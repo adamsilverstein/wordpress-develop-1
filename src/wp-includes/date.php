@@ -151,7 +151,6 @@ class WP_Date_Query {
 	 *                              'comment_date', 'comment_date_gmt'.
 	 */
 	public function __construct( $date_query, $default_column = 'post_date' ) {
-
 		if ( isset( $date_query['relation'] ) && 'OR' === strtoupper( $date_query['relation'] ) ) {
 			$this->relation = 'OR';
 		} else {
@@ -251,6 +250,9 @@ class WP_Date_Query {
 	 *
 	 * Checks to see if the current clause has any time-related keys.
 	 * If so, it's first-order.
+	 *
+	 * @since 4.1.0
+	 * @access protected
 	 *
 	 * @param  array $query Query clause.
 	 * @return bool True if this is a first-order clause.
@@ -491,13 +493,13 @@ class WP_Date_Query {
 		$valid_columns = array(
 			'post_date', 'post_date_gmt', 'post_modified',
 			'post_modified_gmt', 'comment_date', 'comment_date_gmt',
-			'user_registered',
+			'user_registered', 'registered', 'last_updated',
 		);
 
 		// Attempt to detect a table prefix.
 		if ( false === strpos( $column, '.' ) ) {
 			/**
-			 * Filter the list of valid date query columns.
+			 * Filters the list of valid date query columns.
 			 *
 			 * @since 3.7.0
 			 * @since 4.1.0 Added 'user_registered' to the default recognized columns.
@@ -524,6 +526,10 @@ class WP_Date_Query {
 				),
 				$wpdb->users => array(
 					'user_registered',
+				),
+				$wpdb->blogs => array(
+					'registered',
+					'last_updated',
 				),
 			);
 
@@ -555,7 +561,7 @@ class WP_Date_Query {
 		$where = $sql['where'];
 
 		/**
-		 * Filter the date query WHERE clause.
+		 * Filters the date query WHERE clause.
 		 *
 		 * @since 3.7.0
 		 *
@@ -736,12 +742,12 @@ class WP_Date_Query {
 		}
 
 		// Range queries.
-		if ( ! empty( $query['after'] ) )
+		if ( ! empty( $query['after'] ) ) {
 			$where_parts[] = $wpdb->prepare( "$column $gt %s", $this->build_mysql_datetime( $query['after'], ! $inclusive ) );
-
-		if ( ! empty( $query['before'] ) )
+		}
+		if ( ! empty( $query['before'] ) ) {
 			$where_parts[] = $wpdb->prepare( "$column $lt %s", $this->build_mysql_datetime( $query['before'], $inclusive ) );
-
+		}
 		// Specific value queries.
 
 		if ( isset( $query['year'] ) && $value = $this->build_value( $compare, $query['year'] ) )

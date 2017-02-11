@@ -25,12 +25,6 @@ class Tests_Comment extends WP_UnitTestCase {
 		) );
 	}
 
-	public static function wpTearDownAfterClass() {
-		wp_delete_post( self::$post_id, true );
-
-		self::delete_user( self::$user_id );
-	}
-
 	function test_wp_update_comment() {
 		$post = self::factory()->post->create_and_get( array( 'post_title' => 'some-post', 'post_type' => 'post' ) );
 		$post2 = self::factory()->post->create_and_get( array( 'post_title' => 'some-post-2', 'post_type' => 'post' ) );
@@ -133,11 +127,11 @@ class Tests_Comment extends WP_UnitTestCase {
 	public function test_wp_new_comment_respects_dates() {
 		$data = array(
 			'comment_post_ID' => self::$post_id,
-			'comment_author' => rand_str(),
+			'comment_author' => 'Comment Author',
 			'comment_author_url' => '',
 			'comment_author_email' => '',
 			'comment_type' => '',
-			'comment_content' => rand_str(),
+			'comment_content' => 'Comment',
 			'comment_date' => '2011-01-01 10:00:00',
 			'comment_date_gmt' => '2011-01-01 10:00:00',
 		);
@@ -156,12 +150,12 @@ class Tests_Comment extends WP_UnitTestCase {
 	public function test_wp_new_comment_respects_author_ip() {
 		$data = array(
 			'comment_post_ID'      => self::$post_id,
-			'comment_author'       => rand_str(),
+			'comment_author'       => 'Comment Author',
 			'comment_author_IP'    => '192.168.1.1',
 			'comment_author_url'   => '',
 			'comment_author_email' => '',
 			'comment_type'         => '',
-			'comment_content'      => rand_str(),
+			'comment_content'      => 'Comment',
 		);
 
 		$id = wp_new_comment( $data );
@@ -177,12 +171,12 @@ class Tests_Comment extends WP_UnitTestCase {
 	public function test_wp_new_comment_respects_author_ip_empty_string() {
 		$data = array(
 			'comment_post_ID'      => self::$post_id,
-			'comment_author'       => rand_str(),
+			'comment_author'       => 'Comment Author',
 			'comment_author_IP'    => '',
 			'comment_author_url'   => '',
 			'comment_author_email' => '',
 			'comment_type'         => '',
-			'comment_content'      => rand_str(),
+			'comment_content'      => 'Comment',
 		);
 
 		$id = wp_new_comment( $data );
@@ -198,13 +192,13 @@ class Tests_Comment extends WP_UnitTestCase {
 	public function test_wp_new_comment_respects_comment_agent() {
 		$data = array(
 			'comment_post_ID'      => self::$post_id,
-			'comment_author'       => rand_str(),
+			'comment_author'       => 'Comment Author',
 			'comment_author_IP'    => '',
 			'comment_author_url'   => '',
 			'comment_author_email' => '',
 			'comment_agent'        => 'Mozilla/5.0 (iPhone; CPU iPhone OS 7_0 like Mac OS X; en-us) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53',
 			'comment_type'         => '',
-			'comment_content'      => rand_str(),
+			'comment_content'      => 'Comment',
 		);
 
 		$id = wp_new_comment( $data );
@@ -220,13 +214,13 @@ class Tests_Comment extends WP_UnitTestCase {
 	public function test_wp_new_comment_should_trim_provided_comment_agent_to_254_chars() {
 		$data = array(
 			'comment_post_ID'      => self::$post_id,
-			'comment_author'       => rand_str(),
+			'comment_author'       => 'Comment Author',
 			'comment_author_IP'    => '',
 			'comment_author_url'   => '',
 			'comment_author_email' => '',
 			'comment_agent'        => 'Mozilla/5.0 (iPhone; CPU iPhone OS 7_0 like Mac OS X; en-us) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53 Opera/9.80 (X11; Linux i686; Ubuntu/14.10) Presto/2.12.388 Version/12.16 Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en; rv:1.8.1.4pre) Gecko/20070511 Camino/1.6pre',
 			'comment_type'         => '',
-			'comment_content'      => rand_str(),
+			'comment_content'      => 'Comment',
 		);
 
 		$id = wp_new_comment( $data );
@@ -242,13 +236,13 @@ class Tests_Comment extends WP_UnitTestCase {
 	public function test_wp_new_comment_respects_comment_agent_empty_string() {
 		$data = array(
 			'comment_post_ID'      => self::$post_id,
-			'comment_author'       => rand_str(),
+			'comment_author'       => 'Comment Author',
 			'comment_author_IP'    => '',
 			'comment_author_url'   => '',
 			'comment_author_email' => '',
 			'comment_agent'        => '',
 			'comment_type'         => '',
-			'comment_content'      => rand_str(),
+			'comment_content'      => 'Comment',
 		);
 
 		$id = wp_new_comment( $data );
@@ -262,7 +256,7 @@ class Tests_Comment extends WP_UnitTestCase {
 	public function test_comment_field_lengths() {
 		$data = array(
 			'comment_post_ID' => self::$post_id,
-			'comment_author' => rand_str(),
+			'comment_author' => 'Comment Author',
 			'comment_author_url' => '',
 			'comment_author_email' => '',
 			'comment_type' => '',
@@ -402,7 +396,7 @@ class Tests_Comment extends WP_UnitTestCase {
 	}
 
 	/**
-	 * @group 27571
+	 * @ticket 27571
 	 */
 	public function test_post_properties_should_be_lazyloaded() {
 		$c = self::factory()->comment->create( array( 'comment_post_ID' => self::$post_id ) );
@@ -466,7 +460,7 @@ class Tests_Comment extends WP_UnitTestCase {
 		$this->assertFalse( $notification_sent, 'Moderator notification setting on, filter set to off' );
 
 		remove_filter( 'notify_moderator', '__return_false' );
-
+		remove_filter( 'comment_flood_filter', '__return_false' );
 	}
 
 	/**
@@ -487,6 +481,7 @@ class Tests_Comment extends WP_UnitTestCase {
 		$this->assertTrue( $notification_sent, 'Moderator notification setting off, filter set to on' );
 
 		remove_filter( 'notify_moderator', '__return_true' );
+		remove_filter( 'comment_flood_filter', '__return_false' );
 	}
 
 	/**
@@ -508,6 +503,7 @@ class Tests_Comment extends WP_UnitTestCase {
 		$this->assertFalse( $notification_sent, 'Test with author notification setting on, filter set to off' );
 
 		remove_filter( 'notify_post_author', '__return_false' );
+		remove_filter( 'comment_flood_filter', '__return_false' );
 	}
 
 	/**
@@ -528,6 +524,7 @@ class Tests_Comment extends WP_UnitTestCase {
 		$this->assertTrue( $notification_sent, 'Test with author notification setting off, filter set to on' );
 
 		remove_filter( 'notify_post_author', '__return_true' );
+		remove_filter( 'comment_flood_filter', '__return_false' );
 	}
 
 	/**
@@ -544,11 +541,11 @@ class Tests_Comment extends WP_UnitTestCase {
 		// Moderators are notified when a new comment is added.
 		$data = array(
 			'comment_post_ID'      => $post,
-			'comment_author'       => rand_str(),
+			'comment_author'       => 'Comment Author',
 			'comment_author_url'   => '',
 			'comment_author_email' => '',
 			'comment_type'         => '',
-			'comment_content'      => rand_str(),
+			'comment_content'      => 'Comment',
 		);
 		wp_new_comment( $data );
 
@@ -594,11 +591,11 @@ class Tests_Comment extends WP_UnitTestCase {
 		// Post authors are notified when a new comment is added to their post.
 		$data = array(
 			'comment_post_ID'      => $post,
-			'comment_author'       => rand_str(),
+			'comment_author'       => 'Comment Author',
 			'comment_author_url'   => '',
 			'comment_author_email' => '',
 			'comment_type'         => '',
-			'comment_content'      => rand_str(),
+			'comment_content'      => 'Comment',
 		);
 		wp_new_comment( $data );
 
@@ -644,13 +641,13 @@ class Tests_Comment extends WP_UnitTestCase {
 
 		$default_data = array(
 			'comment_post_ID'      => self::$post_id,
-			'comment_author'       => rand_str(),
+			'comment_author'       => 'Comment Author',
 			'comment_author_IP'    => '192.168.0.1',
 			'comment_agent'        => 'WRONG_AGENT',
 			'comment_author_url'   => '',
 			'comment_author_email' => '',
 			'comment_type'         => '',
-			'comment_content'      => rand_str(),
+			'comment_content'      => 'Comment',
 		);
 
 		$comment_id = wp_new_comment( $default_data );
@@ -686,5 +683,83 @@ class Tests_Comment extends WP_UnitTestCase {
 		foreach ( $lengths as $field => $length ) {
 			$this->assertSame( $expected[ $field ], $length );
 		}
+	}
+
+	public function test_update_should_invalidate_comment_cache() {
+		global $wpdb;
+
+		$c = self::factory()->comment->create( array( 'comment_author' => 'Foo' ) );
+
+		$comment = get_comment( $c );
+		$this->assertSame( 'Foo', $comment->comment_author );
+
+		wp_update_comment( array(
+			'comment_ID' => $c,
+			'comment_author' => 'Bar',
+		) );
+
+		$comment = get_comment( $c );
+
+		$this->assertSame( 'Bar', $comment->comment_author );
+	}
+
+	public function test_trash_should_invalidate_comment_cache() {
+		global $wpdb;
+
+		$c = self::factory()->comment->create();
+
+		$comment = get_comment( $c );
+
+		wp_trash_comment( $c );
+
+		$comment = get_comment( $c );
+
+		$this->assertSame( 'trash', $comment->comment_approved );
+	}
+
+	public function test_untrash_should_invalidate_comment_cache() {
+		global $wpdb;
+
+		$c = self::factory()->comment->create();
+		wp_trash_comment( $c );
+
+		$comment = get_comment( $c );
+		$this->assertSame( 'trash', $comment->comment_approved );
+
+		wp_untrash_comment( $c );
+
+		$comment = get_comment( $c );
+
+		$this->assertSame( '1', $comment->comment_approved );
+	}
+
+	public function test_spam_should_invalidate_comment_cache() {
+		global $wpdb;
+
+		$c = self::factory()->comment->create();
+
+		$comment = get_comment( $c );
+
+		wp_spam_comment( $c );
+
+		$comment = get_comment( $c );
+
+		$this->assertSame( 'spam', $comment->comment_approved );
+	}
+
+	public function test_unspam_should_invalidate_comment_cache() {
+		global $wpdb;
+
+		$c = self::factory()->comment->create();
+		wp_spam_comment( $c );
+
+		$comment = get_comment( $c );
+		$this->assertSame( 'spam', $comment->comment_approved );
+
+		wp_unspam_comment( $c );
+
+		$comment = get_comment( $c );
+
+		$this->assertSame( '1', $comment->comment_approved );
 	}
 }

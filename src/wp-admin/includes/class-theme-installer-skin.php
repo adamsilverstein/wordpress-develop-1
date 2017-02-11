@@ -12,6 +12,8 @@
  *
  * @since 2.8.0
  * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php.
+ *
+ * @see WP_Upgrader_Skin
  */
 class Theme_Installer_Skin extends WP_Upgrader_Skin {
 	public $api;
@@ -80,7 +82,7 @@ class Theme_Installer_Skin extends WP_Upgrader_Skin {
 			unset( $install_actions['activate'], $install_actions['preview'] );
 
 		/**
-		 * Filter the list of action links available following a single theme installation.
+		 * Filters the list of action links available following a single theme installation.
 		 *
 		 * @since 2.8.0
 		 *

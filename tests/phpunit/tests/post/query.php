@@ -388,4 +388,151 @@ class Tests_Post_Query extends WP_UnitTestCase {
 		$actual_posts = $q->get_posts();
 		$this->assertEqualSets( $requested, $actual_posts );
 	}
+
+	/**
+	 * @ticket 36687
+	 */
+	public function test_posts_pre_query_filter_should_bypass_database_query() {
+		global $wpdb;
+
+		add_filter( 'posts_pre_query', array( __CLASS__, 'filter_posts_pre_query' ) );
+
+		$num_queries = $wpdb->num_queries;
+		$q = new WP_Query( array(
+			'fields' => 'ids',
+			'no_found_rows' => true,
+		) );
+
+		remove_filter( 'posts_pre_query', array( __CLASS__, 'filter_posts_pre_query' ) );
+
+		$this->assertSame( $num_queries, $wpdb->num_queries );
+		$this->assertSame( array( 12345 ), $q->posts );
+	}
+
+	public static function filter_posts_pre_query( $posts ) {
+		return array( 12345 );
+	}
+
+	/**
+	 * @ticket 36687
+	 */
+	public function test_posts_pre_query_filter_should_respect_set_found_posts() {
+		global $wpdb;
+
+		$this->post_id = self::factory()->post->create();
+
+		// Prevent the DB query
+		add_filter( 'posts_request', '__return_empty_string' );
+		add_filter( 'found_posts_query', '__return_empty_string' );
+
+		// Add the post and found_posts
+		add_filter( 'the_posts', array( $this, 'filter_the_posts' ) );
+		add_filter( 'found_posts', array( $this, 'filter_found_posts' ) );
+
+		$q = new WP_Query( array( 'suppress_filters' => false ) );
+
+		remove_filter( 'posts_request', '__return_empty_string' );
+		remove_filter( 'found_posts_query', '__return_empty_string' );
+		remove_filter( 'the_posts', array( $this, 'filter_the_posts' ) );
+		remove_filter( 'found_posts', array( $this, 'filter_found_posts' ) );
+
+		$this->assertSame( array( $this->post_id ), wp_list_pluck( $q->posts, 'ID' ) );
+		$this->assertSame( 1, $q->found_posts );
+	}
+
+	public function filter_the_posts() {
+		return array( get_post( $this->post_id ) );
+	}
+
+	public function filter_found_posts( $posts ) {
+		return 1;
+	}
+
+	/**
+	 * @ticket 36687
+	 */
+	public function test_set_found_posts_fields_ids() {
+		register_post_type( 'wptests_pt' );
+
+		$posts = self::factory()->post->create_many( 2, array( 'post_type' => 'wptests_pt' ) );
+
+		foreach ( $posts as $p ) {
+			clean_post_cache( $p );
+		}
+
+		$q = new WP_Query( array(
+			'post_type' => 'wptests_pt',
+			'posts_per_page' => 1,
+			'fields' => 'ids',
+		) );
+
+		$this->assertEquals( 2, $q->found_posts );
+		$this->assertEquals( 2, $q->max_num_pages );
+	}
+
+	/**
+	 * @ticket 36687
+	 */
+	public function test_set_found_posts_fields_idparent() {
+		register_post_type( 'wptests_pt' );
+
+		$posts = self::factory()->post->create_many( 2, array( 'post_type' => 'wptests_pt' ) );
+		foreach ( $posts as $p ) {
+			clean_post_cache( $p );
+		}
+
+		$q = new WP_Query( array(
+			'post_type' => 'wptests_pt',
+			'posts_per_page' => 1,
+			'fields' => 'id=>parent',
+		) );
+
+		$this->assertEquals( 2, $q->found_posts );
+		$this->assertEquals( 2, $q->max_num_pages );
+	}
+
+	/**
+	 * @ticket 36687
+	 */
+	public function test_set_found_posts_fields_split_the_query() {
+		register_post_type( 'wptests_pt' );
+
+		$posts = self::factory()->post->create_many( 2, array( 'post_type' => 'wptests_pt' ) );
+		foreach ( $posts as $p ) {
+			clean_post_cache( $p );
+		}
+
+		add_filter( 'split_the_query', '__return_true' );
+		$q = new WP_Query( array(
+			'post_type' => 'wptests_pt',
+			'posts_per_page' => 1,
+		) );
+		remove_filter( 'split_the_query', '__return_true' );
+
+		$this->assertEquals( 2, $q->found_posts );
+		$this->assertEquals( 2, $q->max_num_pages );
+	}
+
+	/**
+	 * @ticket 36687
+	 */
+	public function test_set_found_posts_fields_not_split_the_query() {
+		register_post_type( 'wptests_pt' );
+
+		$posts = self::factory()->post->create_many( 2, array( 'post_type' => 'wptests_pt' ) );
+		foreach ( $posts as $p ) {
+			clean_post_cache( $p );
+		}
+
+		// ! $split_the_query
+		add_filter( 'split_the_query', '__return_false' );
+		$q = new WP_Query( array(
+			'post_type' => 'wptests_pt',
+			'posts_per_page' => 1,
+		) );
+		remove_filter( 'split_the_query', '__return_false' );
+
+		$this->assertEquals( 2, $q->found_posts );
+		$this->assertEquals( 2, $q->max_num_pages );
+	}
 }

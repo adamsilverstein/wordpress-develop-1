@@ -12,6 +12,8 @@
  *
  * @since 3.0.0
  * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php.
+ *
+ * @see Bulk_Upgrader_Skin
  */
 class Bulk_Theme_Upgrader_Skin extends Bulk_Upgrader_Skin {
 	public $theme_info = array(); // Theme_Upgrader::bulk() will fill this in.
@@ -51,7 +53,7 @@ class Bulk_Theme_Upgrader_Skin extends Bulk_Upgrader_Skin {
 			unset( $update_actions['themes_page'] );
 
 		/**
-		 * Filter the list of action links available following bulk theme updates.
+		 * Filters the list of action links available following bulk theme updates.
 		 *
 		 * @since 3.0.0
 		 *

@@ -60,8 +60,8 @@ class Tests_User_WpDeleteUser extends WP_UnitTestCase {
 		$post = array(
 			'post_author' => $user_id,
 			'post_status' => 'publish',
-			'post_content' => rand_str(),
-			'post_title' => rand_str(),
+			'post_content' => 'Post content',
+			'post_title' => 'Post Title',
 			'post_type' => 'post',
 		);
 
@@ -76,8 +76,8 @@ class Tests_User_WpDeleteUser extends WP_UnitTestCase {
 		$post = array(
 			'post_author' => $user_id,
 			'post_status' => 'publish',
-			'post_content' => rand_str(),
-			'post_title' => rand_str(),
+			'post_content' => 'Post content',
+			'post_title' => 'Post Title',
 			'post_type' => 'nav_menu_item',
 		);
 
@@ -136,14 +136,14 @@ class Tests_User_WpDeleteUser extends WP_UnitTestCase {
 	}
 
 	/**
-	 * @group 33800
+	 * @ticket 33800
 	 */
 	public function test_should_return_false_for_non_numeric_string_user_id() {
 		$this->assertFalse( wp_delete_user( 'abcde' ) );
 	}
 
 	/**
-	 * @group 33800
+	 * @ticket 33800
 	 */
 	public function test_should_return_false_for_object_user_id() {
 		if ( is_multisite() ) {

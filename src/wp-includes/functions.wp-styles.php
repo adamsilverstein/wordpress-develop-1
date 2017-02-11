@@ -89,7 +89,7 @@ function wp_add_inline_style( $handle, $data ) {
 			__( 'Do not pass %1$s tags to %2$s.' ),
 			'<code>&lt;style&gt;</code>',
 			'<code>wp_add_inline_style()</code>'
-		), '3.7' );
+		), '3.7.0' );
 		$data = trim( preg_replace( '#<style[^>]*>(.*)</style>#is', '$1', $data ) );
 	}
 
@@ -100,7 +100,7 @@ function wp_add_inline_style( $handle, $data ) {
  * Register a CSS stylesheet.
  *
  * @see WP_Dependencies::add()
- * @link http://www.w3.org/TR/CSS2/media.html#media-types List of CSS media types.
+ * @link https://www.w3.org/TR/CSS2/media.html#media-types List of CSS media types.
  *
  * @since 2.6.0
  * @since 4.3.0 A return value was added.
@@ -145,12 +145,13 @@ function wp_deregister_style( $handle ) {
  *
  * @see WP_Dependencies::add()
  * @see WP_Dependencies::enqueue()
- * @link http://www.w3.org/TR/CSS2/media.html#media-types List of CSS media types.
+ * @link https://www.w3.org/TR/CSS2/media.html#media-types List of CSS media types.
  *
  * @since 2.6.0
  *
  * @param string           $handle Name of the stylesheet. Should be unique.
  * @param string           $src    Full URL of the stylesheet, or path of the stylesheet relative to the WordPress root directory.
+ *                                 Default empty.
  * @param array            $deps   Optional. An array of registered stylesheet handles this stylesheet depends on. Default empty array.
  * @param string|bool|null $ver    Optional. String specifying stylesheet version number, if it has one, which is added to the URL
  *                                 as a query string for cache busting purposes. If version is set to false, a version
@@ -160,7 +161,7 @@ function wp_deregister_style( $handle ) {
  *                                 Default 'all'. Accepts media types like 'all', 'print' and 'screen', or media queries like
  *                                 '(orientation: portrait)' and '(max-width: 640px)'.
  */
-function wp_enqueue_style( $handle, $src = false, $deps = array(), $ver = false, $media = 'all' ) {
+function wp_enqueue_style( $handle, $src = '', $deps = array(), $ver = false, $media = 'all' ) {
 	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__ );
 
 	$wp_styles = wp_styles();

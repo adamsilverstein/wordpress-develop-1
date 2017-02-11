@@ -61,7 +61,7 @@ class WP_Nav_Menu_Widget extends WP_Widget {
 		);
 
 		/**
-		 * Filter the arguments for the Custom Menu widget.
+		 * Filters the arguments for the Custom Menu widget.
 		 *
 		 * @since 4.2.0
 		 * @since 4.4.0 Added the `$instance` parameter.
@@ -72,7 +72,7 @@ class WP_Nav_Menu_Widget extends WP_Widget {
 		 *     @type callable|bool $fallback_cb Callback to fire if the menu doesn't exist. Default empty.
 		 *     @type mixed         $menu        Menu ID, slug, or name.
 		 * }
-		 * @param stdClass $nav_menu      Nav menu object for the current menu.
+		 * @param WP_Term  $nav_menu      Nav menu object for the current menu.
 		 * @param array    $args          Display arguments for the current widget.
 		 * @param array    $instance      Array of settings for the current widget.
 		 */

@@ -312,7 +312,9 @@ module.exports = function(grunt) {
 					'twenty*/**/*.js',
 					'!twenty{eleven,twelve,thirteen}/**',
 					// Third party scripts
-					'!twenty{fourteen,fifteen,sixteen}/js/html5.js'
+					'!twenty{fourteen,fifteen,sixteen}/js/html5.js',
+					'!twentyseventeen/assets/js/html5.js',
+					'!twentyseventeen/assets/js/jquery.scrollTo.js'
 				]
 			},
 			media: {
@@ -441,7 +443,8 @@ module.exports = function(grunt) {
 		},
 		uglify: {
 			options: {
-				ASCIIOnly: true
+				ASCIIOnly: true,
+				screwIE8: false
 			},
 			core: {
 				expand: true,
@@ -514,8 +517,17 @@ module.exports = function(grunt) {
 				},
 				src: SOURCE_DIR + 'wp-admin/js/bookmarklet.js',
 				dest: SOURCE_DIR + 'wp-admin/js/bookmarklet.min.js'
+			},
+			masonry: {
+				options: {
+					// Preserve comments that start with a bang.
+					preserveComments: /^!/
+				},
+				src: SOURCE_DIR + 'wp-includes/js/jquery/jquery.masonry.js',
+				dest: SOURCE_DIR + 'wp-includes/js/jquery/jquery.masonry.min.js'
 			}
 		},
+
 		concat: {
 			tinymce: {
 				options: {
@@ -634,6 +646,15 @@ module.exports = function(grunt) {
 		}
 	});
 
+	// Allow builds to be minimal
+	if( grunt.option( 'minimal-copy' ) ) {
+		var copyFilesOptions = grunt.config.get( 'copy.files.files' );
+		copyFilesOptions[0].src.push( '!wp-content/plugins/**' );
+		copyFilesOptions[0].src.push( '!wp-content/themes/!(twenty*)/**' );
+		grunt.config.set( 'copy.files.files', copyFilesOptions );
+	}
+
+
 	// Register tasks.
 
 	// RTL task.
@@ -676,6 +697,7 @@ module.exports = function(grunt) {
 		'browserify',
 		'jshint:corejs',
 		'uglify:bookmarklet',
+		'uglify:masonry',
 		'qunit:compiled'
 	] );
 
@@ -725,19 +747,34 @@ module.exports = function(grunt) {
 					grunt.fatal( 'The `' +  map[ type ] + '` command returned a non-zero exit code.', code );
 				}
 
-				[ 'png', 'jpg', 'gif', 'jpeg' ].forEach( function( extension ) {
-					if ( ( result.stdout + '\n' ).indexOf( '.' + extension + '\n' ) !== -1 ) {
-						grunt.log.writeln( 'Image files modified. Minifying.');
+				// Callback for finding modified paths.
+				function testPath( path ) {
+					var regex = new RegExp( ' ' + path + '$', 'm' );
+					return regex.test( result.stdout );
+				}
+
+				// Callback for finding modified files by extension.
+				function testExtension( extension ) {
+					var regex = new RegExp( '\.' + extension + '$', 'm' );
+					return regex.test( result.stdout );
+				}
+
+				if ( [ 'package.json', 'Gruntfile.js' ].some( testPath ) ) {
+					grunt.log.writeln( 'Configuration files modified. Running `prerelease`.' );
+					taskList.push( 'prerelease' );
+				} else {
+					if ( [ 'png', 'jpg', 'gif', 'jpeg' ].some( testExtension ) ) {
+						grunt.log.writeln( 'Image files modified. Minifying.' );
 						taskList.push( 'precommit:image' );
 					}
-				} );
 
-				[ 'js', 'css', 'php' ].forEach( function( extension ) {
-					if ( ( result.stdout + '\n' ).indexOf( '.' + extension + '\n' ) !== -1 ) {
-						grunt.log.writeln( extension.toUpperCase() + ' files modified. ' + extension.toUpperCase() + ' tests will be run.');
-						taskList.push( 'precommit:' + extension );
-					}
-				} );
+					[ 'js', 'css', 'php' ].forEach( function( extension ) {
+						if ( testExtension( extension ) ) {
+							grunt.log.writeln( extension.toUpperCase() + ' files modified. ' + extension.toUpperCase() + ' tests will be run.' );
+							taskList.push( 'precommit:' + extension );
+						}
+					} );
+				}
 
 				grunt.task.run( taskList );
 
@@ -800,6 +837,9 @@ module.exports = function(grunt) {
 
 	// Patch task.
 	grunt.renameTask('patch_wordpress', 'patch');
+
+	// Add an alias `apply` of the `patch` task name.
+	grunt.registerTask('apply', 'patch');
 
 	// Default task.
 	grunt.registerTask('default', ['build']);

@@ -10,15 +10,14 @@
 /**
  * Core base class extended to register widgets.
  *
- * This class must be extended for each widget, and WP_Widget::widget() must be overriden.
+ * This class must be extended for each widget, and WP_Widget::widget() must be overridden.
  *
  * If adding widget options, WP_Widget::update() and WP_Widget::form() should also be overridden.
  *
  * @since 2.8.0
  * @since 4.4.0 Moved to its own file from wp-includes/widgets.php
- * @abstract
  */
-abstract class WP_Widget {
+class WP_Widget {
 
 	/**
 	 * Root ID for all widgets of this type.
@@ -37,6 +36,24 @@ abstract class WP_Widget {
 	 * @var string
 	 */
 	public $name;
+
+	/**
+	 * Option name for this widget type.
+	 *
+	 * @since 2.8.0
+	 * @access public
+	 * @var string
+	 */
+	public $option_name;
+
+	/**
+	 * Alt option name for this widget type.
+	 *
+	 * @since 2.8.0
+	 * @access public
+	 * @var string
+	 */
+	public $alt_option_name;
 
 	/**
 	 * Option array passed to wp_register_sidebar_widget().
@@ -87,7 +104,7 @@ abstract class WP_Widget {
 	public $updated = false;
 
 	//
-	// Member functions that must be overriden by subclasses.
+	// Member functions that must be overridden by subclasses.
 	//
 
 	/**
@@ -97,13 +114,14 @@ abstract class WP_Widget {
 	 *
 	 * @since 2.8.0
 	 * @access public
-	 * @abstract
 	 *
 	 * @param array $args     Display arguments including 'before_title', 'after_title',
 	 *                        'before_widget', and 'after_widget'.
 	 * @param array $instance The settings for the particular instance of the widget.
 	 */
-	abstract public function widget( $args, $instance );
+	public function widget( $args, $instance ) {
+		die('function WP_Widget::widget() must be over-ridden in a sub-class.');
+	}
 
 	/**
 	 * Updates a particular instance of a widget.
@@ -353,7 +371,7 @@ abstract class WP_Widget {
 			$instance = $instances[ $this->number ];
 
 			/**
-			 * Filter the settings for a particular widget instance.
+			 * Filters the settings for a particular widget instance.
 			 *
 			 * Returning false will effectively short-circuit display of the widget.
 			 *
@@ -442,7 +460,7 @@ abstract class WP_Widget {
 				}
 
 				/**
-				 * Filter a widget's settings before saving.
+				 * Filters a widget's settings before saving.
 				 *
 				 * Returning false will effectively short-circuit the widget's ability
 				 * to update settings.
@@ -498,7 +516,7 @@ abstract class WP_Widget {
 		}
 
 		/**
-		 * Filter the widget instance's settings before displaying the control form.
+		 * Filters the widget instance's settings before displaying the control form.
 		 *
 		 * Returning false effectively short-circuits display of the control form.
 		 *

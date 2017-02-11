@@ -112,6 +112,11 @@ window._wpCustomizeSettings = {
 		'fixture-setting': {
 			'transport': 'postMessage',
 			'value': 'Lorem Ipsum'
+		},
+		'fixture-setting-abbr': {
+			'transport': 'postMessage',
+			'value': 'NASA',
+			'type': 'abbreviation'
 		}
 	},
 	'theme': {
@@ -142,6 +147,17 @@ window._wpCustomizeSettings = {
 		'mobile': {
 			'label': 'Enter mobile preview mode'
 		}
+	},
+	changeset: {
+		status: '',
+		uuid: '0c674ff4-c159-4e7a-beb4-cb830ae73979'
+	},
+	timeouts: {
+		windowRefresh: 250,
+		changesetAutoSave: 60000,
+		keepAliveCheck: 2500,
+		reflowPaneContents: 100,
+		previewFrameSensitivity: 2000
 	}
 };
 window._wpCustomizeControlsL10n = {};

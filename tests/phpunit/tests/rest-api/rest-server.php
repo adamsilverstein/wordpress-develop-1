@@ -23,6 +23,7 @@ class Tests_REST_Server extends WP_Test_REST_TestCase {
 	public function tearDown() {
 		// Remove our temporary spy server
 		$GLOBALS['wp_rest_server'] = null;
+		unset( $_REQUEST['_wpnonce'] );
 
 		parent::tearDown();
 	}
@@ -717,6 +718,40 @@ class Tests_REST_Server extends WP_Test_REST_TestCase {
 		$this->assertContains( 'test/another', $namespaces );
 	}
 
+	public function test_x_robot_tag_header_on_requests() {
+		$request = new WP_REST_Request( 'GET', '/', array() );
+
+		$result = $this->server->serve_request('/');
+		$headers = $this->server->sent_headers;
+
+		$this->assertEquals( 'noindex', $headers['X-Robots-Tag'] );
+	}
+
+	/**
+	 * @ticket 38446
+	 * @expectedDeprecated rest_enabled
+	 */
+	public function test_rest_enable_filter_is_deprecated() {
+		add_filter( 'rest_enabled', '__return_false' );
+		$this->server->serve_request( '/' );
+		remove_filter( 'rest_enabled', '__return_false' );
+
+		$result = json_decode( $this->server->sent_body );
+
+		$this->assertObjectNotHasAttribute( 'code', $result );
+	}
+
+	public function test_link_header_on_requests() {
+		$api_root = get_rest_url();
+
+		$request = new WP_REST_Request( 'GET', '/', array() );
+
+		$result = $this->server->serve_request('/');
+		$headers = $this->server->sent_headers;
+
+		$this->assertEquals( '<' . esc_url_raw( $api_root ) . '>; rel="https://api.w.org/"', $headers['Link'] );
+	}
+
 	public function test_nocache_headers_on_authenticated_requests() {
 		$editor = self::factory()->user->create( array( 'role' => 'editor' ) );
 		$request = new WP_REST_Request( 'GET', '/', array() );
@@ -872,5 +907,138 @@ class Tests_REST_Server extends WP_Test_REST_TestCase {
 
 	public function filter_wp_rest_server_class() {
 		return 'Spy_REST_Server';
+	}
+
+	/**
+	 * Refreshed nonce should not be present in header when an invalid nonce is passed for logged in user.
+	 *
+	 * @ticket 35662
+	 */
+	public function test_rest_send_refreshed_nonce_invalid_nonce() {
+		$this->helper_setup_user_for_rest_send_refreshed_nonce_tests();
+
+		$_REQUEST['_wpnonce'] = 'random invalid nonce';
+
+		$headers = $this->helper_make_request_and_return_headers_for_rest_send_refreshed_nonce_tests();
+
+		$this->assertArrayNotHasKey( 'X-WP-Nonce', $headers );
+	}
+
+	/**
+	 * Refreshed nonce should be present in header when a valid nonce is
+	 * passed for logged in/anonymous user and not present when nonce is not
+	 * passed.
+	 *
+	 * @ticket 35662
+	 *
+	 * @dataProvider data_rest_send_refreshed_nonce
+	 *
+	 * @param bool $has_logged_in_user Will there be a logged in user for this test.
+	 * @param bool $has_nonce          Are we passing the nonce.
+	 */
+	public function test_rest_send_refreshed_nonce( $has_logged_in_user, $has_nonce ) {
+		if ( true === $has_logged_in_user ) {
+			$this->helper_setup_user_for_rest_send_refreshed_nonce_tests();
+		}
+
+		if ( $has_nonce ) {
+			$_REQUEST['_wpnonce'] = wp_create_nonce( 'wp_rest' );
+		}
+
+		$headers = $this->helper_make_request_and_return_headers_for_rest_send_refreshed_nonce_tests();
+
+		if ( $has_nonce ) {
+			$this->assertArrayHasKey( 'X-WP-Nonce', $headers );
+		} else {
+			$this->assertArrayNotHasKey( 'X-WP-Nonce', $headers );
+		}
+	}
+
+	/**
+	 * Make sure that a sanitization that transforms the argument type will not
+	 * cause the validation to fail.
+	 *
+	 * @ticket 37192
+	 */
+	public function test_rest_validate_before_sanitization() {
+		register_rest_route( 'test-ns', '/test', array(
+			'methods'  => array( 'GET' ),
+			'callback' => '__return_null',
+			'args' => array(
+				'someinteger' => array(
+					'validate_callback' => array( $this, '_validate_as_integer_123' ),
+					'sanitize_callback' => 'absint',
+				),
+				'somestring'  => array(
+					'validate_callback' => array( $this, '_validate_as_string_foo' ),
+					'sanitize_callback' => 'absint',
+				),
+			),
+		) );
+
+		$request = new WP_REST_Request( 'GET', '/test-ns/test' );
+		$request->set_query_params( array( 'someinteger' => 123, 'somestring' => 'foo' ) );
+		$response = $this->server->dispatch( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function _validate_as_integer_123( $value, $request, $key ) {
+		if ( ! is_int( $value ) ) {
+			return new WP_Error( 'some-error', 'This is not valid!' );
+		}
+
+		return true;
+	}
+
+	public function _validate_as_string_foo( $value, $request, $key ) {
+		if ( ! is_string( $value ) ) {
+			return new WP_Error( 'some-error', 'This is not valid!' );
+		}
+
+		return true;
+	}
+
+	/**
+	 * @return array {
+	 *     @type array {
+	 *         @type bool $has_logged_in_user Are we registering a user for the test.
+	 *         @type bool $has_nonce          Is the nonce passed.
+	 *     }
+	 * }
+	 */
+	function data_rest_send_refreshed_nonce() {
+		return array(
+			array( true, true ),
+			array( true, false ),
+			array( false, true ),
+			array( false, false ),
+		);
+	}
+
+	/**
+	 * Helper to setup a users and auth cookie global for the
+	 * rest_send_refreshed_nonce related tests.
+	 */
+	protected function helper_setup_user_for_rest_send_refreshed_nonce_tests() {
+		$author = self::factory()->user->create( array( 'role' => 'author' ) );
+		wp_set_current_user( $author );
+
+		global $wp_rest_auth_cookie;
+
+		$wp_rest_auth_cookie = true;
+	}
+
+	/**
+	 * Helper to make the request and get the headers for the
+	 * rest_send_refreshed_nonce related tests.
+	 *
+	 * @return array
+	 */
+	protected function helper_make_request_and_return_headers_for_rest_send_refreshed_nonce_tests() {
+		$request = new WP_REST_Request( 'GET', '/', array() );
+		$result  = $this->server->serve_request( '/' );
+
+		return $this->server->sent_headers;
 	}
 }

@@ -1,13 +1,15 @@
 <?php
-
 /**
  * A set of unit tests for functions in wp-includes/general-template.php
  *
  * @group template
+ * @group site_icon
  */
-class Tests_General_Template extends WP_UnitTestCase {
 
-	public $wp_site_icon;
+require_once( ABSPATH . 'wp-admin/includes/class-wp-site-icon.php' );
+
+class Tests_General_Template extends WP_UnitTestCase {
+	protected $wp_site_icon;
 	public $site_icon_id;
 	public $site_icon_url;
 
@@ -17,12 +19,14 @@ class Tests_General_Template extends WP_UnitTestCase {
 	function setUp() {
 		parent::setUp();
 
-		require_once ABSPATH . 'wp-admin/includes/class-wp-site-icon.php';
-		$this->wp_site_icon = $GLOBALS['wp_site_icon'];
+		$this->wp_site_icon = new WP_Site_Icon();
 	}
 
 	function tearDown() {
+		global $wp_customize;
 		$this->_remove_custom_logo();
+		$this->_remove_site_icon();
+		$wp_customize = null;
 
 		parent::tearDown();
 	}
@@ -50,7 +54,6 @@ class Tests_General_Template extends WP_UnitTestCase {
 		$this->_set_site_icon();
 		$this->expectOutputString( $this->site_icon_url );
 		site_icon_url();
-		$this->_remove_site_icon();
 	}
 
 	/**
@@ -116,8 +119,6 @@ class Tests_General_Template extends WP_UnitTestCase {
 
 		$this->expectOutputString( $output );
 		wp_site_icon();
-
-		$this->_remove_site_icon();
 	}
 
 	/**
@@ -142,8 +143,51 @@ class Tests_General_Template extends WP_UnitTestCase {
 		add_filter( 'site_icon_meta_tags', array( $this, '_custom_site_icon_meta_tag' ) );
 		wp_site_icon();
 		remove_filter( 'site_icon_meta_tags', array( $this, '_custom_site_icon_meta_tag' ) );
+	}
 
-		$this->_remove_site_icon();
+	/**
+	 * @group site_icon
+	 * @ticket 38377
+	 */
+	function test_customize_preview_wp_site_icon_empty() {
+		global $wp_customize;
+		wp_set_current_user( $this->factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
+		$wp_customize = new WP_Customize_Manager();
+		$wp_customize->register_controls();
+		$wp_customize->start_previewing_theme();
+
+		$this->expectOutputString( '<link rel="icon" href="/favicon.ico" sizes="32x32" />' . "\n" );
+		wp_site_icon();
+	}
+
+	/**
+	 * @group site_icon
+	 * @ticket 38377
+	 */
+	function test_customize_preview_wp_site_icon_dirty() {
+		global $wp_customize;
+		wp_set_current_user( $this->factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
+		$wp_customize = new WP_Customize_Manager();
+		$wp_customize->register_controls();
+		$wp_customize->start_previewing_theme();
+
+		$attachment_id = $this->_insert_attachment();
+		$wp_customize->set_post_value( 'site_icon', $attachment_id );
+		$wp_customize->get_setting( 'site_icon' )->preview();
+		$output = array(
+			sprintf( '<link rel="icon" href="%s" sizes="32x32" />', esc_url( wp_get_attachment_image_url( $attachment_id, 32 ) ) ),
+			sprintf( '<link rel="icon" href="%s" sizes="192x192" />', esc_url( wp_get_attachment_image_url( $attachment_id, 192 ) ) ),
+			sprintf( '<link rel="apple-touch-icon-precomposed" href="%s" />', esc_url( wp_get_attachment_image_url( $attachment_id, 180 ) ) ),
+			sprintf( '<meta name="msapplication-TileImage" content="%s" />', esc_url( wp_get_attachment_image_url( $attachment_id, 270 ) ) ),
+			'',
+		);
+		$output = implode( "\n", $output );
+		$this->expectOutputString( $output );
+		wp_site_icon();
 	}
 
 	/**
@@ -344,5 +388,213 @@ class Tests_General_Template extends WP_UnitTestCase {
 		$this->custom_logo_url = $upload['url'];
 		$this->custom_logo_id  = $this->_make_attachment( $upload );
 		return $this->custom_logo_id;
+	}
+
+	/**
+	 * Test get_the_modified_time
+	 *
+	 * @ticket 37059
+	 *
+	 * @since 4.6.0
+	 */
+	function test_get_the_modified_time_default() {
+		$details = array(
+				'post_date' => '2016-01-21 15:34:36',
+				'post_date_gmt' => '2016-01-21 15:34:36',
+		);
+		$post_id = $this->factory->post->create( $details );
+		$post = get_post( $post_id );
+
+		$GLOBALS['post'] = $post;
+
+		$expected = '1453390476';
+		$d = 'G';
+		$actual = get_the_modified_time( $d );
+		$this->assertEquals( $expected, $actual );
+	}
+
+	/**
+	 * Test get_the_modified_time failures are filtered
+	 *
+	 * @ticket 37059
+	 *
+	 * @since 4.6.0
+	 */
+	function test_get_the_modified_time_failures_are_filtered() {
+		// Remove global post objet
+		$GLOBALS['post'] = null;
+
+		$expected = 'filtered modified time failure result';
+		add_filter( 'get_the_modified_time', array( $this, '_filter_get_the_modified_time_failure' ) );
+		$actual = get_the_modified_time();
+		$this->assertEquals( $expected, $actual );
+		remove_filter( 'get_the_modified_time', array( $this, '_filter_get_the_modified_time_failure' ) );
+	}
+
+	function _filter_get_the_modified_time_failure( $the_time ) {
+		$expected = false;
+		$actual   = $the_time;
+		$this->assertEquals( $expected, $actual );
+
+		if ( false === $the_time ) {
+			return 'filtered modified time failure result';
+		}
+		return $the_time;
+	}
+
+	/**
+	 * Test get_the_modified_time with post_id parameter.
+	 *
+	 * @ticket 37059
+	 *
+	 * @since 4.6.0
+	 */
+	function test_get_the_modified_date_with_post_id() {
+		$details = array(
+				'post_date' => '2016-01-21 15:34:36',
+				'post_date_gmt' => '2016-01-21 15:34:36',
+		);
+		$post_id = $this->factory->post->create( $details );
+		$d = 'Y-m-d';
+		$expected = '2016-01-21';
+		$actual = get_the_modified_date( $d, $post_id );
+		$this->assertEquals( $expected, $actual );
+	}
+
+	/**
+	 * Test get_the_modified_date
+	 *
+	 * @ticket 37059
+	 *
+	 * @since 4.6.0
+	 */
+	function test_get_the_modified_date_default() {
+		$details = array(
+				'post_date' => '2016-01-21 15:34:36',
+				'post_date_gmt' => '2016-01-21 15:34:36',
+		);
+		$post_id = $this->factory->post->create( $details );
+		$post = get_post( $post_id );
+
+		$GLOBALS['post'] = $post;
+
+		$expected = '2016-01-21';
+		$d = 'Y-m-d';
+		$actual = get_the_modified_date( $d );
+		$this->assertEquals( $expected, $actual );
+	}
+
+	/**
+	 * Test get_the_modified_date failures are filtered
+	 *
+	 * @ticket 37059
+	 *
+	 * @since 4.6.0
+	 */
+	function test_get_the_modified_date_failures_are_filtered() {
+		// Remove global post objet
+		$GLOBALS['post'] = null;
+
+		$expected = 'filtered modified date failure result';
+		add_filter( 'get_the_modified_date', array( $this, '_filter_get_the_modified_date_failure' ) );
+		$actual = get_the_modified_date();
+		$this->assertEquals( $expected, $actual );
+		remove_filter( 'get_the_modified_date', array( $this, '_filter_get_the_modified_date_failure' ) );
+	}
+
+	function _filter_get_the_modified_date_failure( $the_date ) {
+		$expected = false;
+		$actual   = $the_date;
+		$this->assertEquals( $expected, $actual );
+
+		if ( false === $the_date ) {
+			return 'filtered modified date failure result';
+		}
+		return $the_date;
+	}
+
+	/**
+	 * Test get_the_modified_time with post_id parameter.
+	 *
+	 * @ticket 37059
+	 *
+	 * @since 4.6.0
+	 */
+	function test_get_the_modified_time_with_post_id() {
+		$details = array(
+				'post_date' => '2016-01-21 15:34:36',
+				'post_date_gmt' => '2016-01-21 15:34:36',
+		);
+		$post_id = $this->factory->post->create( $details );
+		$d = 'G';
+		$expected = '1453390476';
+		$actual = get_the_modified_time( $d, $post_id );
+		$this->assertEquals( $expected, $actual );
+	}
+
+	/**
+	 * @ticket 38253
+	 */
+	function test_get_site_icon_url_preserves_switched_state() {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'This test requires multisite.' );
+		}
+
+		$blog_id = $this->factory->blog->create();
+		switch_to_blog( $blog_id );
+
+		$expected = $GLOBALS['_wp_switched_stack'];
+
+		get_site_icon_url( 512, '', $blog_id );
+
+		$result = $GLOBALS['_wp_switched_stack'];
+
+		restore_current_blog();
+
+		$this->assertSame( $expected, $result );
+	}
+
+	/**
+	 * @ticket 38253
+	 */
+	function test_has_custom_logo_preserves_switched_state() {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'This test requires multisite.' );
+		}
+
+		$blog_id = $this->factory->blog->create();
+		switch_to_blog( $blog_id );
+
+		$expected = $GLOBALS['_wp_switched_stack'];
+
+		has_custom_logo( $blog_id );
+
+		$result = $GLOBALS['_wp_switched_stack'];
+
+		restore_current_blog();
+
+		$this->assertSame( $expected, $result );
+	}
+
+	/**
+	 * @ticket 38253
+	 */
+	function test_get_custom_logo_preserves_switched_state() {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'This test requires multisite.' );
+		}
+
+		$blog_id = $this->factory->blog->create();
+		switch_to_blog( $blog_id );
+
+		$expected = $GLOBALS['_wp_switched_stack'];
+
+		get_custom_logo( $blog_id );
+
+		$result = $GLOBALS['_wp_switched_stack'];
+
+		restore_current_blog();
+
+		$this->assertSame( $expected, $result );
 	}
 }

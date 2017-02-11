@@ -12,6 +12,8 @@
  *
  * @since 2.8.0
  * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php.
+ *
+ * @see WP_Upgrader_Skin
  */
 class Plugin_Upgrader_Skin extends WP_Upgrader_Skin {
 	public $plugin = '';
@@ -54,7 +56,7 @@ class Plugin_Upgrader_Skin extends WP_Upgrader_Skin {
 			unset( $update_actions['activate_plugin'] );
 
 		/**
-		 * Filter the list of action links available following a single plugin update.
+		 * Filters the list of action links available following a single plugin update.
 		 *
 		 * @since 2.7.0
 		 *

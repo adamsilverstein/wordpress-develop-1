@@ -1,4 +1,10 @@
-/* global wp */
+/* global JSON, wp, test, ok, equal, module */
+
+wp.customize.settingConstructor.abbreviation = wp.customize.Setting.extend({
+	validate: function( value ) {
+		return value.toUpperCase();
+	}
+});
 
 jQuery( window ).load( function (){
 	'use strict';
@@ -85,6 +91,27 @@ jQuery( window ).load( function (){
 	test( 'Setting has fixture value', function () {
 		equal( wp.customize( 'fixture-setting' )(), 'Lorem Ipsum' );
 	} );
+	test( 'Setting has notifications', function () {
+		var setting = wp.customize( 'fixture-setting' );
+		ok( setting.notifications.extended( wp.customize.Values ) );
+		equal( wp.customize.Notification, setting.notifications.prototype.constructor.defaultConstructor );
+	} );
+	test( 'Setting has findControls method', function() {
+		var controls, setting = wp.customize( 'fixture-setting' );
+		equal( 'function', typeof setting.findControls );
+		controls = setting.findControls();
+		equal( 1, controls.length );
+		equal( 'fixture-control', controls[0].id );
+	} );
+	test( 'Setting constructor object exists', function( assert ) {
+		assert.ok( _.isObject( wp.customize.settingConstructor ) );
+	} );
+	test( 'Custom setting constructor is used', function( assert ) {
+		var setting = wp.customize( 'fixture-setting-abbr' );
+		assert.ok( setting.extended( wp.customize.settingConstructor.abbreviation ) );
+		setting.set( 'usa' );
+		assert.equal( 'USA', setting.get() );
+	} );
 
 	module( 'Customizer Control in Fixture' );
 	test( 'Control exists', function () {
@@ -98,6 +125,53 @@ jQuery( window ).load( function (){
 	test( 'Control has the section fixture section ID', function () {
 		var control = wp.customize.control( 'fixture-control' );
 		equal( control.section(), 'fixture-section' );
+	} );
+	test( 'Control has notifications', function ( assert ) {
+		var control = wp.customize.control( 'fixture-control' ), settingNotification, controlOnlyNotification, doneEmbedded;
+		assert.ok( control.notifications.extended( wp.customize.Values ) );
+		assert.equal( wp.customize.Notification, control.notifications.prototype.constructor.defaultConstructor );
+		assert.ok( _.isFunction( control.getNotificationsContainerElement ) );
+		assert.ok( _.isFunction( control.renderNotifications ) );
+
+		doneEmbedded = assert.async();
+		control.deferred.embedded.done( function() {
+			var notificationContainerElement;
+
+			assert.equal( 0, _.size( control.notifications._value ) );
+			assert.equal( 0, _.size( control.settings['default'].notifications._value ) );
+
+			notificationContainerElement = control.getNotificationsContainerElement();
+			assert.equal( 1, notificationContainerElement.length );
+			assert.ok( notificationContainerElement.is( '.customize-control-notifications-container' ) );
+			assert.equal( 0, notificationContainerElement.find( '> ul > li' ).length );
+			assert.equal( 'none', notificationContainerElement.css( 'display' ) );
+
+			settingNotification = new wp.customize.Notification( 'setting_invalidity', 'Invalid setting' );
+			controlOnlyNotification = new wp.customize.Notification( 'control_invalidity', 'Invalid control' );
+			control.settings['default'].notifications.add( settingNotification.code, settingNotification );
+			control.notifications.add( controlOnlyNotification.code, controlOnlyNotification );
+
+			// Note that renderNotifications is being called manually here since rendering normally happens asynchronously.
+			control.renderNotifications();
+
+			assert.equal( 2, notificationContainerElement.find( '> ul > li' ).length );
+			assert.notEqual( 'none', notificationContainerElement.css( 'display' ) );
+			assert.equal( 2, _.size( control.notifications._value ) );
+			assert.equal( 1, _.size( control.settings['default'].notifications._value ) );
+
+			control.notifications.remove( controlOnlyNotification.code );
+			control.renderNotifications();
+			assert.equal( 1, notificationContainerElement.find( '> ul > li' ).length );
+			assert.notEqual( 'none', notificationContainerElement.css( 'display' ) );
+
+			control.settings['default'].notifications.remove( settingNotification.code );
+			control.renderNotifications();
+			assert.equal( 0, notificationContainerElement.find( '> ul > li' ).length );
+			assert.ok( notificationContainerElement.is( ':animated' ) ); // It is being slid down.
+			notificationContainerElement.stop().hide(); // Clean up.
+
+			doneEmbedded();
+		} );
 	} );
 
 	module( 'Customizer control without associated settings' );
@@ -137,9 +211,14 @@ jQuery( window ).load( function (){
 		section = wp.customize.section( id );
 		ok( ! section.params.content );
 		ok( !! section.container );
-		ok( section.container.is( '.control-section.control-section-default' ) );
-		ok( 1 === section.container.find( '> .accordion-section-title' ).length );
-		ok( 1 === section.container.find( '> .accordion-section-content' ).length );
+		ok( !! section.headContainer );
+		ok( !! section.contentContainer );
+		ok( section.container.has( section.headContainer ) );
+		ok( section.container.has( section.contentContainer ) );
+		ok( section.headContainer.is( '.control-section.control-section-default' ) );
+		ok( 1 === section.headContainer.find( '> .accordion-section-title' ).length );
+		ok( section.contentContainer.is( '.accordion-section-content' ) );
+		equal( section.headContainer.attr( 'aria-owns' ), section.contentContainer.attr( 'id' ) );
 	} );
 
 	module( 'Customizer Custom Type (titleless) Section with Template in Fixture' );
@@ -151,9 +230,14 @@ jQuery( window ).load( function (){
 		section = wp.customize.section( id );
 		ok( ! section.params.content );
 		ok( !! section.container );
+		ok( !! section.headContainer );
+		ok( !! section.contentContainer );
+		ok( section.container.has( section.headContainer ) );
+		ok( section.container.has( section.contentContainer ) );
 		ok( section.container.is( '.control-section.control-section-titleless' ) );
-		ok( 0 === section.container.find( '> .accordion-section-title' ).length );
-		ok( 1 === section.container.find( '> .accordion-section-content' ).length );
+		ok( 0 === section.headContainer.find( '> .accordion-section-title' ).length );
+		ok( section.contentContainer.is( '.accordion-section-content' ) );
+		equal( section.headContainer.attr( 'aria-owns' ), section.contentContainer.attr( 'id' ) );
 	} );
 	module( 'Customizer Custom Type Section Lacking Specific Template' );
 	test( 'Fixture section has expected content', function () {
@@ -161,9 +245,14 @@ jQuery( window ).load( function (){
 		section = wp.customize.section( id );
 		ok( ! section.params.content );
 		ok( !! section.container );
-		ok( section.container.is( '.control-section.control-section-' + section.params.type ) );
-		ok( 1 === section.container.find( '> .accordion-section-title' ).length );
-		ok( 1 === section.container.find( '> .accordion-section-content' ).length );
+		ok( !! section.headContainer );
+		ok( !! section.contentContainer );
+		ok( section.container.has( section.headContainer ) );
+		ok( section.container.has( section.contentContainer ) );
+		ok( section.headContainer.is( '.control-section.control-section-' + section.params.type ) );
+		ok( 1 === section.headContainer.find( '> .accordion-section-title' ).length );
+		ok( section.contentContainer.is( '.accordion-section-content' ) );
+		equal( section.headContainer.attr( 'aria-owns' ), section.contentContainer.attr( 'id' ) );
 	} );
 	module( 'Customizer Section lacking any params' );
 	test( 'Fixture section has default params supplied', function () {
@@ -196,6 +285,10 @@ jQuery( window ).load( function (){
 		var panel = wp.customize.panel( 'fixture-panel' );
 		ok( !! panel.params.content );
 		ok( !! panel.container );
+		ok( !! panel.headContainer );
+		ok( !! panel.contentContainer );
+		ok( panel.container.has( panel.headContainer ) );
+		ok( panel.container.has( panel.contentContainer ) );
 	} );
 	test( 'Fixture panel has section among its sections()', function () {
 		var panel = wp.customize.panel( 'fixture-panel' );
@@ -230,9 +323,14 @@ jQuery( window ).load( function (){
 		panel = wp.customize.panel( id );
 		ok( ! panel.params.content );
 		ok( !! panel.container );
-		ok( panel.container.is( '.control-panel.control-panel-default' ) );
-		ok( 1 === panel.container.find( '> .accordion-section-title' ).length );
-		ok( 1 === panel.container.find( '> .control-panel-content' ).length );
+		ok( !! panel.headContainer );
+		ok( !! panel.contentContainer );
+		ok( panel.container.has( panel.headContainer ) );
+		ok( panel.container.has( panel.contentContainer ) );
+		ok( panel.headContainer.is( '.control-panel.control-panel-default' ) );
+		ok( 1 === panel.headContainer.find( '> .accordion-section-title' ).length );
+		ok( panel.contentContainer.is( '.control-panel-content' ) );
+		equal( panel.headContainer.attr( 'aria-owns' ), panel.contentContainer.attr( 'id' ) );
 	} );
 
 	module( 'Customizer Custom Type Panel (titleless) with Template in Fixture' );
@@ -244,9 +342,14 @@ jQuery( window ).load( function (){
 		panel = wp.customize.panel( id );
 		ok( ! panel.params.content );
 		ok( !! panel.container );
-		ok( panel.container.is( '.control-panel.control-panel-titleless' ) );
-		ok( 0 === panel.container.find( '> .accordion-section-title' ).length );
-		ok( 1 === panel.container.find( '> .control-panel-content' ).length );
+		ok( !! panel.headContainer );
+		ok( !! panel.contentContainer );
+		ok( panel.container.has( panel.headContainer ) );
+		ok( panel.container.has( panel.contentContainer ) );
+		ok( panel.headContainer.is( '.control-panel.control-panel-titleless' ) );
+		ok( 0 === panel.headContainer.find( '> .accordion-section-title' ).length );
+		ok( panel.contentContainer.is( '.control-panel-content' ) );
+		equal( panel.headContainer.attr( 'aria-owns' ), panel.contentContainer.attr( 'id' ) );
 	} );
 
 	module( 'Customizer Custom Type Panel Lacking Specific Template' );
@@ -255,9 +358,14 @@ jQuery( window ).load( function (){
 		panel = wp.customize.panel( id );
 		ok( ! panel.params.content );
 		ok( !! panel.container );
-		ok( panel.container.is( '.control-panel.control-panel-' + panel.params.type ) );
-		ok( 1 === panel.container.find( '> .accordion-section-title' ).length );
-		ok( 1 === panel.container.find( '> .control-panel-content' ).length );
+		ok( !! panel.headContainer );
+		ok( !! panel.contentContainer );
+		ok( panel.container.has( panel.headContainer ) );
+		ok( panel.container.has( panel.contentContainer ) );
+		ok( panel.headContainer.is( '.control-panel.control-panel-' + panel.params.type ) );
+		ok( 1 === panel.headContainer.find( '> .accordion-section-title' ).length );
+		ok( panel.contentContainer.is( '.control-panel-content' ) );
+		equal( panel.headContainer.attr( 'aria-owns' ), panel.contentContainer.attr( 'id' ) );
 	} );
 	module( 'Customizer Panel lacking any params' );
 	test( 'Fixture panel has default params supplied', function () {
@@ -438,4 +546,93 @@ jQuery( window ).load( function (){
 	test( 'Panel instance is not contextuallyActive', function () {
 		equal( mockPanel.isContextuallyActive(), false );
 	});
+
+	module( 'Test wp.customize.findControlsForSettings' );
+	test( 'findControlsForSettings(blogname)', function() {
+		var controlsForSettings, settingId = 'fixture-setting', controlId = 'fixture-control';
+		ok( wp.customize.control.has( controlId ) );
+		ok( wp.customize.has( settingId ) );
+		controlsForSettings = wp.customize.findControlsForSettings( [ settingId ] );
+		ok( _.isObject( controlsForSettings ), 'Response is object' );
+		ok( _.isArray( controlsForSettings['fixture-setting'] ), 'Response has a fixture-setting array' );
+		equal( 1, controlsForSettings['fixture-setting'].length );
+		equal( wp.customize.control( controlId ), controlsForSettings['fixture-setting'][0] );
+	} );
+
+	module( 'Customize Controls wp.customize.dirtyValues' );
+	test( 'dirtyValues() returns expected values', function() {
+		wp.customize.state( 'changesetStatus' ).set( 'auto-draft' );
+		wp.customize.each( function( setting ) {
+			setting._dirty = false;
+		} );
+		ok( _.isEmpty( wp.customize.dirtyValues() ) );
+		ok( _.isEmpty( wp.customize.dirtyValues( { unsaved: false } ) ) );
+
+		wp.customize( 'fixture-setting' )._dirty = true;
+		ok( ! _.isEmpty( wp.customize.dirtyValues() ) );
+		ok( _.isEmpty( wp.customize.dirtyValues( { unsaved: true } ) ) );
+
+		wp.customize( 'fixture-setting' ).set( 'Modified' );
+		ok( ! _.isEmpty( wp.customize.dirtyValues() ) );
+		ok( ! _.isEmpty( wp.customize.dirtyValues( { unsaved: true } ) ) );
+		equal( 'Modified', wp.customize.dirtyValues()['fixture-setting'] );
+
+		// When the changeset does not exist, all dirty settings are necessarily unsaved.
+		wp.customize.state( 'changesetStatus' ).set( '' );
+		wp.customize( 'fixture-setting' )._dirty = true;
+		ok( ! _.isEmpty( wp.customize.dirtyValues() ) );
+		ok( ! _.isEmpty( wp.customize.dirtyValues( { unsaved: true } ) ) );
+	} );
+
+	module( 'Customize Controls: wp.customize.requestChangesetUpdate()' );
+	test( 'requestChangesetUpdate makes request and returns promise', function( assert ) {
+		var request, originalBeforeSetup = jQuery.ajaxSettings.beforeSend;
+
+		jQuery.ajaxSetup( {
+			beforeSend: function( e, data ) {
+				var queryParams, changesetData;
+				queryParams = wp.customize.utils.parseQueryString( data.data );
+
+				assert.equal( 'customize_save', queryParams.action );
+				assert.ok( ! _.isUndefined( queryParams.customize_changeset_data ) );
+				assert.ok( ! _.isUndefined( queryParams.nonce ) );
+				assert.ok( ! _.isUndefined( queryParams.customize_theme ) );
+				assert.equal( wp.customize.settings.changeset.uuid, queryParams.customize_changeset_uuid );
+				assert.equal( 'on', queryParams.wp_customize );
+
+				changesetData = JSON.parse( queryParams.customize_changeset_data );
+				assert.ok( ! _.isUndefined( changesetData.additionalSetting ) );
+				assert.ok( ! _.isUndefined( changesetData['fixture-setting'] ) );
+
+				assert.equal( 'additionalValue', changesetData.additionalSetting.value );
+				assert.equal( 'requestChangesetUpdate', changesetData['fixture-setting'].value );
+
+				// Prevent Ajax request from completing.
+				return false;
+			}
+		} );
+
+		wp.customize.each( function( setting ) {
+			setting._dirty = false;
+		} );
+
+		request = wp.customize.requestChangesetUpdate();
+		assert.equal( 'resolved', request.state());
+		request.done( function( data ) {
+			assert.ok( _.isEqual( {}, data ) );
+		} );
+
+		wp.customize( 'fixture-setting' ).set( 'requestChangesetUpdate' );
+
+		request = wp.customize.requestChangesetUpdate( {
+			additionalSetting: {
+				value: 'additionalValue'
+			}
+		} );
+
+		request.always( function( data ) {
+			assert.equal( 'canceled', data.statusText );
+			jQuery.ajaxSetup( { beforeSend: originalBeforeSetup } );
+		} );
+	} );
 });

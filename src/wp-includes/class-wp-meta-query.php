@@ -114,8 +114,8 @@ class WP_Meta_Query {
 	 * @access public
 	 *
 	 * @param array $meta_query {
-	 *     Array of meta query clauses. When first-order clauses use strings as their array keys, they may be
-	 *     referenced in the 'orderby' parameter of the parent query.
+	 *     Array of meta query clauses. When first-order clauses or sub-clauses use strings as
+	 *     their array keys, they may be referenced in the 'orderby' parameter of the parent query.
 	 *
 	 *     @type string $relation Optional. The MySQL keyword used to join
 	 *                            the clauses of the query. Accepts 'AND', or 'OR'. Default 'AND'.
@@ -327,6 +327,8 @@ class WP_Meta_Query {
 			return false;
 		}
 
+		$this->table_aliases = array();
+
 		$this->meta_table     = $meta_table;
 		$this->meta_id_column = sanitize_key( $type . '_id' );
 
@@ -344,7 +346,7 @@ class WP_Meta_Query {
 		}
 
 		/**
-		 * Filter the meta query's generated SQL.
+		 * Filters the meta query's generated SQL.
 		 *
 		 * @since 3.1.0
 		 *
@@ -632,7 +634,11 @@ class WP_Meta_Query {
 			}
 
 			if ( $where ) {
-				$sql_chunks['where'][] = "CAST($alias.meta_value AS {$meta_type}) {$meta_compare} {$where}";
+				if ( 'CHAR' === $meta_type ) {
+					$sql_chunks['where'][] = "$alias.meta_value {$meta_compare} {$where}";
+				} else {
+					$sql_chunks['where'][] = "CAST($alias.meta_value AS {$meta_type}) {$meta_compare} {$where}";
+				}
 			}
 		}
 
@@ -717,7 +723,7 @@ class WP_Meta_Query {
 		}
 
 		/**
-		 * Filter the table alias identified as compatible with the current clause.
+		 * Filters the table alias identified as compatible with the current clause.
 		 *
 		 * @since 4.1.0
 		 *

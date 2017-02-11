@@ -23,7 +23,7 @@ class Tests_Term_WpGetObjectTerms extends WP_UnitTestCase {
 		$this->assertEquals( 3, count($tt_1) );
 
 		// make sure they're correct
-		$terms = wp_get_object_terms($post_id, $this->taxonomy, array('fields' => 'slugs', 'orderby' => 't.term_id'));
+		$terms = wp_get_object_terms($post_id, $this->taxonomy, array('fields' => 'slugs', 'orderby' => 'term_id'));
 		$this->assertEquals( $terms_1_slugs, $terms );
 	}
 
@@ -360,26 +360,30 @@ class Tests_Term_WpGetObjectTerms extends WP_UnitTestCase {
 	 * @ticket 15675
 	 */
 	public function test_parent() {
+		register_taxonomy( 'wptests_tax2', 'post', array(
+			'hierarchical' => true,
+		) );
+
 		$t1 = self::factory()->term->create( array(
-			'taxonomy' => $this->taxonomy,
+			'taxonomy' => 'wptests_tax2',
 		) );
 		$t2 = self::factory()->term->create( array(
-			'taxonomy' => $this->taxonomy,
+			'taxonomy' => 'wptests_tax2',
 		) );
 		$t3 = self::factory()->term->create( array(
-			'taxonomy' => $this->taxonomy,
+			'taxonomy' => 'wptests_tax2',
 			'parent' => $t1,
 		) );
 		$t4 = self::factory()->term->create( array(
-			'taxonomy' => $this->taxonomy,
+			'taxonomy' => 'wptests_tax2',
 			'parent' => $t2,
 		) );
 
 		$p = self::factory()->post->create();
 
-		wp_set_object_terms( $p, array( $t1, $t2, $t3, $t3 ), $this->taxonomy );
+		wp_set_object_terms( $p, array( $t1, $t2, $t3, $t3 ), 'wptests_tax2' );
 
-		$found = wp_get_object_terms( $p, $this->taxonomy, array(
+		$found = wp_get_object_terms( $p, 'wptests_tax2', array(
 			'parent' => $t1,
 			'fields' => 'ids',
 		) );
@@ -470,6 +474,64 @@ class Tests_Term_WpGetObjectTerms extends WP_UnitTestCase {
 		}
 
 		$this->assertSame( $num_queries + 3, $wpdb->num_queries );
+	}
+
+	/**
+	 * @ticket 36932
+	 */
+	public function test_termmeta_cache_should_be_primed_when_fields_is_all_with_object_id() {
+		global $wpdb;
+
+		register_taxonomy( 'wptests_tax', 'post' );
+		$terms = self::factory()->term->create_many( 3, array( 'taxonomy' => 'wptests_tax' ) );
+		add_term_meta( $terms[0], 'foo', 'bar' );
+		add_term_meta( $terms[1], 'foo', 'bar' );
+		add_term_meta( $terms[2], 'foo', 'bar' );
+
+		$p = self::factory()->post->create();
+		wp_set_object_terms( $p, $terms, 'wptests_tax' );
+
+		$found = wp_get_object_terms( $p, 'wptests_tax', array(
+			'update_term_meta_cache' => true,
+			'fields' => 'all_with_object_id',
+		) );
+
+		$num_queries = $wpdb->num_queries;
+
+		foreach ( $terms as $t ) {
+			$this->assertSame( 'bar', get_term_meta( $t, 'foo', true ) );
+		}
+
+		$this->assertSame( $num_queries, $wpdb->num_queries );
+	}
+
+	/**
+	 * @ticket 36932
+	 */
+	public function test_termmeta_cache_should_be_primed_when_fields_is_ids() {
+		global $wpdb;
+
+		register_taxonomy( 'wptests_tax', 'post' );
+		$terms = self::factory()->term->create_many( 3, array( 'taxonomy' => 'wptests_tax' ) );
+		add_term_meta( $terms[0], 'foo', 'bar' );
+		add_term_meta( $terms[1], 'foo', 'bar' );
+		add_term_meta( $terms[2], 'foo', 'bar' );
+
+		$p = self::factory()->post->create();
+		wp_set_object_terms( $p, $terms, 'wptests_tax' );
+
+		$found = wp_get_object_terms( $p, 'wptests_tax', array(
+			'update_term_meta_cache' => true,
+			'fields' => 'ids',
+		) );
+
+		$num_queries = $wpdb->num_queries;
+
+		foreach ( $terms as $t ) {
+			$this->assertSame( 'bar', get_term_meta( $t, 'foo', true ) );
+		}
+
+		$this->assertSame( $num_queries, $wpdb->num_queries );
 	}
 
 	/**
@@ -627,5 +689,28 @@ class Tests_Term_WpGetObjectTerms extends WP_UnitTestCase {
 		$term_ids = wp_list_pluck( $terms, 'term_id' );
 		// all terms should still be objects
 		return $terms;
+	}
+
+	public function test_verify_args_parameter_can_be_string() {
+		$p = self::factory()->post->create();
+
+		$t1 = self::factory()->term->create( array(
+			'taxonomy' => $this->taxonomy,
+			'name' => 'AAA',
+		) );
+		$t2 = self::factory()->term->create( array(
+			'taxonomy' => $this->taxonomy,
+			'name' => 'ZZZ',
+		) );
+		$t3 = self::factory()->term->create( array(
+			'taxonomy' => $this->taxonomy,
+			'name' => 'JJJ',
+		) );
+
+		wp_set_object_terms( $p, array( $t1, $t2, $t3 ), $this->taxonomy );
+
+		$found = wp_get_object_terms( $p, $this->taxonomy, 'orderby=name&fields=ids' );
+
+		$this->assertEquals( array( $t1, $t3, $t2 ), $found );
 	}
 }

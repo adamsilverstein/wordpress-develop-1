@@ -12,6 +12,8 @@
  *
  * @since 3.7.0
  * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php.
+ *
+ * @see WP_Upgrader_Skin
  */
 class Language_Pack_Upgrader_Skin extends WP_Upgrader_Skin {
 	public $language_update = null;
@@ -71,7 +73,7 @@ class Language_Pack_Upgrader_Skin extends WP_Upgrader_Skin {
 		$update_actions['updates_page'] = '<a href="' . self_admin_url( 'update-core.php' ) . '" target="_parent">' . __( 'Return to WordPress Updates page' ) . '</a>';
 
 		/**
-		 * Filter the list of action links available following a translations update.
+		 * Filters the list of action links available following a translations update.
 		 *
 		 * @since 3.7.0
 		 *

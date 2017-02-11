@@ -33,7 +33,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 	/**
 	 * Information on the current request
 	 *
-	 * @var array cURL information array, see {@see http://php.net/curl_getinfo}
+	 * @var array cURL information array, see {@see https://secure.php.net/curl_getinfo}
 	 */
 	public $info;
 
@@ -176,7 +176,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 
 		$this->process_response($response, $options);
 
-		// Need to remove the $this reference from the curl handle. 
+		// Need to remove the $this reference from the curl handle.
 		// Otherwise Requests_Transport_cURL wont be garbage collected and the curl_close() will never be called.
 		curl_setopt($this->handle, CURLOPT_HEADERFUNCTION, null);
 		curl_setopt($this->handle, CURLOPT_WRITEFUNCTION, null);
@@ -333,13 +333,6 @@ class Requests_Transport_cURL implements Requests_Transport {
 				curl_setopt($this->handle, CURLOPT_POST, true);
 				curl_setopt($this->handle, CURLOPT_POSTFIELDS, $data);
 				break;
-			case Requests::PATCH:
-			case Requests::PUT:
-			case Requests::DELETE:
-			case Requests::OPTIONS:
-				curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, $options['type']);
-				curl_setopt($this->handle, CURLOPT_POSTFIELDS, $data);
-				break;
 			case Requests::HEAD:
 				curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, $options['type']);
 				curl_setopt($this->handle, CURLOPT_NOBODY, true);
@@ -347,13 +340,30 @@ class Requests_Transport_cURL implements Requests_Transport {
 			case Requests::TRACE:
 				curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, $options['type']);
 				break;
+			case Requests::PATCH:
+			case Requests::PUT:
+			case Requests::DELETE:
+			case Requests::OPTIONS:
+			default:
+				curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, $options['type']);
+				if (!empty($data)) {
+					curl_setopt($this->handle, CURLOPT_POSTFIELDS, $data);
+				}
 		}
 
-		if (is_int($options['timeout']) || $this->version < self::CURL_7_16_2) {
-			curl_setopt($this->handle, CURLOPT_TIMEOUT, ceil($options['timeout']));
+		// cURL requires a minimum timeout of 1 second when using the system
+		// DNS resolver, as it uses `alarm()`, which is second resolution only.
+		// There's no way to detect which DNS resolver is being used from our
+		// end, so we need to round up regardless of the supplied timeout.
+		//
+		// https://github.com/curl/curl/blob/4f45240bc84a9aa648c8f7243be7b79e9f9323a5/lib/hostip.c#L606-L609
+		$timeout = max($options['timeout'], 1);
+
+		if (is_int($timeout) || $this->version < self::CURL_7_16_2) {
+			curl_setopt($this->handle, CURLOPT_TIMEOUT, ceil($timeout));
 		}
 		else {
-			curl_setopt($this->handle, CURLOPT_TIMEOUT_MS, round($options['timeout'] * 1000));
+			curl_setopt($this->handle, CURLOPT_TIMEOUT_MS, round($timeout * 1000));
 		}
 
 		if (is_int($options['connect_timeout']) || $this->version < self::CURL_7_16_2) {
@@ -365,8 +375,9 @@ class Requests_Transport_cURL implements Requests_Transport {
 		curl_setopt($this->handle, CURLOPT_URL, $url);
 		curl_setopt($this->handle, CURLOPT_REFERER, $url);
 		curl_setopt($this->handle, CURLOPT_USERAGENT, $options['useragent']);
-		curl_setopt($this->handle, CURLOPT_HTTPHEADER, $headers);
-
+		if (!empty($headers)) {
+			curl_setopt($this->handle, CURLOPT_HTTPHEADER, $headers);
+		}
 		if ($options['protocol_version'] === 1.1) {
 			curl_setopt($this->handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		}
@@ -448,7 +459,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 	 * @param string $data Body data
 	 * @return integer Length of provided data
 	 */
-	protected function stream_body($handle, $data) {
+	public function stream_body($handle, $data) {
 		$this->hooks->dispatch('request.progress', array($data, $this->response_bytes, $this->response_byte_limit));
 		$data_length = strlen($data);
 
@@ -481,7 +492,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 	 * Format a URL given GET data
 	 *
 	 * @param string $url
-	 * @param array|object $data Data to build query using, see {@see http://php.net/http_build_query}
+	 * @param array|object $data Data to build query using, see {@see https://secure.php.net/http_build_query}
 	 * @return string URL with data
 	 */
 	protected static function format_get($url, $data) {
@@ -514,7 +525,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 	 * @return boolean True if the transport is valid, false otherwise.
 	 */
 	public static function test($capabilities = array()) {
-		if (!function_exists('curl_init') && !function_exists('curl_exec')) {
+		if (!function_exists('curl_init') || !function_exists('curl_exec')) {
 			return false;
 		}
 

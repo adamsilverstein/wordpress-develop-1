@@ -71,7 +71,7 @@ class Requests {
 	/**
 	 * PATCH method
 	 *
-	 * @link http://tools.ietf.org/html/rfc5789
+	 * @link https://tools.ietf.org/html/rfc5789
 	 * @var string
 	 */
 	const PATCH = 'PATCH';
@@ -88,7 +88,7 @@ class Requests {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.6';
+	const VERSION = '1.7';
 
 	/**
 	 * Registered transport classes
@@ -287,7 +287,7 @@ class Requests {
 	 * Note: Unlike {@see post} and {@see put}, `$headers` is required, as the
 	 * specification recommends that should send an ETag
 	 *
-	 * @link http://tools.ietf.org/html/rfc5789
+	 * @link https://tools.ietf.org/html/rfc5789
 	 */
 	public static function patch($url, $headers, $data = array(), $options = array()) {
 		return self::request($url, $headers, $data, self::PATCH, $options);
@@ -304,6 +304,8 @@ class Requests {
 	 * options:
 	 *
 	 * - `timeout`: How long should we wait for a response?
+	 *    Note: for cURL, a minimum of 1 second applies, as DNS resolution
+	 *    operates at second-resolution only.
 	 *    (float, seconds with a millisecond precision, default: 10, example: 0.01)
 	 * - `connect_timeout`: How long should we wait while trying to connect?
 	 *    (float, seconds with a millisecond precision, default: 10, example: 0.01)
@@ -321,7 +323,7 @@ class Requests {
 	 *    for Basic authentication
 	 *    (Requests_Auth|array|boolean, default: false)
 	 * - `proxy`: Proxy details to use for proxy by-passing and authentication
-	 *    (Requests_Proxy|array|boolean, default: false)
+	 *    (Requests_Proxy|array|string|boolean, default: false)
 	 * - `max_bytes`: Limit for the response body size.
 	 *    (integer|boolean, default: false)
 	 * - `idn`: Enable IDN parsing
@@ -573,7 +575,7 @@ class Requests {
 			$options['auth']->register($options['hooks']);
 		}
 
-		if (!empty($options['proxy'])) {
+		if (is_string($options['proxy']) || is_array($options['proxy'])) {
 			$options['proxy'] = new Requests_Proxy_HTTP($options['proxy']);
 		}
 		if ($options['proxy'] !== false) {
@@ -742,20 +744,22 @@ class Requests {
 	/**
 	 * Decoded a chunked body as per RFC 2616
 	 *
-	 * @see http://tools.ietf.org/html/rfc2616#section-3.6.1
+	 * @see https://tools.ietf.org/html/rfc2616#section-3.6.1
 	 * @param string $data Chunked body
 	 * @return string Decoded body
 	 */
 	protected static function decode_chunked($data) {
-		if (!preg_match('/^([0-9a-f]+)[^\r\n]*\r\n/i', trim($data))) {
+		if (!preg_match('/^([0-9a-f]+)(?:;(?:[\w-]*)(?:=(?:(?:[\w-]*)*|"(?:[^\r\n])*"))?)*\r\n/i', trim($data))) {
 			return $data;
 		}
+
+
 
 		$decoded = '';
 		$encoded = $data;
 
 		while (true) {
-			$is_chunked = (bool) preg_match('/^([0-9a-f]+)[^\r\n]*\r\n/i', $encoded, $matches);
+			$is_chunked = (bool) preg_match('/^([0-9a-f]+)(?:;(?:[\w-]*)(?:=(?:(?:[\w-]*)*|"(?:[^\r\n])*"))?)*\r\n/i', $encoded, $matches);
 			if (!$is_chunked) {
 				// Looks like it's not chunked after all
 				return $data;
@@ -848,12 +852,12 @@ class Requests {
 	 * Warning: Magic numbers within. Due to the potential different formats that the compressed
 	 * data may be returned in, some "magic offsets" are needed to ensure proper decompression
 	 * takes place. For a simple progmatic way to determine the magic offset in use, see:
-	 * http://core.trac.wordpress.org/ticket/18273
+	 * https://core.trac.wordpress.org/ticket/18273
 	 *
 	 * @since 2.8.1
-	 * @link http://core.trac.wordpress.org/ticket/18273
-	 * @link http://au2.php.net/manual/en/function.gzinflate.php#70875
-	 * @link http://au2.php.net/manual/en/function.gzinflate.php#77336
+	 * @link https://core.trac.wordpress.org/ticket/18273
+	 * @link https://secure.php.net/manual/en/function.gzinflate.php#70875
+	 * @link https://secure.php.net/manual/en/function.gzinflate.php#77336
 	 *
 	 * @param string $gzData String to decompress.
 	 * @return string|bool False on failure.
@@ -891,7 +895,7 @@ class Requests {
 		// java.util.zip.Deflater, Ruby’s Zlib::Deflate, and .NET's
 		// System.IO.Compression.DeflateStream.
 		//
-		// See http://decompres.blogspot.com/ for a quick explanation of this
+		// See https://decompres.blogspot.com/ for a quick explanation of this
 		// data type
 		$huffman_encoded = false;
 

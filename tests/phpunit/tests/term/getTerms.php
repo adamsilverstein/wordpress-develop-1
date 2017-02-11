@@ -12,6 +12,29 @@ class Tests_Term_getTerms extends WP_UnitTestCase {
 	}
 
 	/**
+	 * @ticket 37568
+	 */
+	public function test_meta_query_args_only() {
+		register_taxonomy( 'wptests_tax', 'post', array( 'hierarchical' => true ) );
+
+		$term1 = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax' ) );
+		$term2 = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax' ) );
+
+		$post = self::factory()->post->create( array( 'post_type' => 'post' ) );
+
+		update_term_meta( $term1, 'somekey', 'thevalue' );
+
+		wp_set_post_terms( $post, array( $term1, $term2 ), 'wptests_tax' );
+
+		$found = get_terms( array(
+			'meta_key' => 'somekey',
+			'meta_value' => 'thevalue',
+		) );
+
+		$this->assertEqualSets( array( $term1 ), wp_list_pluck( $found, 'term_id' ) );
+	}
+
+	/**
 	 * @ticket 35495
 	 */
 	public function test_should_accept_an_args_array_containing_taxonomy_for_first_parameter() {
@@ -24,6 +47,32 @@ class Tests_Term_getTerms extends WP_UnitTestCase {
 			'fields' => 'ids',
 			'update_term_meta_cache' => false,
 		) );
+
+		$this->assertEqualSets( array( $term ), $found );
+	}
+
+	/**
+	 * @ticket 35495
+	 * @ticket 35381
+	 */
+	public function test_legacy_params_as_query_string_should_be_properly_parsed() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		$term = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax' ) );
+
+		$found = get_terms( 'wptests_tax', 'hide_empty=0&fields=ids&update_term_meta_cache=0' );
+
+		$this->assertEqualSets( array( $term ), $found );
+	}
+
+	/**
+	 * @ticket 35495
+	 * @ticket 35381
+	 */
+	public function test_new_params_as_query_string_should_be_properly_parsed() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		$term = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax' ) );
+
+		$found = get_terms( 'taxonomy=wptests_tax&hide_empty=0&fields=ids&update_term_meta_cache=0' );
 
 		$this->assertEqualSets( array( $term ), $found );
 	}
@@ -267,6 +316,7 @@ class Tests_Term_getTerms extends WP_UnitTestCase {
 	function test_get_terms_search() {
 		$term_id1 = self::factory()->tag->create( array( 'slug' => 'burrito' ) );
 		$term_id2 = self::factory()->tag->create( array( 'name' => 'Wilbur' ) );
+		$term_id3 = self::factory()->tag->create( array( 'name' => 'Foo' ) );
 
 		$terms = get_terms( 'post_tag', array( 'hide_empty' => false, 'search' => 'bur', 'fields' => 'ids' ) );
 		$this->assertEqualSets( array( $term_id1, $term_id2 ), $terms );
@@ -2152,6 +2202,27 @@ class Tests_Term_getTerms extends WP_UnitTestCase {
 		$this->assertEqualSets( array(), $found );
 	}
 
+	/**
+	 * @ticket 36992
+	 * @ticket 35381
+	 */
+	public function test_count_should_not_pass_through_main_get_terms_filter() {
+		add_filter( 'get_terms', array( __CLASS__, 'maybe_filter_count' ) );
+
+		$found = get_terms( array(
+			'hide_empty' => 0,
+			'fields' => 'count',
+		) );
+
+		remove_filter( 'get_terms', array( __CLASS__, 'maybe_filter_count' ) );
+
+		$this->assertNotEquals( 'foo', $found );
+	}
+
+	public static function maybe_filter_count() {
+		return 'foo';
+	}
+
 	protected function create_hierarchical_terms_and_posts() {
 		$terms = array();
 
@@ -2243,8 +2314,8 @@ class Tests_Term_getTerms extends WP_UnitTestCase {
 
 	protected function set_up_three_posts_and_tags() {
 		$posts = self::factory()->post->create_many( 3, array( 'post_type' => 'post' ) );
-		foreach ( $posts as $post ) {
-			wp_set_object_terms( $post, rand_str(), 'post_tag' );
+		foreach ( $posts as $i => $post ) {
+			wp_set_object_terms( $post, "term_{$i}", 'post_tag' );
 		}
 
 		wp_cache_delete( 'last_changed', 'terms' );

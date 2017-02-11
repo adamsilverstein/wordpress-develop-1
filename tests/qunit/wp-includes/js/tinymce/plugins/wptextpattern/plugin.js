@@ -6,7 +6,7 @@
 		return;
 	}
 
-	function mceType(chr) {
+	function mceType( chr, noKeyUp ) {
 		var editor = tinymce.activeEditor, keyCode, charCode, evt, startElm, rng, startContainer, startOffset, textNode;
 
 		function charCodeToKeyCode(charCode) {
@@ -109,12 +109,17 @@
 			}
 		}
 
-		fakeEvent(startElm, 'keyup', evt);
+		if ( ! noKeyUp ) {
+			fakeEvent(startElm, 'keyup', evt);
+		}
 	}
 
 	function type() {
 		var args = arguments;
 
+		// Wait once for conversions to be triggered,
+		// and once for the `canUndo` flag to be set.
+		setTimeout( function() {
 		setTimeout( function() {
 			if ( typeof args[0] === 'string' ) {
 				args[0] = args[0].split( '' );
@@ -134,6 +139,7 @@
 				type.apply( null, args );
 			}
 		} );
+		} );
 	}
 
 	QUnit.module( 'tinymce.plugins.wptextpattern', {
@@ -149,6 +155,13 @@
 					selector: '#editor',
 					skin: false,
 					plugins: 'wptextpattern',
+					wptextpattern: {
+						inline: [
+							{ delimiter: '`', format: 'code' },
+							{ delimiter: '``', format: 'bold' },
+							{ delimiter: '```', format: 'italic' }
+						]
+					},
 					init_instance_callback: function() {
 						editor = arguments[0];
 						editor.focus();
@@ -173,6 +186,14 @@
 
 	QUnit.test( 'Unordered list.', function( assert ) {
 		type( '* a', function() {
+			assert.equal( editor.getContent(), '<ul>\n<li>a</li>\n</ul>' );
+		}, assert.async() );
+	} );
+
+	QUnit.test( 'Unordered list. (fast)', function( assert ) {
+		type( '*', function() {
+			mceType( ' ', true );
+		}, 'a', function() {
 			assert.equal( editor.getContent(), '<ul>\n<li>a</li>\n</ul>' );
 		}, assert.async() );
 	} );
@@ -285,9 +306,44 @@
 		}, assert.async() );
 	} );
 
-	QUnit.test( 'Inline: single.', function( assert ) {
+	QUnit.test( 'Inline: single character.', function( assert ) {
 		type( '`test`', function() {
 			assert.equal( editor.getContent(), '<p><code>test</code></p>' );
+			assert.equal( editor.selection.getRng().startOffset, 1 );
+		}, assert.async() );
+	} );
+
+	QUnit.test( 'Inline: two characters.', function( assert ) {
+		type( '``test``', function() {
+			assert.equal( editor.getContent(), '<p><strong>test</strong></p>' );
+			assert.equal( editor.selection.getRng().startOffset, 1 );
+		}, assert.async() );
+	} );
+
+	QUnit.test( 'Inline: allow spaces within text.', function( assert ) {
+		type( '`a a`', function() {
+			assert.equal( editor.getContent(), '<p><code>a a</code></p>' );
+			assert.equal( editor.selection.getRng().startOffset, 1 );
+		}, assert.async() );
+	} );
+
+	QUnit.test( 'Inline: disallow \\S-delimiter-\\s.', function( assert ) {
+		type( 'a` a`', function() {
+			assert.equal( editor.getContent(), '<p>a` a`</p>' );
+			assert.equal( editor.selection.getRng().startOffset, 5 );
+		}, assert.async() );
+	} );
+
+	QUnit.test( 'Inline: allow \\s-delimiter-\\s.', function( assert ) {
+		type( 'a ` a`', function() {
+			assert.equal( editor.getContent(), '<p>a <code> a</code></p>' );
+			assert.equal( editor.selection.getRng().startOffset, 1 );
+		}, assert.async() );
+	} );
+
+	QUnit.test( 'Inline: allow \\S-delimiter-\\S.', function( assert ) {
+		type( 'a`a`', function() {
+			assert.equal( editor.getContent(), '<p>a<code>a</code></p>' );
 			assert.equal( editor.selection.getRng().startOffset, 1 );
 		}, assert.async() );
 	} );
@@ -297,16 +353,43 @@
 		editor.selection.setCursorLocation( editor.$( 'p' )[0].firstChild, 5 );
 
 		type( '`', function() {
-			editor.selection.setCursorLocation( editor.$( 'p' )[0].firstChild, 11 );
+			editor.selection.setCursorLocation( editor.$( 'p' )[0].firstChild, 10 );
 		}, '`', function() {
 			assert.equal( editor.getContent(), '<p>test <code>test</code> test</p>' );
 			assert.equal( editor.selection.getRng().startOffset, 1 );
 		}, assert.async() );
 	} );
 
-	QUnit.test( 'Inline: no change.', function( assert ) {
-		type( 'test `````', function() {
-			assert.equal( editor.getContent(), '<p>test `````</p>' );
+	QUnit.test( 'Inline: no change without content.', function( assert ) {
+		type( 'test `` ``` ````', function() {
+			assert.equal( editor.getContent(), '<p>test `` ``` ````</p>' );
+		}, assert.async() );
+	} );
+
+	QUnit.test( 'Inline: convert with previously unconverted pattern.', function( assert ) {
+		editor.setContent( '<p>`test` test&nbsp;</p>' );
+		editor.selection.setCursorLocation( editor.$( 'p' )[0].firstChild, 12 );
+
+		type( '`test`', function() {
+			assert.equal( editor.getContent(), '<p>`test` test&nbsp;<code>test</code></p>' );
+		}, assert.async() );
+	} );
+
+	QUnit.test( 'Inline: convert with previous pattern characters.', function( assert ) {
+		editor.setContent( '<p>test``` 123</p>' );
+		editor.selection.setCursorLocation( editor.$( 'p' )[0].firstChild, 11 );
+
+		type( '``456``', function() {
+			assert.equal( editor.getContent(), '<p>test``` 123<strong>456</strong></p>' );
+		}, assert.async() );
+	} );
+
+	QUnit.test( 'Inline: disallow after previous pattern characters and leading space.', function( assert ) {
+		editor.setContent( '<p>test``` 123</p>' );
+		editor.selection.setCursorLocation( editor.$( 'p' )[0].firstChild, 11 );
+
+		type( '``` 456```', function() {
+			assert.equal( editor.getContent(), '<p>test``` 123``` 456```</p>' );
 		}, assert.async() );
 	} );
 } )( window.jQuery, window.QUnit, window.tinymce, window.setTimeout );

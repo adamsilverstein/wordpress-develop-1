@@ -12,6 +12,8 @@
  *
  * @since 2.8.0
  * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php.
+ *
+ * @see WP_Upgrader_Skin
  */
 class Theme_Upgrader_Skin extends WP_Upgrader_Skin {
 	public $theme = '';
@@ -66,7 +68,7 @@ class Theme_Upgrader_Skin extends WP_Upgrader_Skin {
 		$update_actions['themes_page'] = '<a href="' . self_admin_url( 'themes.php' ) . '" target="_parent">' . __( 'Return to Themes page' ) . '</a>';
 
 		/**
-		 * Filter the list of action links available following a single theme update.
+		 * Filters the list of action links available following a single theme update.
 		 *
 		 * @since 2.8.0
 		 *
