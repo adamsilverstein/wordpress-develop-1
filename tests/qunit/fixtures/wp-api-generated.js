@@ -388,7 +388,16 @@ mockedApiResponse.Schema = {
                         "format": {
                             "required": false,
                             "enum": [
-                                "standard"
+                                "standard",
+                                "aside",
+                                "chat",
+                                "gallery",
+                                "link",
+                                "image",
+                                "quote",
+                                "status",
+                                "video",
+                                "audio"
                             ],
                             "description": "The format for the object.",
                             "type": "string"
@@ -562,7 +571,16 @@ mockedApiResponse.Schema = {
                         "format": {
                             "required": false,
                             "enum": [
-                                "standard"
+                                "standard",
+                                "aside",
+                                "chat",
+                                "gallery",
+                                "link",
+                                "image",
+                                "quote",
+                                "status",
+                                "video",
+                                "audio"
                             ],
                             "description": "The format for the object.",
                             "type": "string"
@@ -3384,6 +3402,7 @@ mockedApiResponse.PostsCollection = [
         "modified": "2017-02-14T00:00:00",
         "modified_gmt": "2017-02-14T00:00:00",
         "slug": "restapi-client-fixture-post",
+        "status": "publish",
         "type": "post",
         "link": "http://example.org/?p=3",
         "title": {
@@ -3474,6 +3493,7 @@ mockedApiResponse.PostModel = {
     "modified": "2017-02-14T00:00:00",
     "modified_gmt": "2017-02-14T00:00:00",
     "slug": "restapi-client-fixture-post",
+    "status": "publish",
     "type": "post",
     "link": "http://example.org/?p=3",
     "title": {
@@ -3552,6 +3572,7 @@ mockedApiResponse.PagesCollection = [
         "modified": "2017-02-14T00:00:00",
         "modified_gmt": "2017-02-14T00:00:00",
         "slug": "restapi-client-fixture-page",
+        "status": "publish",
         "type": "page",
         "link": "http://example.org/?page_id=5",
         "title": {
@@ -3626,6 +3647,7 @@ mockedApiResponse.PageModel = {
     "modified": "2017-02-14T00:00:00",
     "modified_gmt": "2017-02-14T00:00:00",
     "slug": "restapi-client-fixture-page",
+    "status": "publish",
     "type": "page",
     "link": "http://example.org/?page_id=5",
     "title": {
@@ -3700,6 +3722,7 @@ mockedApiResponse.MediaCollection = [
         "modified": "2017-02-14T00:00:00",
         "modified_gmt": "2017-02-14T00:00:00",
         "slug": "restapi-client-fixture-attachment",
+        "status": "inherit",
         "type": "attachment",
         "link": "http://example.org/?attachment_id=7",
         "title": {
@@ -3758,6 +3781,7 @@ mockedApiResponse.MediaModel = {
     "modified": "2017-02-14T00:00:00",
     "modified_gmt": "2017-02-14T00:00:00",
     "slug": "restapi-client-fixture-attachment",
+    "status": "inherit",
     "type": "attachment",
     "link": "http://example.org/?attachment_id=7",
     "title": {
