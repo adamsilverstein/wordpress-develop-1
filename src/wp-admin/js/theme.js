@@ -492,7 +492,7 @@ themes.view.Theme = wp.Backbone.View.extend({
 		themes.focusedTheme = this.$el;
 
 		// Construct a new Preview view.
-		themes.currentPreview = preview = new themes.view.Preview({
+		preview = new themes.view.Preview({
 			model: this.model
 		});
 
@@ -1939,7 +1939,7 @@ themes.RunInstaller = {
 			self.view.sort( sort );
 
 			// Close the preview if open.
-			if ( themes.currentPreview ) {
+			if ( themes.focusedTheme ) {
 				$( '.close-full-overlay' ).click();
 			}
 		});
