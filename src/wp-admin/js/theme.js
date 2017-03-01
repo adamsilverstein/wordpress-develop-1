@@ -573,10 +573,6 @@ themes.view.Theme = wp.Backbone.View.extend({
 			self.current = self.model;
 		});
 
-		// Listen for closepreview events, closing the preview.
-		this.listenTo( preview, 'closepreview', function() {
-			preview.close();
-		});
 	},
 
 	// Handles .disabled classes for previous/next buttons in theme installer preview
@@ -1944,7 +1940,7 @@ themes.RunInstaller = {
 
 			// Close the preview if open.
 			if ( themes.currentPreview ) {
-				themes.currentPreview.trigger( 'closepreview' );
+				$( '.close-full-overlay' ).click();
 			}
 		});
 
