@@ -491,8 +491,8 @@ themes.view.Theme = wp.Backbone.View.extend({
 		// Set focus to current theme.
 		themes.focusedTheme = this.$el;
 
-		// Construct a new Preview view.
-		preview = new themes.view.Preview({
+
+		themes.preview = preview = new themes.view.Preview({
 			model: this.model
 		});
 
@@ -903,6 +903,7 @@ themes.view.Preview = themes.view.Details.extend({
 	},
 
 	close: function() {
+
 		this.$el.fadeOut( 200, function() {
 			$( 'body' ).removeClass( 'theme-installer-active full-overlay-active' );
 
@@ -1910,6 +1911,12 @@ themes.RunInstaller = {
 		// Queries the API for the passed theme slug
 		themes.router.on( 'route:preview', function( slug ) {
 
+			// Construct a new Preview view.
+			if ( themes.preview ) {
+				themes.preview.undelegateEvents();
+				themes.preview.unbind();
+			}
+
 			// If the theme preview is active, set the current theme.
 			if ( self.view.view.theme && self.view.view.theme.preview ) {
 				self.view.view.theme.model = self.view.collection.findWhere( { 'slug': slug } );
@@ -1939,8 +1946,8 @@ themes.RunInstaller = {
 			self.view.sort( sort );
 
 			// Close the preview if open.
-			if ( themes.focusedTheme ) {
-				$( '.close-full-overlay' ).click();
+			if ( themes.preview ) {
+				themes.preview.close();
 			}
 		});
 
