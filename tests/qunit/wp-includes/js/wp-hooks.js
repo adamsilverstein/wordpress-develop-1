@@ -154,14 +154,14 @@
 		wp.hooks.doAction( 'another.action' );
 
 		// Verify no action is running yet.
-		notOk( wp.hooks.doingAction( 'test.action' ), 'The test.action is not running.' );
+		ok( ! wp.hooks.doingAction( 'test.action' ), 'The test.action is not running.' );
 		equal( wp.hooks.didAction( 'test.action' ), 0, 'The test.action has not run.' );
-		notOk( wp.hooks.hasAction( 'test.action' ), 'The test.action is not registered.' );
+		ok( ! wp.hooks.hasAction( 'test.action' ), 'The test.action is not registered.' );
 
 		wp.hooks.addAction( 'test.action', action_a );
 
 		// Verify action added, not running yet.
-		notOk( wp.hooks.doingAction( 'test.action' ), 'The test.action is not running.' );
+		ok( ! wp.hooks.doingAction( 'test.action' ), 'The test.action is not running.' );
 		equal( wp.hooks.didAction( 'test.action' ), 0, 'The test.action has not run.' );
 		ok( wp.hooks.hasAction( 'test.action' ), 'The test.action is registered.' );
 
@@ -180,10 +180,10 @@
 		// Verify state is reset appropriately.
 		ok( wp.hooks.doingAction( 'test.action' ), 'The test.action is running.' );
 		equal( wp.hooks.didAction( 'test.action' ), 0, 'The test.action has not run.' );
-		notOk( wp.hooks.hasAction( 'test.action' ), 'The test.action is not registered.' );
+		ok( ! wp.hooks.hasAction( 'test.action' ), 'The test.action is not registered.' );
 
 		wp.hooks.doAction( 'another.action' );
-		notOk( wp.hooks.doingAction( 'test.action' ), 'The test.action is running.' );
+		ok( ! wp.hooks.doingAction( 'test.action' ), 'The test.action is running.' );
 
 
 	} );
