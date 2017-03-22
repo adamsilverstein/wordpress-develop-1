@@ -144,4 +144,48 @@
 		equal( wp.hooks.applyFilters( 'test.filter', 'test' ), 'testca' );
 		wp.hooks.removeFilter( 'test.filter' );
 	} );
+
+	// Test doingAction, didAction, hasAction.
+	QUnit.test( 'Test doingAction, didAction and hasAction.', function() {
+
+		// Reset state for testing.
+		wp.hooks.removeAction( 'test.action' );
+		wp.hooks.addAction( 'another.action', function(){} );
+		wp.hooks.doAction( 'another.action' );
+
+		// Verify no action is running yet.
+		notOk( wp.hooks.doingAction( 'test.action' ), 'The test.action is not running.' );
+		equal( wp.hooks.didAction( 'test.action' ), 0, 'The test.action has not run.' );
+		notOk( wp.hooks.hasAction( 'test.action' ), 'The test.action is not registered.' );
+
+		wp.hooks.addAction( 'test.action', action_a );
+
+		// Verify action added, not running yet.
+		notOk( wp.hooks.doingAction( 'test.action' ), 'The test.action is not running.' );
+		equal( wp.hooks.didAction( 'test.action' ), 0, 'The test.action has not run.' );
+		ok( wp.hooks.hasAction( 'test.action' ), 'The test.action is registered.' );
+
+		wp.hooks.doAction( 'test.action' );
+
+		// Verify action added and running.
+		ok( wp.hooks.doingAction( 'test.action' ), 'The test.action is running.' );
+		equal( wp.hooks.didAction( 'test.action' ), 1, 'The test.action has run once.' );
+		ok( wp.hooks.hasAction( 'test.action' ), 'The test.action is registered.' );
+
+		wp.hooks.doAction( 'test.action' );
+		equal( wp.hooks.didAction( 'test.action' ), 2, 'The test.action has run twice.' );
+
+		wp.hooks.removeAction( 'test.action' );
+
+		// Verify state is reset appropriately.
+		ok( wp.hooks.doingAction( 'test.action' ), 'The test.action is running.' );
+		equal( wp.hooks.didAction( 'test.action' ), 0, 'The test.action has not run.' );
+		notOk( wp.hooks.hasAction( 'test.action' ), 'The test.action is not registered.' );
+
+		wp.hooks.doAction( 'another.action' );
+		notOk( wp.hooks.doingAction( 'test.action' ), 'The test.action is running.' );
+
+
+	} );
+
 } )( window.QUnit );
