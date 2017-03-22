@@ -95,7 +95,7 @@
 				}
 			} else {
 				// Reset hooks to empty
-				HOOKS[ type ][ hook ] = [];
+				delete HOOKS[ type ][ hook ];
 			}
 		};
 	}
