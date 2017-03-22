@@ -151,7 +151,7 @@
 
 		for ( i = 0; i < handlers.length; i++ ) {
 			handlers[ i ].callback.apply( null, args );
-			HOOKS.actions[ action ]['runs'] = HOOKS.actions[ action ]['runs'] ? HOOKS.actions[ action ]['runs'] + 1 : 1;
+			HOOKS.actions[ action ].runs = HOOKS.actions[ action ].runs ? HOOKS.actions[ action ].runs + 1 : 1;
 		}
 	}
 
@@ -174,7 +174,7 @@
 		}
 
 		HOOKS.filters.current = filter;
-		HOOKS.filters[ filter ]['runs'] = HOOKS.filters[ filter ]['runs'] ? HOOKS.filters[ filter ]['runs'] + 1 : 1;
+		HOOKS.filters[ filter ].runs = HOOKS.filters[ filter ].runs ? HOOKS.filters[ filter ].runs + 1 : 1;
 
 		for ( i = 0; i < handlers.length; i++ ) {
 			args[ 0 ] = handlers[ i ].callback.apply( null, args );
@@ -220,14 +220,14 @@
 
 			// If the action was not passed, check for any current hook.
 			if ( 'undefined' === typeof action ) {
-				return ! 'undefined' === typeof HOOKS[ type ].current;
+				return 'undefined' !== typeof HOOKS[ type ].current;
 			}
 
 			// Return the current hook.
 			return HOOKS[ type ] && HOOKS[ type ].current ?
 				action === HOOKS[ type ].current :
 				false;
-		}
+		};
 	}
 
 	/**
@@ -240,10 +240,10 @@
 	 */
 	function createDidHookByType( type ) {
 		return function( action ) {
-			return HOOKS[ type ] && HOOKS[ type ][ action ] && HOOKS[ type ][ action ]['runs'] ?
-				HOOKS[ type ][ action ]['runs'] :
+			return HOOKS[ type ] && HOOKS[ type ][ action ] && HOOKS[ type ][ action ].runs ?
+				HOOKS[ type ][ action ].runs :
 				0;
-		}
+		};
 	}
 
 	/**
@@ -259,7 +259,7 @@
 			return HOOKS[ type ] && HOOKS[ type ][ action ] ?
 				!! HOOKS[ type ][ action ] :
 				false;
-		}
+		};
 	}
 
 	wp.hooks = {
@@ -271,6 +271,6 @@
 		addAction: createAddHookByType( 'actions' ),
 		doingAction: createDoingHookByType( 'actions' ),
 		didAction: createDidHookByType( 'actions' ),
-		hasAction: createHasHookByType( 'actions' ),
+		hasAction: createHasHookByType( 'actions' )
 	};
 } )( window.wp = window.wp || {} );
