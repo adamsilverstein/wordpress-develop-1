@@ -105,7 +105,7 @@
 	 * hooks of the specified type by calling upon runner with its hook name
 	 * and arguments.
 	 *
-	 * @param  {string}   type   Type for which hooks are to be run
+	 * @param  {string}   type   Type for which hooks are to be run, one of 'action' or 'filter'.
 	 * @param  {Function} runner Function to invoke for each hook callback
 	 * @return {Function}        Hook runner
 	 */
@@ -147,8 +147,11 @@
 			return;
 		}
 
+		HOOKS.actions.current = action;
+
 		for ( i = 0; i < handlers.length; i++ ) {
 			handlers[ i ].callback.apply( null, args );
+			HOOKS.actions[ action ]['runs'] = HOOKS.actions[ action ]['runs'] ? HOOKS.actions[ action ]['runs'] + 1 : 1;
 		}
 	}
 
@@ -169,6 +172,9 @@
 		if ( ! handlers ) {
 			return args[ 0 ];
 		}
+
+		HOOKS.filters.current = filter;
+		HOOKS.filters[ filter ]['runs'] = HOOKS.filters[ filter ]['runs'] ? HOOKS.filters[ filter ]['runs'] + 1 : 1;
 
 		for ( i = 0; i < handlers.length; i++ ) {
 			args[ 0 ] = handlers[ i ].callback.apply( null, args );
@@ -201,12 +207,51 @@
 		return hooks;
 	}
 
+	/**
+	 * Checks to see if an action is currently being executed.
+	 *
+	 * @param  {string} type   Type for which hooks are to be run, one of 'action' or 'filter'.
+	 * @param {string}  action The action to check.
+	 *
+	 * @return {[type]}      [description]
+	 */
+	function createDoingHookByType( type, action ) {
+		return HOOKS.[ type ].current;
+	}
+
+	/**
+	 * Retrieve the number of times an action is fired.
+	 *
+	 * @param  {string} type   Type for which hooks are to be run, one of 'action' or 'filter'.
+	 * @param {string}  action The action to check.
+	 *
+	 * @return {[type]}      [description]
+	 */
+	function createDidHookByType( type, action ) {
+		return HOOKS.[ type ][ action ]['runs'];
+	}
+
+	/**
+	 * Check to see if an action is registered for a hook.
+	 *
+	 * @param  {string} type   Type for which hooks are to be run, one of 'action' or 'filter'.
+	 * @param {string}  action  The action to check.
+	 *
+	 * @return {bool}      Whether an action has been registered for a hook.
+	 */
+	function createHasHookByType( type, action ) {
+		return !! HOOKS.[ type ][ action ];
+	}
+
 	wp.hooks = {
 		removeFilter: createRemoveHookByType( 'filters' ),
 		applyFilters: createRunHookByType( 'filters', runApplyFilters ),
 		addFilter: createAddHookByType( 'filters' ),
 		removeAction: createRemoveHookByType( 'actions' ),
 		doAction: createRunHookByType( 'actions', runDoAction ),
-		addAction: createAddHookByType( 'actions' )
+		addAction: createAddHookByType( 'actions' ),
+		doingAction: createDoingHookByType( 'actions' ),
+		didAction: createDidHookByType( 'actions' ),
+		hasAction: createHasHookByType( 'actions' ),
 	};
 } )( window.wp = window.wp || {} );
