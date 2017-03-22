@@ -210,37 +210,56 @@
 	/**
 	 * Checks to see if an action is currently being executed.
 	 *
-	 * @param  {string} type   Type for which hooks are to be run, one of 'action' or 'filter'.
-	 * @param {string}  action The action to check.
+	 * @param  {string} type   Type of hooks to check, one of 'action' or 'filter'.
+	 * @param {string}  action The name of the action to check for, if omitted will check for any action being performed.
 	 *
 	 * @return {[type]}      [description]
 	 */
-	function createDoingHookByType( type, action ) {
-		return HOOKS[ type ] && HOOKS[ type ].current ? HOOKS[ type ].current : false;
+	function createDoingHookByType( type ) {
+		return function( action ) {
+
+			// If the action was not passed, check for any current hook.
+			if ( 'undefined' === typeof action ) {
+				return ! 'undefined' === typeof HOOKS[ type ].current;
+			}
+
+			// Return the current hook.
+			return HOOKS[ type ] && HOOKS[ type ].current ?
+				action === HOOKS[ type ].current :
+				false;
+		}
 	}
 
 	/**
 	 * Retrieve the number of times an action is fired.
 	 *
-	 * @param  {string} type   Type for which hooks are to be run, one of 'action' or 'filter'.
+	 * @param  {string} type   Type for which hooks to check, one of 'action' or 'filter'.
 	 * @param {string}  action The action to check.
 	 *
 	 * @return {[type]}      [description]
 	 */
-	function createDidHookByType( type, action ) {
-		return HOOKS[ type ] && HOOKS[ type ][ action ] ? HOOKS[ type ][ action ]['runs'] : 0;
+	function createDidHookByType( type ) {
+		return function( action ) {
+			return HOOKS[ type ] && HOOKS[ type ][ action ] && HOOKS[ type ][ action ]['runs'] ?
+				HOOKS[ type ][ action ]['runs'] :
+				0;
+		}
 	}
 
 	/**
 	 * Check to see if an action is registered for a hook.
 	 *
-	 * @param  {string} type   Type for which hooks are to be run, one of 'action' or 'filter'.
+	 * @param  {string} type   Type for which hooks to check, one of 'action' or 'filter'.
 	 * @param {string}  action  The action to check.
 	 *
 	 * @return {bool}      Whether an action has been registered for a hook.
 	 */
-	function createHasHookByType( type, action ) {
-		return HOOKS[ type ] && HOOKS[ type ][ action ] ? !! HOOKS[ type ][ action ] : false;
+	function createHasHookByType( type ) {
+		return function( action ) {
+			return HOOKS[ type ] && HOOKS[ type ][ action ] ?
+				!! HOOKS[ type ][ action ] :
+				false;
+		}
 	}
 
 	wp.hooks = {
