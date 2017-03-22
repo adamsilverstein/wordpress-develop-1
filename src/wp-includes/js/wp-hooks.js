@@ -216,7 +216,7 @@
 	 * @return {[type]}      [description]
 	 */
 	function createDoingHookByType( type, action ) {
-		return HOOKS.[ type ].current;
+		return HOOKS[ type ] && HOOKS[ type ].current ? HOOKS[ type ].current : false;
 	}
 
 	/**
@@ -228,7 +228,7 @@
 	 * @return {[type]}      [description]
 	 */
 	function createDidHookByType( type, action ) {
-		return HOOKS.[ type ][ action ]['runs'];
+		return HOOKS[ type ] && HOOKS[ type ][ action ] ? HOOKS[ type ][ action ]['runs'] : 0;
 	}
 
 	/**
@@ -240,7 +240,7 @@
 	 * @return {bool}      Whether an action has been registered for a hook.
 	 */
 	function createHasHookByType( type, action ) {
-		return !! HOOKS.[ type ][ action ];
+		return HOOKS[ type ] && HOOKS[ type ][ action ] ? !! HOOKS[ type ][ action ] : false;
 	}
 
 	wp.hooks = {
