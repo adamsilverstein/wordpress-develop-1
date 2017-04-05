@@ -8,9 +8,10 @@
  */
 var Router = Backbone.Router.extend({
 	routes: {
-		'upload.php?item=:slug':    'showItem',
-		'upload.php?search=:query': 'search',
-		'upload.php':               'reset'
+		'upload.php?item=:slug&mode=edit': 'editItem',
+		'upload.php?item=:slug':           'showItem',
+		'upload.php?search=:query':        'search',
+		'upload.php':                      'reset'
 	},
 
 	// Map routes against the page URL
@@ -51,6 +52,14 @@ var Router = Backbone.Router.extend({
 			} );
 			item.fetch();
 		}
+	},
+
+	// Show the modal in edit mode with a specific item.
+	editItem: function( query ) {
+		this.showItem( query );
+		_.defer( function() {
+			jQuery( '.edit-attachment' ).click();
+		} );
 	}
 });
 
