@@ -57,9 +57,7 @@ var Router = Backbone.Router.extend({
 	// Show the modal in edit mode with a specific item.
 	editItem: function( query ) {
 		this.showItem( query );
-		_.defer( function() {
-			jQuery( '.edit-attachment' ).click();
-		} );
+		wp.media.frames.edit.content.mode( 'edit-details' );
 	}
 });
 
