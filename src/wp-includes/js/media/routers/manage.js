@@ -41,6 +41,7 @@ var Router = Backbone.Router.extend({
 
 		// Trigger the media frame to open the correct item
 		item = library.findWhere( { id: parseInt( query, 10 ) } );
+		item.set( 'skipHistory', true );
 
 		if ( item ) {
 			frame.trigger( 'edit:attachment', item );

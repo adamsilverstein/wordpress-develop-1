@@ -133,8 +133,8 @@ EditAttachments = MediaFrame.extend({
 			model:      this.model
 		}) );
 
-		// Update browser url when navigating media details
-		if ( this.model ) {
+		// Update browser url when navigating media details, except on load.
+		if ( this.model && ! this.model.get( 'skipHistory' ) ) {
 			this.gridRouter.navigate( this.gridRouter.baseUrl( '?item=' + this.model.id ) );
 		}
 	},
