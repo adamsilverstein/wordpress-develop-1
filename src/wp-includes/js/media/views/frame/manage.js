@@ -87,7 +87,6 @@ Manage = MediaFrame.extend({
 
 	bindSearchHandler: function() {
 		var search = this.$( '#media-search-input' ),
-			currentSearch = this.options.container.data( 'search' ),
 			searchView = this.browserView.toolbar.get( 'search' ).$el,
 			listMode = this.$( '.view-list' ),
 

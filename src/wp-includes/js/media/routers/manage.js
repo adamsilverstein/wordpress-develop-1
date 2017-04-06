@@ -19,7 +19,7 @@ var Router = Backbone.Router.extend({
 		return 'upload.php' + url;
 	},
 
-	reset: function( query ) {
+	reset: function() {
 		var frame = wp.media.frames.edit;
 
 		if ( frame ) {
