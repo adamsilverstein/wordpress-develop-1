@@ -160,6 +160,9 @@ EditAttachments = MediaFrame.extend({
 			frame: this,
 			controller: editImageController
 		} );
+
+		this.gridRouter.navigate( this.gridRouter.baseUrl( '?item=' + this.model.id + '&mode=edit' ) );
+
 	},
 
 	editImageModeRender: function( view ) {
