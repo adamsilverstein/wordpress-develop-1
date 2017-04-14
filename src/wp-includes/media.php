@@ -3324,20 +3324,23 @@ function wp_enqueue_media( $args = array() ) {
 	/**
 	 * Allows showing or hiding the "Create Audio Playlist" button in the media library.
 	 *
-	 * By default (if this filter returns `null`), a query will be run to
-	 * determine whether the media library contains any audio items.  This
-	 * query is expensive for large media libraries, so it may be desirable for
-	 * sites to override this behavior.
+	 * By default, the "Create Audio Playlist" button will always be shown in
+	 * the media library.  If this filter returns `null`, a query will be run
+	 * to determine whether the media library contains any audio items.  This
+	 * was the default behavior prior to version 4.8.0, but this query is
+	 * expensive for large media libraries.
 	 *
 	 * @since 4.7.4
+	 * @since 4.8.0 The filter's default value is `true` rather than `null`.
 	 *
 	 * @link https://core.trac.wordpress.org/ticket/31071
 	 *
-	 * @return bool|null Whether to show the button, or `null` for default behavior.
+	 * @param bool|null Whether to show the button, or `null` to decide based
+	 *                  on whether any audio files exist in the media library.
 	 */
-	$has_audio = apply_filters( 'media_has_audio', null );
-	if ( is_null( $has_audio ) ) {
-		$has_audio = $wpdb->get_var( "
+	$show_audio_playlist = apply_filters( 'media_library_show_audio_playlist', true );
+	if ( null === $show_audio_playlist ) {
+		$show_audio_playlist = $wpdb->get_var( "
 			SELECT ID
 			FROM $wpdb->posts
 			WHERE post_type = 'attachment'
@@ -3349,20 +3352,23 @@ function wp_enqueue_media( $args = array() ) {
 	/**
 	 * Allows showing or hiding the "Create Video Playlist" button in the media library.
 	 *
-	 * By default (if this filter returns `null`), a query will be run to
-	 * determine whether the media library contains any video items.  This
-	 * query is expensive for large media libraries, so it may be desirable for
-	 * sites to override this behavior.
+	 * By default, the "Create Video Playlist" button will always be shown in
+	 * the media library.  If this filter returns `null`, a query will be run
+	 * to determine whether the media library contains any video items.  This
+	 * was the default behavior prior to version 4.8.0, but this query is
+	 * expensive for large media libraries.
 	 *
 	 * @since 4.7.4
+	 * @since 4.8.0 The filter's default value is `true` rather than `null`.
 	 *
 	 * @link https://core.trac.wordpress.org/ticket/31071
 	 *
-	 * @return bool|null Whether to show the button, or `null` for default behavior.
+	 * @param bool|null Whether to show the button, or `null` to decide based
+	 *                  on whether any video files exist in the media library.
 	 */
-	$has_video = apply_filters( 'media_has_video', null );
-	if ( is_null( $has_video ) ) {
-		$has_video = $wpdb->get_var( "
+	$show_video_playlist = apply_filters( 'media_library_show_video_playlist', true );
+	if ( null === $show_video_playlist ) {
+		$show_video_playlist = $wpdb->get_var( "
 			SELECT ID
 			FROM $wpdb->posts
 			WHERE post_type = 'attachment'
@@ -3383,11 +3389,11 @@ function wp_enqueue_media( $args = array() ) {
 	 *
 	 * @link https://core.trac.wordpress.org/ticket/31071
 	 *
-	 * @return array|null An array of objects with `month` and `year`
-	 *                    properties, or `null` (or any other non-array value)
-	 *                    for default behavior.
+	 * @param array|null An array of objects with `month` and `year`
+	 *                   properties, or `null` (or any other non-array value)
+	 *                   for default behavior.
 	 */
-	$months = apply_filters( 'media_months', null );
+	$months = apply_filters( 'media_library_months_with_files', null );
 	if ( ! is_array( $months ) ) {
 		$months = $wpdb->get_results( $wpdb->prepare( "
 			SELECT DISTINCT YEAR( post_date ) AS year, MONTH( post_date ) AS month
@@ -3414,14 +3420,14 @@ function wp_enqueue_media( $args = array() ) {
 		),
 		'defaultProps' => $props,
 		'attachmentCounts' => array(
-			'audio' => ( $has_audio ) ? 1 : 0,
-			'video' => ( $has_video ) ? 1 : 0
+			'audio' => ( $show_audio_playlist ) ? 1 : 0,
+			'video' => ( $show_video_playlist ) ? 1 : 0,
 		),
 		'embedExts'    => $exts,
 		'embedMimes'   => $ext_mimes,
 		'contentWidth' => $content_width,
 		'months'       => $months,
-		'mediaTrash'   => MEDIA_TRASH ? 1 : 0
+		'mediaTrash'   => MEDIA_TRASH ? 1 : 0,
 	);
 
 	$post = null;
