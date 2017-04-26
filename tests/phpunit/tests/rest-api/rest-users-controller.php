@@ -992,10 +992,11 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 		$this->assertEquals( 'Sorry, that username is not allowed.', $errors['username'] );
 	}
 
+	/**
+	 * @group ms-required
+	 */
 	public function test_create_new_network_user_on_site_does_not_add_user_to_sub_site() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test requires multisite.' );
-		}
+		$this->skipWithoutMultisite();
 
 		$this->allow_user_to_manage_multisite();
 
@@ -1021,10 +1022,11 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 		$this->assertFalse( $user_is_member );
 	}
 
+	/**
+	 * @group ms-required
+	 */
 	public function test_create_new_network_user_on_sub_site_adds_user_to_site() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test requires multisite.' );
-		}
+		$this->skipWithoutMultisite();
 
 		$this->allow_user_to_manage_multisite();
 
@@ -1054,10 +1056,11 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 		$this->assertTrue( $user_is_member );
 	}
 
+	/**
+	 * @group ms-required
+	 */
 	public function test_create_existing_network_user_on_sub_site_has_error() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test requires multisite.' );
-		}
+		$this->skipWithoutMultisite();
 
 		$this->allow_user_to_manage_multisite();
 
@@ -1441,10 +1444,11 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 		$this->assertArrayNotHasKey( 'administrator', $user->caps );
 	}
 
+	/**
+	 * @group ms-excluded
+	 */
 	public function test_update_user_role_invalid_privilege_deescalation() {
-		if ( is_multisite() ) {
-			return $this->markTestSkipped( 'Test only intended for single site.' );
-		}
+		$this->skipWithMultisite();
 
 		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 
@@ -1471,10 +1475,11 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 		$this->assertArrayNotHasKey( 'editor', $user->caps );
 	}
 
+	/**
+	 * @group ms-required
+	 */
 	public function test_update_user_role_privilege_deescalation_multisite() {
-		if ( ! is_multisite() ) {
-			return $this->markTestSkipped( 'Test only intended for multisite.' );
-		}
+		$this->skipWithoutMultisite();
 
 		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 
@@ -2220,11 +2225,10 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 
 	/**
 	 * @ticket 39701
+	 * @group ms-required
 	 */
 	public function test_get_item_from_different_site_as_site_administrator() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test only runs in multisite' );
-		}
+		$this->skipWithoutMultisite();
 
 		switch_to_blog( self::$site );
 		$user_id = $this->factory->user->create( array(
@@ -2241,11 +2245,10 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 
 	/**
 	 * @ticket 39701
+	 * @group ms-required
 	 */
 	public function test_get_item_from_different_site_as_network_administrator() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test only runs in multisite' );
-		}
+		$this->skipWithoutMultisite();
 
 		switch_to_blog( self::$site );
 		$user_id = $this->factory->user->create( array(
@@ -2262,11 +2265,10 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 
 	/**
 	 * @ticket 39701
+	 * @group ms-required
 	 */
 	public function test_update_item_from_different_site_as_site_administrator() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test only runs in multisite' );
-		}
+		$this->skipWithoutMultisite();
 
 		switch_to_blog( self::$site );
 		$user_id = $this->factory->user->create( array(
@@ -2285,11 +2287,10 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 
 	/**
 	 * @ticket 39701
+	 * @group ms-required
 	 */
 	public function test_update_item_from_different_site_as_network_administrator() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test only runs in multisite' );
-		}
+		$this->skipWithoutMultisite();
 
 		switch_to_blog( self::$site );
 		$user_id = $this->factory->user->create( array(
@@ -2308,11 +2309,10 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 
 	/**
 	 * @ticket 39701
+	 * @group ms-required
 	 */
 	public function test_delete_item_from_different_site_as_site_administrator() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test only runs in multisite' );
-		}
+		$this->skipWithoutMultisite();
 
 		switch_to_blog( self::$site );
 		$user_id = $this->factory->user->create( array(
@@ -2331,11 +2331,10 @@ class WP_Test_REST_Users_Controller extends WP_Test_REST_Controller_Testcase {
 
 	/**
 	 * @ticket 39701
+	 * @group ms-required
 	 */
 	public function test_delete_item_from_different_site_as_network_administrator() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test only runs in multisite' );
-		}
+		$this->skipWithoutMultisite();
 
 		switch_to_blog( self::$site );
 		$user_id = $this->factory->user->create( array(

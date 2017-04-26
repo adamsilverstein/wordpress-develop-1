@@ -38,11 +38,10 @@ class Tests_Link_GetDashboardUrl extends WP_UnitTestCase {
 
 	/**
 	 * @ticket 39065
+	 * @group ms-required
 	 */
 	public function test_get_dashboard_url_for_network_administrator_with_no_sites() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test only runs in multisite.' );
-		}
+		$this->skipWithoutMultisite();
 
 		grant_super_admin( self::$user_id );
 
@@ -58,11 +57,10 @@ class Tests_Link_GetDashboardUrl extends WP_UnitTestCase {
 
 	/**
 	 * @ticket 39065
+	 * @group ms-required
 	 */
 	public function test_get_dashboard_url_for_administrator_of_different_site() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test only runs in multisite.' );
-		}
+		$this->skipWithoutMultisite();
 
 		$site_id = self::factory()->blog->create( array( 'user_id' => self::$user_id ) );
 
