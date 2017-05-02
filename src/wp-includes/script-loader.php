@@ -83,7 +83,7 @@ function wp_default_scripts( &$scripts ) {
 		'expandMenu'   => __( 'Expand Main menu' ),
 	) );
 
-	$scripts->add( 'wp-a11y', "/wp-includes/js/wp-a11y$suffix.js", array( 'jquery' ), false, 1 );
+	$scripts->add( 'wp-a11y', "/wp-includes/js/wp-a11y$suffix.js", array( 'jquery', 'utils' ), false, 1 );
 
 	$scripts->add( 'sack', "/wp-includes/js/tw-sack$suffix.js", array(), '1.6.1', 1 );
 
@@ -576,7 +576,7 @@ function wp_default_scripts( &$scripts ) {
 			'permalinkSaved' => __( 'Permalink saved' ),
 		) );
 
-		$scripts->add( 'press-this', "/wp-admin/js/press-this$suffix.js", array( 'jquery', 'tags-box' ), false, 1 );
+		$scripts->add( 'press-this', "/wp-admin/js/press-this$suffix.js", array( 'jquery', 'tags-box', 'utils' ), false, 1 );
 		did_action( 'init' ) && $scripts->localize( 'press-this', 'pressThisL10n', array(
 			'newPost' => __( 'Title' ),
 			'serverError' => __( 'Connection lost or the server is busy. Please try again later.' ),

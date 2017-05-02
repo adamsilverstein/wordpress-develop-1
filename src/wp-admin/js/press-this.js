@@ -56,38 +56,6 @@
 		}
 
 		/**
-		 * Strips HTML tags
-		 *
-		 * @param string string Text to have the HTML tags striped out of.
-		 * @returns string Stripped text.
-		 */
-		function stripTags( string ) {
-			string = string || '';
-
-			return string
-				.replace( /<!--[\s\S]*?(-->|$)/g, '' )
-				.replace( /<(script|style)[^>]*>[\s\S]*?(<\/\1>|$)/ig, '' )
-				.replace( /<\/?[a-z][\s\S]*?(>|$)/ig, '' );
-		}
-
-		/**
-		 * Strip HTML tags and convert HTML entities.
-		 *
-		 * @param text string Text.
-		 * @returns string Sanitized text.
-		 */
-		function sanitizeText( text ) {
-			var _text = stripTags( text );
-
-			try {
-				textarea.innerHTML = _text;
-				_text = stripTags( textarea.value );
-			} catch ( er ) {}
-
-			return _text;
-		}
-
-		/**
 		 * Allow only HTTP or protocol relative URLs.
 		 *
 		 * @param url string The URL.
@@ -97,7 +65,7 @@
 			url = $.trim( url || '' );
 
 			if ( /^(?:https?:)?\/\//.test( url ) ) {
-				url = stripTags( url );
+				url = wp.utils.stripTags( url );
 				return url.replace( /["\\]+/g, '' );
 			}
 
@@ -224,7 +192,7 @@
 				$image.replaceWith( $( '<span>' ).text( $image.attr( 'alt' ) ) );
 			});
 
-			return sanitizeText( $element.text() );
+			return wp.utils.sanitizeText( $element.text() );
 		}
 
 		/**
