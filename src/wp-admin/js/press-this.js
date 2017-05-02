@@ -8,7 +8,6 @@
 			$window               = $( window ),
 			$document             = $( document ),
 			saveAlert             = false,
-			textarea              = document.createElement( 'textarea' ),
 			sidebarIsOpen         = false,
 			settings              = window.wpPressThisConfig || {},
 			data                  = window.wpPressThisData || {},

@@ -196,7 +196,7 @@ function getAllUserSettings() {
 	return wpCookies.getHash( 'wp-settings-' + userSettings.uid ) || {};
 }
 
-var wp = window.wp || {};
+window.wp = window.wp || {};
 wp.utils = {
 
 		/**
@@ -230,6 +230,5 @@ wp.utils = {
 			} catch ( er ) {}
 
 			return _text;
-		},
-
-}
+		}
+};
