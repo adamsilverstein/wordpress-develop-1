@@ -467,7 +467,22 @@ Line Three.</p>",
 <!-- HTML
 Comment -->
 Line Three.</p>",
-
+			),
+			array(
+				'<script type="text/javascript"><!--
+google_ad_client = "xxxxxxxx";
+google_ad_width = 120;
+google_ad_height = 60;
+google_ad_format = "120x60_as_rimg";
+google_cpa_choice = "CAAQ2eOZzgEaCD4zuVkdzt_CKI-293M";
+//--></script>',
+				'<p><script type="text/javascript"><!--
+google_ad_client = "xxxxxxxx";
+google_ad_width = 120;
+google_ad_height = 60;
+google_ad_format = "120x60_as_rimg";
+google_cpa_choice = "CAAQ2eOZzgEaCD4zuVkdzt_CKI-293M";
+//--></script></p>',
 			),
 		);
 	}
@@ -601,4 +616,20 @@ line 2<br/>
 		$this->assertEquals( $expected2, trim( wpautop( $content2 ) ) );
 	}
 
+	/**
+	 * @ticket 2833
+	 */
+	function test_that_styles_dont_get_extra_brs() {
+		$content = '<style type="text/css>
+.matt { color: #FFFFFF; }
+</style>';
+		$expected = '<style type="text/css>
+.matt { color: #FFFFFF; }
+</style>';
+
+		$this->assertEquals( $expected, trim( wpautop( $content ) ) );
+	}
+
+
 }
+
