@@ -430,6 +430,49 @@ Paragraph two.';
 	}
 
 	/**
+	 * Do not allow HTML comments to get wrapped in p tags.
+	 *
+	 * @dataProvider data_html_comments
+	 * @ticket 2691
+	 */
+	function test_html_comments( $input, $expected ) {
+		$this->assertEquals( $expected, trim( wpautop( $input ) ) );
+	}
+
+	function data_html_comments() {
+		return array(
+			array(
+				"<!-- HTML Comment -->",
+				"<!-- HTML Comment -->",
+			),
+			array(
+				"<!-- HTML\nmultiline\nComment -->",
+				"<!-- HTML\nmultiline\nComment -->",
+			),
+			array(
+				"Line One.\n<!-- HTML Comment -->Line Two\nLine Three.",
+				"<p>Line One.<br />
+<!-- HTML Comment -->Line Two<br />
+Line Three.</p>",
+			),
+			array(
+				"<p>Line One.\n<!-- HTML Comment -->Line Two</p>\nLine Three.",
+				"<p>Line One.<br />
+<!-- HTML Comment -->Line Two</p>
+<p>Line Three.</p>",
+			),
+			array(
+				"Line One.\n<!-- HTML\nComment -->\nLine Three.",
+				"<p>Line One.<br />
+<!-- HTML
+Comment -->
+Line Three.</p>",
+
+			),
+		);
+	}
+
+	/**
 	 * Do not allow newlines within HTML elements to become mangled.
 	 *
 	 * @ticket 33106
@@ -450,7 +493,7 @@ Paragraph two.';
 				"<p>Hello <!-- a\nhref='world' --></p>\n",
 			),
 			array(
-				"Hello <!-- <object>\n<param>\n<param>\n<embed>\n</embed>\n</object>\n -->",
+				"Hello <!-- <object>\n<param>\n<param>\n<embed>\n</embed>\n</object>\n -->\n",
 				"<p>Hello <!-- <object>\n<param>\n<param>\n<embed>\n</embed>\n</object>\n --></p>\n",
 			),
 			array(
