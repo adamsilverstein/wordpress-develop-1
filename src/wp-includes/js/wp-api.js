@@ -1171,6 +1171,33 @@
 					routeName = 'me';
 				}
 
+				var initializeModel = function( attributes, options ) {
+					wp.api.WPApiBaseModel.prototype.initialize.call( this, attributes, options );
+
+					/**
+					 * Determine if a model requires ?force=true to actually delete them.
+					 */
+					if (
+						! _.isEmpty(
+							_.filter(
+								this.endpoints,
+								function( endpoint ) {
+									return (
+
+										// Does the method support DELETE?
+										'DELETE' === endpoint.methods[0] &&
+
+										// Exclude models that support trash (Post, Page).
+										( 'Whether to bypass trash and force deletion.' !== endpoint.args.force.description  )
+									);
+								}
+							)
+						)
+					) {
+						this.requireForceForDelete = true;
+					}
+				};
+
 				// If the model has a parent in its route, add that to its class name.
 				if ( '' !== parentName && parentName !== routeName ) {
 					modelClassName = wp.api.utils.capitalizeAndCamelCaseDashes( parentName ) + wp.api.utils.capitalizeAndCamelCaseDashes( routeName );
@@ -1203,23 +1230,10 @@
 						// Include the array of route methods for easy reference.
 						methods: modelRoute.route.methods,
 
-						initialize: function( attributes, options ) {
-							wp.api.WPApiBaseModel.prototype.initialize.call( this, attributes, options );
+						// Include the array of route endpoints for easy reference.
+						endpoints: modelRoute.route.endpoints,
 
-							/**
-							 * Posts and pages support trashing, other types don't support a trash
-							 * and require that you pass ?force=true to actually delete them.
-							 *
-							 * @todo we should be getting trashability from the Schema, not hard coding types here.
-							 */
-							if (
-								'Posts' !== this.name &&
-								'Pages' !== this.name &&
-								_.includes( this.methods, 'DELETE' )
-							) {
-								this.requireForceForDelete = true;
-							}
-						}
+						initialize: initializeModel
 					} );
 				} else {
 
@@ -1247,7 +1261,12 @@
 						name: modelClassName,
 
 						// Include the array of route methods for easy reference.
-						methods: modelRoute.route.methods
+						methods: modelRoute.route.methods,
+
+						// Include the array of route endpoints for easy reference.
+						endpoints: modelRoute.route.endpoints,
+
+						initialize: initializeModel
 					} );
 				}
 
