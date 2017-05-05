@@ -1188,7 +1188,10 @@
 										'DELETE' === endpoint.methods[0] &&
 
 										// Exclude models that support trash (Post, Page).
-										( 'Whether to bypass trash and force deletion.' !== endpoint.args.force.description  )
+										(
+											! _.isUndefined( endpoint.args.force.description ) &&
+											'Whether to bypass trash and force deletion.' !== endpoint.args.force.description
+										)
 									);
 								}
 							)
