@@ -1966,7 +1966,7 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 					$schema['properties']['featured_media'] = array(
 						'description' => __( 'The ID of the featured media for the object.' ),
 						'type'        => 'integer',
-						'context'     => array( 'view', 'edit' ),
+						'context'     => array( 'view', 'edit', 'embed' ),
 					);
 					break;
 
@@ -2130,12 +2130,15 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 			'type'               => 'string',
 			'default'            => 'date',
 			'enum'               => array(
+				'author',
 				'date',
-				'relevance',
 				'id',
 				'include',
-				'title',
+				'modified',
+				'parent',
+				'relevance',
 				'slug',
+				'title',
 			),
 		);
 
@@ -2147,7 +2150,7 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 
 		if ( $post_type->hierarchical || 'attachment' === $this->post_type ) {
 			$query_params['parent'] = array(
-				'description'       => __( 'Limit result set to those of particular parent IDs.' ),
+				'description'       => __( 'Limit result set to items with particular parent IDs.' ),
 				'type'              => 'array',
 				'items'             => array(
 					'type'          => 'integer',
