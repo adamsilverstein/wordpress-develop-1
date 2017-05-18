@@ -77,7 +77,7 @@ function wp_default_scripts( &$scripts ) {
 
 	$scripts->add( 'common', "/wp-admin/js/common$suffix.js", array('jquery', 'hoverIntent', 'utils'), false, 1 );
 	did_action( 'init' ) && $scripts->localize( 'common', 'commonL10n', array(
-		'warnDelete'   => __( "You are about to permanently delete these items.\n  'Cancel' to stop, 'OK' to delete." ),
+		'warnDelete'   => __( "You are about to permanently delete these items from your site.\nThis action cannot be undone.\n 'Cancel' to stop, 'OK' to delete." ),
 		'dismiss'      => __( 'Dismiss this notice.' ),
 		'collapseMenu' => __( 'Collapse Main menu' ),
 		'expandMenu'   => __( 'Expand Main menu' ),
@@ -357,7 +357,7 @@ function wp_default_scripts( &$scripts ) {
 			'Play'                    => __( 'Play' ),
 			'Pause'                   => __( 'Pause' ),
 			'Captions/Subtitles'      => __( 'Captions/Subtitles' ),
-			'None'                    => __( 'None', 'no captions/subtitles' ),
+			'None'                    => _x( 'None', 'no captions/subtitles' ),
 			'Time Slider'             => __( 'Time Slider' ),
 			/* translators: %1: number of seconds (30 by default) */
 			'Skip back %1 seconds'    => __( 'Skip back %1 seconds' ),
@@ -602,6 +602,14 @@ function wp_default_scripts( &$scripts ) {
 		$scripts->add( 'admin-gallery', "/wp-admin/js/gallery$suffix.js", array( 'jquery-ui-sortable' ) );
 
 		$scripts->add( 'admin-widgets', "/wp-admin/js/widgets$suffix.js", array( 'jquery-ui-sortable', 'jquery-ui-draggable', 'jquery-ui-droppable' ), false, 1 );
+		$scripts->add( 'media-widgets', "/wp-admin/js/widgets/media-widgets$suffix.js", array( 'jquery', 'media-models', 'media-views' ) );
+		$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
+
+		$scripts->add( 'media-audio-widget', "/wp-admin/js/widgets/media-audio-widget$suffix.js", array( 'media-widgets', 'media-audiovideo' ) );
+		$scripts->add( 'media-image-widget', "/wp-admin/js/widgets/media-image-widget$suffix.js", array( 'media-widgets' ) );
+		$scripts->add( 'media-video-widget', "/wp-admin/js/widgets/media-video-widget$suffix.js", array( 'media-widgets', 'media-audiovideo' ) );
+		$scripts->add( 'text-widgets', "/wp-admin/js/widgets/text-widgets$suffix.js", array( 'jquery', 'backbone', 'editor', 'wp-util' ) );
+		$scripts->add_inline_script( 'text-widgets', 'wp.textWidgets.init();', 'after' );
 
 		$scripts->add( 'theme', "/wp-admin/js/theme$suffix.js", array( 'wp-backbone', 'wp-a11y' ), false, 1 );
 
@@ -724,7 +732,7 @@ function wp_default_scripts( &$scripts ) {
 			'current' => __( 'Current Color' ),
 		) );
 
-		$scripts->add( 'dashboard', "/wp-admin/js/dashboard$suffix.js", array( 'jquery', 'admin-comments', 'postbox' ), false, 1 );
+		$scripts->add( 'dashboard', "/wp-admin/js/dashboard$suffix.js", array( 'jquery', 'admin-comments', 'postbox', 'wp-util', 'wp-a11y' ), false, 1 );
 
 		$scripts->add( 'list-revisions', "/wp-includes/js/wp-list-revisions$suffix.js" );
 
@@ -990,6 +998,46 @@ function wp_localize_jquery_ui_datepicker() {
 	) );
 
 	wp_add_inline_script( 'jquery-ui-datepicker', "jQuery(document).ready(function(jQuery){jQuery.datepicker.setDefaults({$datepicker_defaults});});" );
+}
+
+/**
+ * Localizes community events data that needs to be passed to dashboard.js.
+ *
+ * @since 4.8.0
+ */
+function wp_localize_community_events() {
+	if ( ! wp_script_is( 'dashboard' ) ) {
+		return;
+	}
+
+	require_once( ABSPATH . 'wp-admin/includes/class-wp-community-events.php' );
+
+	$user_id       = get_current_user_id();
+	$user_location = get_user_option( 'community-events-location', $user_id );
+	$events_client = new WP_Community_Events( $user_id, $user_location );
+
+	wp_localize_script( 'dashboard', 'communityEventsData', array(
+		'nonce' => wp_create_nonce( 'community_events' ),
+		'cache' => $events_client->get_cached_events(),
+
+		'l10n' => array(
+			'enter_closest_city' => __( 'Enter your closest city to find nearby events.' ),
+			'error_occurred_please_try_again' => __( 'An error occurred. Please try again.' ),
+
+			/*
+			 * These specific examples were chosen to highlight the fact that a
+			 * state is not needed, even for cities whose name is not unique.
+			 * It would be too cumbersome to include that in the instructions
+			 * to the user, so it's left as an implication.
+			 */
+			/* translators: %s is the name of the city we couldn't locate. Replace the examples with cities in your locale, but test that they match the expected location before including them. Use endonyms (native locale names) whenever possible. */
+			'could_not_locate_city' => __( 'We couldn&#8217;t locate %s. Please try another nearby city. For example: Kansas City; Springfield; Portland.' ),
+
+			// This one is only used with wp.a11y.speak(), so it can/should be more brief.
+			/* translators: %s is the name of a city. */
+			'city_updated' => __( 'City updated. Listing events near %s.' ),
+		)
+	) );
 }
 
 /**

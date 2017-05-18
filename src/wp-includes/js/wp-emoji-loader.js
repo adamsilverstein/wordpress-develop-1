@@ -19,7 +19,7 @@
 	 */
 	function browserSupportsEmoji( type ) {
 		var stringFromCharCode = String.fromCharCode,
-			flag, flag2, technologist, technologist2;
+			flag, flag2, emoji41, emoji42;
 
 		if ( ! context || ! context.fillText ) {
 			return false;
@@ -39,20 +39,24 @@
 		switch ( type ) {
 			case 'flag':
 				/*
-				 * This works because the image will be one of three things:
-				 * - Two empty squares, if the browser doesn't render emoji
-				 * - Two squares with 'U' and 'N' in them, if the browser doesn't render flag emoji
-				 * - The United Nations flag
+				 * Test for UN flag compatibility. This is the least supported of the letter locale flags,
+				 * so gives us an easy test for full support.
 				 *
-				 * The first two will encode to small images (1-2KB data URLs), the third will encode
-				 * to a larger image (4-5KB data URL).
+				 * To test for support, we try to render it, and compare the rendering to how it would look if
+				 * the browser doesn't render it correctly ([U] + [N]).
 				 */
 				context.fillText( stringFromCharCode( 55356, 56826, 55356, 56819 ), 0, 0 );
-				if ( canvas.toDataURL().length < 3000 ) {
-					return false;
-				}
+				flag = canvas.toDataURL();
 
 				context.clearRect( 0, 0, canvas.width, canvas.height );
+
+				// Add a zero width space between the characters, to force rendering as characters.
+				context.fillText( stringFromCharCode( 55356, 57331, 8203, 55356, 57096 ), 0, 0 );
+				flag2 = canvas.toDataURL();
+
+				if ( flag !== flag2 ) {
+					return false;
+				}
 
 				/*
 				 * Test for rainbow flag compatibility. As the rainbow flag was added out of sequence with
@@ -62,6 +66,9 @@
 				 * To test for support, we try to render it, and compare the rendering to how it would look if
 				 * the browser doesn't render it correctly (white flag emoji + rainbow emoji).
 				 */
+				// Cleanup from previous test.
+				context.clearRect( 0, 0, canvas.width, canvas.height );
+
 				context.fillText( stringFromCharCode( 55356, 57331, 65039, 8205, 55356, 57096 ), 0, 0 );
 				flag = canvas.toDataURL();
 
@@ -73,21 +80,44 @@
 				return flag !== flag2;
 			case 'emoji4':
 				/*
+				 * Emoji 4 support was implemented gradually, multiple tests are used to
+				 * confirm support.
+				 *
+				 * In this test we try rendering man shrugging, light skin tone and compare
+				 * it to how it would look if the browser does not render it correctly
+				 * (person shrugging: light skin town + male sign).
+				 */
+				context.fillText( stringFromCharCode( 55358, 56631, 55356, 57339, 8205, 9794, 65039 ), 0, 0 );
+				emoji41 = canvas.toDataURL();
+
+				context.clearRect( 0, 0, canvas.width, canvas.height );
+
+				context.fillText( stringFromCharCode( 55358, 56631, 55356, 57339, 9794, 65039 ), 0, 0 );
+				emoji42 = canvas.toDataURL();
+
+				if ( emoji41 !== emoji42 ) {
+					return false;
+				}
+
+				/*
 				 * Emoji 4 has the best technologists. So does WordPress!
 				 *
 				 * To test for support, try to render a new emoji (woman technologist: medium skin tone),
 				 * then compare it to how it would look if the browser doesn't render it correctly
 				 * (woman technologist: medium skin tone + personal computer).
 				 */
+				// Cleanup from previous test.
+				context.clearRect( 0, 0, canvas.width, canvas.height );
+
 				context.fillText( stringFromCharCode( 55357, 56425, 55356, 57341, 8205, 55357, 56507), 0, 0 );
-				technologist = canvas.toDataURL();
+				emoji41 = canvas.toDataURL();
 
 				context.clearRect( 0, 0, canvas.width, canvas.height );
 
 				context.fillText( stringFromCharCode( 55357, 56425, 55356, 57341, 55357, 56507), 0, 0 );
-				technologist2 = canvas.toDataURL();
+				emoji42 = canvas.toDataURL();
 
-				return technologist !== technologist2;
+				return emoji41 !== emoji42;
 		}
 
 		return false;

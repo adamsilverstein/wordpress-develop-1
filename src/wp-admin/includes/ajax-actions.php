@@ -297,6 +297,37 @@ function wp_ajax_autocomplete_user() {
 }
 
 /**
+ * Handles AJAX requests for community events
+ *
+ * @since 4.8.0
+ */
+function wp_ajax_get_community_events() {
+	require_once( ABSPATH . 'wp-admin/includes/class-wp-community-events.php' );
+
+	check_ajax_referer( 'community_events' );
+
+	$search         = isset( $_POST['location'] ) ? wp_unslash( $_POST['location'] ) : '';
+	$timezone       = isset( $_POST['timezone'] ) ? wp_unslash( $_POST['timezone'] ) : '';
+	$user_id        = get_current_user_id();
+	$saved_location = get_user_option( 'community-events-location', $user_id );
+	$events_client  = new WP_Community_Events( $user_id, $saved_location );
+	$events         = $events_client->get_events( $search, $timezone );
+
+	if ( is_wp_error( $events ) ) {
+		wp_send_json_error( array(
+			'error' => $events->get_error_message(),
+		) );
+	} else {
+		if ( isset( $events['location'] ) ) {
+			// Store the location network-wide, so the user doesn't have to set it on each site.
+			update_user_option( $user_id, 'community-events-location', $events['location'], true );
+		}
+
+		wp_send_json_success( $events );
+	}
+}
+
+/**
  * Ajax handler for dashboard widgets.
  *
  * @since 3.4.0
@@ -1497,7 +1528,10 @@ function wp_ajax_wp_link_ajax() {
 
 	$args['pagenum'] = ! empty( $_POST['page'] ) ? absint( $_POST['page'] ) : 1;
 
-	require(ABSPATH . WPINC . '/class-wp-editor.php');
+	if ( ! class_exists( '_WP_Editors', false ) ) {
+		require( ABSPATH . WPINC . '/class-wp-editor.php' );
+	}
+
 	$results = _WP_Editors::wp_link_query( $args );
 
 	if ( ! isset( $results ) )
@@ -1598,6 +1632,8 @@ function wp_ajax_sample_permalink() {
  * Ajax handler for Quick Edit saving a post from a list table.
  *
  * @since 3.1.0
+ *
+ * @global string $mode List table view mode.
  */
 function wp_ajax_inline_save() {
 	global $mode;

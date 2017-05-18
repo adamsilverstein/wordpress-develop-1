@@ -462,6 +462,8 @@ final class WP_Customize_Manager {
 	 * Check if customize query variable exist. Init filters to filter the current theme.
 	 *
 	 * @since 3.4.0
+	 *
+	 * @global string $pagenow
 	 */
 	public function setup_theme() {
 		global $pagenow;
@@ -482,6 +484,24 @@ final class WP_Customize_Manager {
 
 		if ( ! preg_match( '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $this->_changeset_uuid ) ) {
 			$this->wp_die( -1, __( 'Invalid changeset UUID' ) );
+		}
+
+		/*
+		 * Clear incoming post data if the user lacks a CSRF token (nonce). Note that the customizer
+		 * application will inject the customize_preview_nonce query parameter into all Ajax requests.
+		 * For similar behavior elsewhere in WordPress, see rest_cookie_check_errors() which logs out
+		 * a user when a valid nonce isn't present.
+		 */
+		$has_post_data_nonce = (
+			check_ajax_referer( 'preview-customize_' . $this->get_stylesheet(), 'nonce', false )
+			||
+			check_ajax_referer( 'save-customize_' . $this->get_stylesheet(), 'nonce', false )
+			||
+			check_ajax_referer( 'preview-customize_' . $this->get_stylesheet(), 'customize_preview_nonce', false )
+		);
+		if ( ! current_user_can( 'customize' ) || ! $has_post_data_nonce ) {
+			unset( $_POST['customized'] );
+			unset( $_REQUEST['customized'] );
 		}
 
 		/*
@@ -3957,7 +3977,7 @@ final class WP_Customize_Manager {
 			'type'           => 'url',
 			'description'    => __( 'Or, enter a YouTube URL:' ),
 			'section'        => 'header_image',
-			'active_callback'=> 'is_front_page',
+			'active_callback' => 'is_header_video_active',
 		) );
 
 		$this->add_control( new WP_Customize_Header_Image_Control( $this ) );
@@ -4142,7 +4162,8 @@ final class WP_Customize_Manager {
 				__( 'CSS allows you to customize the appearance and layout of your site with code. Separate CSS is saved for each of your themes. In the editing area the Tab key enters a tab character. To move below this area by pressing Tab, press the Esc key followed by the Tab key.' ),
 				esc_url( __( 'https://codex.wordpress.org/CSS' ) ),
 				__( 'Learn more about CSS' ),
-				__( '(link opens in a new window)' )
+				/* translators: accessibility text */
+				__( '(opens in a new window)' )
 			),
 		) );
 

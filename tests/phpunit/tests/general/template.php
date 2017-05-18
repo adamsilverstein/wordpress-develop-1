@@ -72,12 +72,9 @@ class Tests_General_Template extends WP_UnitTestCase {
 	/**
  	 * @group site_icon
 	 * @group multisite
+	 * @group ms-required
 	 */
 	function test_has_site_icon_returns_true_when_called_for_other_site_with_site_icon_set() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'This test requires multisite.' );
-		}
-
 		$blog_id = $this->factory->blog->create();
 		switch_to_blog( $blog_id );
 		$this->_set_site_icon();
@@ -89,12 +86,9 @@ class Tests_General_Template extends WP_UnitTestCase {
 	/**
 	 * @group site_icon
 	 * @group multisite
+	 * @group ms-required
 	 */
 	function test_has_site_icon_returns_false_when_called_for_other_site_without_site_icon_set() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'This test requires multisite.' );
-		}
-
 		$blog_id = $this->factory->blog->create();
 
 		$this->assertFalse( has_site_icon( $blog_id ) );
@@ -264,12 +258,9 @@ class Tests_General_Template extends WP_UnitTestCase {
 	/**
 	 * @group custom_logo
 	 * @group multisite
+	 * @group ms-required
 	 */
 	function test_has_custom_logo_returns_true_when_called_for_other_site_with_custom_logo_set() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'This test requires multisite.' );
-		}
-
 		$blog_id = $this->factory->blog->create();
 		switch_to_blog( $blog_id );
 		$this->_set_custom_logo();
@@ -281,12 +272,9 @@ class Tests_General_Template extends WP_UnitTestCase {
 	/**
 	 * @group custom_logo
 	 * @group multisite
+	 * @group ms-required
 	 */
 	function test_has_custom_logo_returns_false_when_called_for_other_site_without_custom_logo_set() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'This test requires multisite.' );
-		}
-
 		$blog_id = $this->factory->blog->create();
 
 		$this->assertFalse( has_custom_logo( $blog_id ) );
@@ -312,12 +300,9 @@ class Tests_General_Template extends WP_UnitTestCase {
 	/**
 	 * @group custom_logo
 	 * @group multisite
+	 * @group ms-required
 	 */
 	function test_get_custom_logo_returns_logo_when_called_for_other_site_with_custom_logo_set() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'This test requires multisite.' );
-		}
-
 		$blog_id = $this->factory->blog->create();
 		switch_to_blog( $blog_id );
 
@@ -534,12 +519,9 @@ class Tests_General_Template extends WP_UnitTestCase {
 
 	/**
 	 * @ticket 38253
+	 * @group ms-required
 	 */
 	function test_get_site_icon_url_preserves_switched_state() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'This test requires multisite.' );
-		}
-
 		$blog_id = $this->factory->blog->create();
 		switch_to_blog( $blog_id );
 
@@ -556,12 +538,9 @@ class Tests_General_Template extends WP_UnitTestCase {
 
 	/**
 	 * @ticket 38253
+	 * @group ms-required
 	 */
 	function test_has_custom_logo_preserves_switched_state() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'This test requires multisite.' );
-		}
-
 		$blog_id = $this->factory->blog->create();
 		switch_to_blog( $blog_id );
 
@@ -578,12 +557,9 @@ class Tests_General_Template extends WP_UnitTestCase {
 
 	/**
 	 * @ticket 38253
+	 * @group ms-required
 	 */
 	function test_get_custom_logo_preserves_switched_state() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'This test requires multisite.' );
-		}
-
 		$blog_id = $this->factory->blog->create();
 		switch_to_blog( $blog_id );
 
