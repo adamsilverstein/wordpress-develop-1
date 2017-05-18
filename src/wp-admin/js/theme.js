@@ -1653,7 +1653,7 @@ themes.view.Installer = themes.view.Appearance.extend({
 		this.clearSearch();
 
 		// Track sorting so we can restore the correct tab when closing preview.
-		themes.router.selectedTab = sort;
+		themes.router.selectedTab = 'featured' === sort ? '' : sort;
 
 		$( '.filter-links li > a, .theme-filter' ).removeClass( this.activeClass );
 		$( '[data-sort="' + sort + '"]' ).addClass( this.activeClass );
