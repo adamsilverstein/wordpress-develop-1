@@ -491,7 +491,6 @@ themes.view.Theme = wp.Backbone.View.extend({
 		// Set focus to current theme.
 		themes.focusedTheme = this.$el;
 
-
 		themes.preview = preview = new themes.view.Preview({
 			model: this.model
 		});
@@ -903,7 +902,6 @@ themes.view.Preview = themes.view.Details.extend({
 	},
 
 	close: function() {
-
 		this.$el.fadeOut( 200, function() {
 			$( 'body' ).removeClass( 'theme-installer-active full-overlay-active' );
 
