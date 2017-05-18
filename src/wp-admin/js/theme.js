@@ -914,6 +914,7 @@ themes.view.Preview = themes.view.Details.extend({
 		// Restore the previous browse tab if available.
 		if ( themes.router.selectedTab ) {
 			themes.router.navigate( themes.router.baseUrl( '?browse=' + themes.router.selectedTab ) );
+			themes.router.selectedTab = false;
 		} else {
 			themes.router.navigate( themes.router.baseUrl( '' ) );
 		}
