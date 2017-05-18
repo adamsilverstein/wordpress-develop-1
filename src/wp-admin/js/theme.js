@@ -913,7 +913,6 @@ themes.view.Preview = themes.view.Details.extend({
 			}
 		}).removeClass( 'iframe-ready' );
 
-		themes.router.navigate( themes.router.baseUrl( '' ) );
 		this.trigger( 'preview:close' );
 		this.undelegateEvents();
 		this.unbind();
