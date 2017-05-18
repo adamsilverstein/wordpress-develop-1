@@ -67,7 +67,7 @@ class WP_Widget_Text extends WP_Widget {
 		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */
 		$title = apply_filters( 'widget_title', empty( $instance['title'] ) ? '' : $instance['title'], $instance, $this->id_base );
 
-		$widget_text = ! empty( $instance['text'] ) ? $instance['text'] : '';
+		$text = ! empty( $instance['text'] ) ? $instance['text'] : '';
 
 		/**
 		 * Filters the content of the Text widget.
@@ -75,11 +75,11 @@ class WP_Widget_Text extends WP_Widget {
 		 * @since 2.3.0
 		 * @since 4.4.0 Added the `$this` parameter.
 		 *
-		 * @param string         $widget_text The widget content.
-		 * @param array          $instance    Array of settings for the current widget.
-		 * @param WP_Widget_Text $this        Current Text widget instance.
+		 * @param string         $text     The widget content.
+		 * @param array          $instance Array of settings for the current widget.
+		 * @param WP_Widget_Text $this     Current Text widget instance.
 		 */
-		$text = apply_filters( 'widget_text', $widget_text, $instance, $this );
+		$text = apply_filters( 'widget_text', $text, $instance, $this );
 
 		if ( isset( $instance['filter'] ) ) {
 			if ( 'content' === $instance['filter'] ) {
@@ -91,11 +91,11 @@ class WP_Widget_Text extends WP_Widget {
 				 *
 				 * @since 4.8.0
 				 *
-				 * @param string         $widget_text The widget content.
-				 * @param array          $instance    Array of settings for the current widget.
-				 * @param WP_Widget_Text $this        Current Text widget instance.
+				 * @param string         $text     The widget content.
+				 * @param array          $instance Array of settings for the current widget.
+				 * @param WP_Widget_Text $this     Current Text widget instance.
 				 */
-				$text = apply_filters( 'widget_text_content', $widget_text, $instance, $this );
+				$text = apply_filters( 'widget_text_content', $text, $instance, $this );
 
 			} elseif ( $instance['filter'] ) {
 				$text = wpautop( $text ); // Back-compat for instances prior to 4.8.
@@ -196,7 +196,7 @@ class WP_Widget_Text extends WP_Widget {
 			</p>
 			<p>
 				<label for="{{ elementIdPrefix }}text" class="screen-reader-text"><?php esc_html_e( 'Content:' ); ?></label>
-				<textarea id="{{ elementIdPrefix }}text" class="widefat text" style="height: 200px" rows="16" cols="20"></textarea>
+				<textarea id="{{ elementIdPrefix }}text" class="widefat text wp-editor-area" style="height: 200px" rows="16" cols="20"></textarea>
 			</p>
 		</script>
 		<?php
