@@ -911,6 +911,12 @@ themes.view.Preview = themes.view.Details.extend({
 			}
 		}).removeClass( 'iframe-ready' );
 
+		// Restore the previous browse tab if available.
+		if ( themes.router.selectedTab ) {
+			themes.router.navigate( themes.router.baseUrl( '?browse=' + themes.router.selectedTab ) );
+		} else {
+			themes.router.navigate( themes.router.baseUrl( '' ) );
+		}
 		this.trigger( 'preview:close' );
 		this.undelegateEvents();
 		this.unbind();
@@ -1644,6 +1650,9 @@ themes.view.Installer = themes.view.Appearance.extend({
 
 	sort: function( sort ) {
 		this.clearSearch();
+
+		// Track sorting so we can restore the correct tab when closing preview.
+		themes.router.selectedTab = sort;
 
 		$( '.filter-links li > a, .theme-filter' ).removeClass( this.activeClass );
 		$( '[data-sort="' + sort + '"]' ).addClass( this.activeClass );
