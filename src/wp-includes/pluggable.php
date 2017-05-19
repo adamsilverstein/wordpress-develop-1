@@ -308,10 +308,10 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 	}
 
 	// Empty out the values that may be set
-	$phpmailer->ClearAllRecipients();
-	$phpmailer->ClearAttachments();
-	$phpmailer->ClearCustomHeaders();
-	$phpmailer->ClearReplyTos();
+	$phpmailer->clearAllRecipients();
+	$phpmailer->clearAttachments();
+	$phpmailer->clearCustomHeaders();
+	$phpmailer->clearReplyTos();
 
 	// From email and name
 	// If we don't have a name from the input headers
@@ -410,7 +410,7 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 	}
 
 	// Set to use PHP's mail()
-	$phpmailer->IsMail();
+	$phpmailer->isMail();
 
 	// Set Content-Type and charset
 	// If we don't have a content-type from the input headers
@@ -430,7 +430,7 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 
 	// Set whether it's plaintext, depending on $content_type
 	if ( 'text/html' == $content_type )
-		$phpmailer->IsHTML( true );
+		$phpmailer->isHTML( true );
 
 	// If we don't have a charset from the input headers
 	if ( !isset( $charset ) )
@@ -450,17 +450,17 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 	// Set custom headers
 	if ( !empty( $headers ) ) {
 		foreach ( (array) $headers as $name => $content ) {
-			$phpmailer->AddCustomHeader( sprintf( '%1$s: %2$s', $name, $content ) );
+			$phpmailer->addCustomHeader( sprintf( '%1$s: %2$s', $name, $content ) );
 		}
 
 		if ( false !== stripos( $content_type, 'multipart' ) && ! empty($boundary) )
-			$phpmailer->AddCustomHeader( sprintf( "Content-Type: %s;\n\t boundary=\"%s\"", $content_type, $boundary ) );
+			$phpmailer->addCustomHeader( sprintf( "Content-Type: %s;\n\t boundary=\"%s\"", $content_type, $boundary ) );
 	}
 
 	if ( !empty( $attachments ) ) {
 		foreach ( $attachments as $attachment ) {
 			try {
-				$phpmailer->AddAttachment($attachment);
+				$phpmailer->addAttachment($attachment);
 			} catch ( phpmailerException $e ) {
 				continue;
 			}
@@ -938,12 +938,17 @@ function wp_clear_auth_cookie() {
 		return;
 	}
 
+	// Auth cookies
 	setcookie( AUTH_COOKIE,        ' ', time() - YEAR_IN_SECONDS, ADMIN_COOKIE_PATH,   COOKIE_DOMAIN );
 	setcookie( SECURE_AUTH_COOKIE, ' ', time() - YEAR_IN_SECONDS, ADMIN_COOKIE_PATH,   COOKIE_DOMAIN );
 	setcookie( AUTH_COOKIE,        ' ', time() - YEAR_IN_SECONDS, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN );
 	setcookie( SECURE_AUTH_COOKIE, ' ', time() - YEAR_IN_SECONDS, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN );
 	setcookie( LOGGED_IN_COOKIE,   ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,          COOKIE_DOMAIN );
 	setcookie( LOGGED_IN_COOKIE,   ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH,      COOKIE_DOMAIN );
+
+	// Settings cookies
+	setcookie( 'wp-settings-' . get_current_user_id(),      ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH );
+	setcookie( 'wp-settings-time-' . get_current_user_id(), ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH );
 
 	// Old cookies
 	setcookie( AUTH_COOKIE,        ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,     COOKIE_DOMAIN );
@@ -1805,6 +1810,7 @@ function wp_new_user_notification( $user_id, $deprecated = null, $notify = '' ) 
 
 	// Now insert the key, hashed, into the DB.
 	if ( empty( $wp_hasher ) ) {
+		require_once ABSPATH . WPINC . '/class-phpass.php';
 		$wp_hasher = new PasswordHash( 8, true );
 	}
 	$hashed = time() . ':' . $wp_hasher->HashPassword( $key );
@@ -2085,6 +2091,7 @@ function wp_hash_password($password) {
 	global $wp_hasher;
 
 	if ( empty($wp_hasher) ) {
+		require_once( ABSPATH . WPINC . '/class-phpass.php');
 		// By default, use the portable hash from phpass
 		$wp_hasher = new PasswordHash(8, true);
 	}
@@ -2144,6 +2151,7 @@ function wp_check_password($password, $hash, $user_id = '') {
 	// If the stored hash is longer than an MD5, presume the
 	// new style phpass portable hash.
 	if ( empty($wp_hasher) ) {
+		require_once( ABSPATH . WPINC . '/class-phpass.php');
 		// By default, use the portable hash from phpass
 		$wp_hasher = new PasswordHash(8, true);
 	}
