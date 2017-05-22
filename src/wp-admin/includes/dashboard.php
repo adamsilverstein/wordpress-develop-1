@@ -980,8 +980,8 @@ function wp_dashboard_cached_rss_widget( $widget_id, $callback, $check_urls = ar
 		$check_urls = array( $widgets[$widget_id]['url'] );
 	}
 
-	$locale = get_locale();
-	$cache_key = 'dash_' . md5( $widget_id . '_' . $locale );
+	$locale = get_user_locale();
+	$cache_key = 'dash_v2_' . md5( $widget_id . '_' . $locale );
 	if ( false !== ( $output = get_transient( $cache_key ) ) ) {
 		echo $output;
 		return true;
@@ -1062,7 +1062,8 @@ function wp_dashboard_rss_control( $widget_id, $form_inputs = array() ) {
 			}
 		}
 		update_option( 'dashboard_widget_options', $widget_options );
-		$cache_key = 'dash_' . md5( $widget_id );
+		$locale = get_user_locale();
+		$cache_key = 'dash_v2_' . md5( $widget_id . '_' . $locale );
 		delete_transient( $cache_key );
 	}
 
@@ -1173,7 +1174,7 @@ function wp_print_community_events_markup() {
 
 				<?php submit_button( __( 'Submit' ), 'secondary', 'community-events-submit', false ); ?>
 
-				<button class="community-events-cancel button button-link" type="button" aria-expanded="false">
+				<button class="community-events-cancel button-link" type="button" aria-expanded="false">
 					<?php _e( 'Cancel' ); ?>
 				</button>
 
@@ -1234,15 +1235,23 @@ function wp_print_community_events_templates() {
 
 	<script id="tmpl-community-events-no-upcoming-events" type="text/template">
 		<li class="event-none">
-			<?php printf(
-				/* translators: 1: the city the user searched for, 2: meetup organization documentation URL */
-				__( 'There aren&#8217;t any events scheduled near %1$s at the moment. Would you like to <a href="%2$s">organize one</a>?' ),
-				'{{ data.location.description }}',
-				__( 'https://make.wordpress.org/community/handbook/meetup-organizer/welcome/' )
-			); ?>
+			<# if ( data.location.description ) { #>
+				<?php printf(
+					/* translators: 1: the city the user searched for, 2: meetup organization documentation URL */
+					__( 'There aren&#8217;t any events scheduled near %1$s at the moment. Would you like to <a href="%2$s">organize one</a>?' ),
+					'{{ data.location.description }}',
+					__( 'https://make.wordpress.org/community/handbook/meetup-organizer/welcome/' )
+				); ?>
+
+			<# } else { #>
+				<?php printf(
+					/* translators: meetup organization documentation URL. */
+					__( 'There aren&#8217;t any events scheduled near you at the moment. Would you like to <a href="%s">organize one</a>?' ),
+					__( 'https://make.wordpress.org/community/handbook/meetup-organizer/welcome/' )
+				); ?>
+			<# } #>
 		</li>
 	</script>
-
 	<?php
 }
 

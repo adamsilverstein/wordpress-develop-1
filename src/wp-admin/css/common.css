@@ -1074,7 +1074,7 @@ th.action-links {
 .wp-filter .search-form input[type="search"] {
 	margin: 0;
 	padding: 3px 5px;
-	width: 280px;
+	width: 100%;
 	max-width: 100%;
 	font-size: 16px;
 	font-weight: 300;
@@ -1142,32 +1142,19 @@ th.action-links {
 	color: #fff;
 }
 
+.filter-drawer,
 .wp-filter .favorites-form {
 	display: none;
-	margin: 0 -20px;
+	margin: 0 -10px 0 -20px;
 	padding: 20px;
 	border-top: 1px solid #eee;
 	background: #fafafa;
 	overflow: hidden;
-	width: 100%;
 }
 
+.show-filters .filter-drawer,
 .show-favorites-form .favorites-form {
 	display: block;
-}
-
-.filter-drawer {
-	display: none;
-	margin: 0 -20px;
-	padding: 20px;
-	border-top: 1px solid #eee;
-	background: #fafafa;
-}
-
-.show-filters .filter-drawer {
-	display: block;
-	overflow: hidden;
-	width: 100%;
 }
 
 .show-filters .filter-links a.current {

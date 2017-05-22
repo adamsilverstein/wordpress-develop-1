@@ -135,12 +135,24 @@
 		},
 
 		/**
+		 * Whether a url is a supported external host.
+		 *
+		 * @param {String} url - Video url.
+		 * @returns {boolean} Whether url is a supported video host.
+		 */
+		isHostedVideo: function isHostedVideo( url ) {
+			var parsedUrl = document.createElement( 'a' );
+			parsedUrl.href = url;
+			return /vimeo|youtu\.?be/.test( parsedUrl.host );
+		},
+
+		/**
 		 * Render preview.
 		 *
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl, poster, isHostedEmbed = false, parsedUrl, mime, error;
+			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl, poster, isHostedEmbed = false, mime, error;
 			attachmentId = control.model.get( 'attachment_id' );
 			attachmentUrl = control.model.get( 'url' );
 			error = control.model.get( 'error' );
@@ -150,9 +162,7 @@
 			}
 
 			if ( ! attachmentId && attachmentUrl ) {
-				parsedUrl = document.createElement( 'a' );
-				parsedUrl.href = attachmentUrl;
-				isHostedEmbed = /vimeo|youtu\.?be/.test( parsedUrl.host );
+				isHostedEmbed = control.isHostedVideo( attachmentUrl );
 			}
 
 			if ( isHostedEmbed ) {
