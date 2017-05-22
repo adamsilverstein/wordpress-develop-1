@@ -90,14 +90,14 @@ Manage = MediaFrame.extend({
 			searchView = this.browserView.toolbar.get( 'search' ).$el,
 			listMode = this.$( '.view-list' ),
 
-			input  = _.debounce( function (e) {
+			input  = _.throttle( function (e) {
 				var val = $( e.currentTarget ).val(),
 					url = '';
 
 				if ( val ) {
 					url += '?search=' + val;
+					this.gridRouter.navigate( this.gridRouter.baseUrl( url ), { replace: true } );
 				}
-				this.gridRouter.navigate( this.gridRouter.baseUrl( url ) );
 			}, 1000 );
 
 		// Update the URL when entering search string (at most once per second)
