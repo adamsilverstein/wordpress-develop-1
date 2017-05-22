@@ -1949,6 +1949,7 @@ themes.RunInstaller = {
 		themes.router.on( 'route:sort', function( sort ) {
 			if ( ! sort ) {
 				sort = 'featured';
+				themes.router.navigate( themes.router.baseUrl( '?browse=featured' ), { replace: true } );
 			}
 			self.view.sort( sort );
 
