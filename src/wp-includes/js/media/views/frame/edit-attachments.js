@@ -251,8 +251,7 @@ EditAttachments = MediaFrame.extend({
 	resetRoute: function() {
 		var searchTerm = this.controller.browserView.toolbar.get( 'search' ).$el.val(),
 			url = '' !== searchTerm ? '?search=' + searchTerm : '';
-
-		this.gridRouter.navigate( this.gridRouter.baseUrl( url ) );
+		this.gridRouter.navigate( this.gridRouter.baseUrl( url ), { replace: true } );
 	}
 });
 
