@@ -534,7 +534,10 @@ module.exports = function(grunt) {
 		explainjs: {
 			dist: {
 				files: [{
-					src: [ SOURCE_DIR + 'wp-includes/js/*.js', SOURCE_DIR + 'wp-admin/js/*.js' ],
+					src: [
+						SOURCE_DIR + 'wp-includes/**/*.js',
+						SOURCE_DIR + 'wp-admin/**/*.js'
+					],
 					dest: 'explainjs/explain.html'
 				}]
 			},
