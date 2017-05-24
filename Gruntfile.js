@@ -531,7 +531,14 @@ module.exports = function(grunt) {
 				dest: SOURCE_DIR + 'wp-includes/js/jquery/jquery.masonry.min.js'
 			}
 		},
-
+		explainjs: {
+			dist: {
+				files: [{
+					src: [ SOURCE_DIR + 'wp-includes/js/*.js', SOURCE_DIR + 'wp-admin/js/*.js' ],
+					dest: 'explainjs/explain.html'
+				}]
+			},
+		},
 		concat: {
 			tinymce: {
 				options: {
