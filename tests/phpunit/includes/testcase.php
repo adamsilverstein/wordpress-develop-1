@@ -443,6 +443,27 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		array_push( $this->expected_doing_it_wrong, $doing_it_wrong );
 	}
 
+	/**
+	 * PHPUnit 6+ compatibility shim.
+	 *
+	 * @param mixed      $exception
+	 * @param string     $message
+	 * @param int|string $code
+	 */
+	public function setExpectedException( $exception, $message = '', $code = null ) {
+		if ( method_exists( 'PHPUnit_Framework_TestCase', 'setExpectedException' ) ) {
+			parent::setExpectedException( $exception, $message, $code );
+		} else {
+			$this->expectException( $exception );
+			if ( '' !== $message ) {
+				$this->expectExceptionMessage( $message );
+			}
+			if ( null !== $code ) {
+				$this->expectExceptionCode( $code );
+			}
+		}
+	}
+
 	function deprecated_function_run( $function ) {
 		if ( ! in_array( $function, $this->caught_deprecated ) )
 			$this->caught_deprecated[] = $function;
@@ -576,6 +597,17 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 
 	protected function checkRequirements() {
 		parent::checkRequirements();
+
+		$annotations = $this->getAnnotations();
+
+		if ( ! empty( $annotations['group'] ) ) {
+			if ( in_array( 'ms-required', $annotations['group'], true ) ) {
+				$this->skipWithoutMultisite();
+			}
+			if ( in_array( 'ms-excluded', $annotations['group'], true ) ) {
+				$this->skipWithMultisite();
+			}
+		}
 
 		// Core tests no longer check against open Trac tickets, but others using WP_UnitTestCase may do so.
 		if ( defined( 'WP_RUN_CORE_TESTS' ) && WP_RUN_CORE_TESTS ) {
@@ -856,5 +888,29 @@ class WP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		$id = wp_insert_attachment( $attachment, $upload[ 'file' ], $parent_post_id );
 		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $upload['file'] ) );
 		return $id;
+	}
+
+	/**
+	 * There's no way to change post_modified through WP functions.
+	 */
+	protected function update_post_modified( $post_id, $date ) {
+		global $wpdb;
+		return $wpdb->update(
+			$wpdb->posts,
+			array(
+				'post_modified' => $date,
+				'post_modified_gmt' => $date,
+			),
+			array(
+				'ID' => $post_id,
+			),
+			array(
+				'%s',
+				'%s',
+			),
+			array(
+				'%d',
+			)
+		);
 	}
 }

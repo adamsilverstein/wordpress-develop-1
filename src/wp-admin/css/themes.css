@@ -20,6 +20,10 @@
 }
 
 /* Search form */
+.themes-php .search-form {
+	display: inline;
+}
+
 .themes-php .wp-filter-search {
 	position: relative;
 	top: -2px;
@@ -1640,6 +1644,8 @@ body.full-overlay-active {
 	min-width: 299px;
 	max-width: 599px;
 	width: 18%;
+	width: -webkit-calc( 18% - 1px );
+	width: calc( 18% - 1px );
 	height: 45px;
 	border-top: 1px solid #ddd;
 	background: #eee;
