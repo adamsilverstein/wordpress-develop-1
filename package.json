@@ -33,5 +33,9 @@
     "grunt-rtlcss": "~2.0.1",
     "grunt-sass": "~1.2.1",
     "matchdep": "~1.0.0"
+  },
+  "dependencies": {
+    "grunt-webpack": "^3.0.0",
+    "webpack": "^2.6.1"
   }
 }
