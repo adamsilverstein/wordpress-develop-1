@@ -579,7 +579,10 @@
 		}
 
 		this.initCrop(postid, img, parent);
-		this.setCropSelection(postid, 0);
+		this.setCropSelection(postid, { 'x1': 0, 'y1': 0, 'width': img[0].width, 'height': img[0].height } );
+		this.iasapi.setSelection( 0, 0, img[0].width, img[0].height );
+		this.setCropSelection(postid, this.iasapi.getSelection());
+		this.iasapi.update();
 		this.toggleEditor(postid, 0);
 		// Editor is ready, move focus to the first focusable element.
 		$( '.imgedit-wrap .imgedit-help-toggle' ).eq( 0 ).focus();
@@ -695,8 +698,8 @@
 		c = c || 0;
 
 		if ( !c || ( c.width < 3 && c.height < 3 ) ) {
-			this.setDisabled($('.imgedit-crop', '#imgedit-panel-' + postid), 0);
-			this.setDisabled($('#imgedit-crop-sel-' + postid), 0);
+			this.setDisabled($('.imgedit-crop', '#imgedit-panel-' + postid), 1);
+			this.setDisabled($('#imgedit-crop-sel-' + postid), 1);
 			$('#imgedit-sel-width-' + postid).val('');
 			$('#imgedit-sel-height-' + postid).val('');
 			$('#imgedit-selection-' + postid).val('');
