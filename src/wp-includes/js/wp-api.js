@@ -466,9 +466,27 @@
 			 * Add a helper function to handle post Meta.
 			 */
 			MetaMixin = {
+
+				/**
+				 * Get the meta for a post.
+				 *
+				 * @return {object} The post meta, as a key value pair object.
+				 */
 				getMeta: function() {
-					return buildCollectionGetter( this, 'PostMeta', 'https://api.w.org/meta' );
-				}
+					return this.get( 'meta' );
+				},
+
+				/**
+				 * Set the meta for a post.
+				 *
+				 * @param {object}
+				 */
+
+				setMeta: function( meta ) {
+					this.set( 'meta', meta );
+				},
+
+
 			},
 
 			/**
@@ -699,8 +717,8 @@
 			model = model.extend( CategoriesMixin );
 		}
 
-		// Add the MetaMixin for models that support meta collections.
-		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Meta' ] ) ) {
+		// Add the MetaMixin for models that support meta.
+		if ( ! _.isUndefined( model.prototype.args.meta ) ) {
 			model = model.extend( MetaMixin );
 		}
 
