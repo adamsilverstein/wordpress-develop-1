@@ -20,7 +20,7 @@
 		// Make variables public.
 		slider.vars = $.extend( {}, $.featuredslider.defaults, options );
 
-		namespace = slider.vars.namespace,
+		namespace = slider.vars.namespace;
 
 		// Store a reference to the slider object.
 		$.data( el, 'featuredslider', slider );
@@ -105,14 +105,12 @@
 					var type = 'control-paging',
 						j = 1,
 						item,
-						slide,
 						i;
 
 					slider.controlNavScaffold = $( '<ol class="' + namespace + 'control-nav ' + namespace + type + '"></ol>' );
 
 					if ( slider.pagingCount > 1 ) {
 						for ( i = 0; i < slider.pagingCount; i++ ) {
-							slide = slider.slides.eq( i );
 							item = '<a>' + j + '</a>';
 							slider.controlNavScaffold.append( '<li>' + item + '</li>' );
 							j++;
@@ -120,7 +118,11 @@
 					}
 
 					// CONTROLSCONTAINER
-					( slider.controlsContainer ) ? $( slider.controlsContainer ).append( slider.controlNavScaffold ) : slider.append( slider.controlNavScaffold );
+					if ( slider.controlsContainer ) {
+						$( slider.controlsContainer ).append( slider.controlNavScaffold );
+					} else {
+						slider.append( slider.controlNavScaffold );
+					}
 					methods.controlNav.set();
 
 					methods.controlNav.active();
@@ -162,7 +164,11 @@
 						slider.controlNav.eq( pos ).closest( 'li' ).remove();
 					}
 					methods.controlNav.set();
-					( slider.pagingCount > 1 && slider.pagingCount !== slider.controlNav.length ) ? slider.update( pos, action ) : methods.controlNav.active();
+					if ( slider.pagingCount > 1 && slider.pagingCount !== slider.controlNav.length ) {
+						slider.update( pos, action );
+					} else {
+						methods.controlNav.active();
+					}
 				}
 			},
 
@@ -315,7 +321,7 @@
 						return;
 					}
 
-					transX = -e.translationX,
+					transX = -e.translationX;
 					transY = -e.translationY;
 
 					// Accumulate translations.
@@ -349,7 +355,7 @@
 					}
 
 					if ( slider.animatingTo === slider.currentSlide && ! scrolling && dx !== null ) {
-						updateDx = dx,
+						updateDx = dx;
 						target = ( updateDx > 0 ) ? slider.getTarget( 'next' ) : slider.getTarget( 'prev' );
 
 						slider.featureAnimate( target );
@@ -376,7 +382,11 @@
 
 			smoothHeight: function( dur ) {
 				var $obj = slider.viewport;
-				( dur ) ? $obj.animate( { 'height': slider.slides.eq( slider.animatingTo ).height() }, dur ) : $obj.height( slider.slides.eq( slider.animatingTo ).height() );
+				if ( dur ) {
+					$obj.animate( { 'height': slider.slides.eq( slider.animatingTo ).height() }, dur );
+				} else {
+					$obj.height( slider.slides.eq( slider.animatingTo ).height() );
+				}
 			},
 
 			setToClearWatchedEvent: function() {

@@ -1,4 +1,4 @@
-/* jshint node:true */
+/* global module, require, __dirname */
 module.exports = function(grunt) {
 	var path = require('path'),
 		fs = require( 'fs' ),
@@ -130,7 +130,7 @@ module.exports = function(grunt) {
 							version = version.replace( /-[\d]{5}$/, '-' + grunt.template.today( 'yyyymmdd.HHMMss' ) );
 
 							/* jshint quotmark: true */
-							return "$wp_version = '" + version + "';";
+							return '$wp_version = \'' + version + '\';';
 						});
 					}
 				},
@@ -290,6 +290,59 @@ module.exports = function(grunt) {
 				dest: BUILD_DIR,
 				ext: '-rtl.css',
 				src: []
+			}
+		},
+		eslint: {
+			grunt: {
+				options: {
+					configFile: 'node_modules/eslint-config-wordpress/index.js'
+				},
+				src: ['Gruntfile.js']
+			},
+			jshint: {
+				options: {
+					configFile: 'node_modules/eslint-config-wordpress/index.js'
+				},
+				cwd: SOURCE_DIR,
+				src: [
+					'wp-admin/js/*.js',
+					'wp-includes/js/*.js',
+					// Built scripts.
+					'!wp-includes/js/media-*',
+					// WordPress scripts inside directories
+					'wp-includes/js/jquery/jquery.table-hotkeys.js',
+					'wp-includes/js/mediaelement/wp-mediaelement.js',
+					'wp-includes/js/mediaelement/wp-playlist.js',
+					'wp-includes/js/plupload/handlers.js',
+					'wp-includes/js/plupload/wp-plupload.js',
+					'wp-includes/js/tinymce/plugins/wordpress/plugin.js',
+					'wp-includes/js/tinymce/plugins/wp*/plugin.js',
+					// Third party scripts
+					'!wp-admin/js/farbtastic.js',
+					'!wp-includes/js/backbone*.js',
+					'!wp-includes/js/swfobject.js',
+					'!wp-includes/js/underscore*.js',
+					'!wp-includes/js/colorpicker.js',
+					'!wp-includes/js/hoverIntent.js',
+					'!wp-includes/js/json2.js',
+					'!wp-includes/js/tw-sack.js',
+					'!wp-includes/js/twemoji.js',
+					'!**/*.min.js'
+				]
+			},
+			themes: {
+				options: {
+					configFile: 'node_modules/eslint-config-wordpress/index.js'
+				},
+				expand: true,
+				cwd: SOURCE_DIR + 'wp-content/themes',
+				src: [
+					'twenty*/**/*.js',
+					'!twenty{eleven,twelve,thirteen}/**',
+					// Third party scripts
+					'!twenty{fourteen,fifteen,sixteen,seventeen}/**/html5.js',
+					'!twentyseventeen/assets/js/jquery.scrollTo.js'
+				]
 			}
 		},
 		jshint: {
@@ -736,7 +789,11 @@ module.exports = function(grunt) {
 
 			if ( set.length ) {
 				fs.stat( dir = set.shift(), function( error ) {
-					error ? find( set ) : run( path.basename( dir ).substr( 1 ) );
+					if ( error ) {
+						find( set )
+					} else {
+						run( path.basename( dir ).substr( 1 ) );
+					}
 				} );
 			} else {
 				grunt.fatal( 'This WordPress install is not under version control.' );
