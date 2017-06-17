@@ -1114,7 +1114,7 @@
 				}
 			},
 
-			singleModels = wpApiSettings.singleModels || [ 'me', 'settings' ],
+			singleModels = routeModel.get( 'singleModels' ),
 			modelRegex   = new RegExp( '(?:.*[+)]|\/(' + singleModels.join( '|' ) + '))$' );
 
 			/**
@@ -1367,6 +1367,7 @@
 		attributes.apiRoot       = args.apiRoot || wpApiSettings.root || '/wp-json';
 		attributes.versionString = args.versionString || wpApiSettings.versionString || 'wp/v2/';
 		attributes.schema        = args.schema || null;
+		attributes.singleModels  = args.singleModels || [ 'me', 'settings' ];
 		if ( ! attributes.schema && attributes.apiRoot === wpApiSettings.root && attributes.versionString === wpApiSettings.versionString ) {
 			attributes.schema = wpApiSettings.schema;
 		}
