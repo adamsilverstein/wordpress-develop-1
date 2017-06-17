@@ -1112,7 +1112,10 @@
 					'PostsRevisions':  'PostRevisions',
 					'PostsTags':       'PostTags'
 				}
-			};
+			},
+
+			singleModels = wpApiSettings.singleModels || [ 'me', 'settings' ],
+			modelRegex   = new RegExp( '(?:.*[+)]|\/(' + singleModels.join( '|' ) + '))$' );
 
 			/**
 			 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
@@ -1137,8 +1140,8 @@
 						index !== ( '/' + routeModel.get( 'versionString' ).slice( 0, -1 ) )
 				) {
 
-					// Single items end with a regex (or the special case 'me').
-					if ( /(?:.*[+)]|\/me)$/.test( index ) ) {
+					// Single items end with a regex, or a special case word.
+					if ( modelRegex.test( index ) ) {
 						modelRoutes.push( { index: index, route: route } );
 					} else {
 
