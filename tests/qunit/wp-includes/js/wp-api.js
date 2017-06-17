@@ -115,7 +115,9 @@
 		'Page',
 		'Post',
 		'Tag',
-		'User'
+		'User',
+		'UsersMe',
+		'Settings'
 	];
 
 	_.each( modelsWithIdsClassNames, function( className ) {
