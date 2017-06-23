@@ -650,7 +650,17 @@ function get_objects_in_term( $term_ids, $taxonomies, $args = array() ) {
 	$taxonomies = "'" . implode( "', '", array_map( 'esc_sql', $taxonomies ) ) . "'";
 	$term_ids = "'" . implode( "', '", $term_ids ) . "'";
 
-	$object_ids = $wpdb->get_col("SELECT tr.object_id FROM $wpdb->term_relationships AS tr INNER JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id WHERE tt.taxonomy IN ($taxonomies) AND tt.term_id IN ($term_ids) ORDER BY tr.object_id $order");
+	$sql = "SELECT tr.object_id FROM $wpdb->term_relationships AS tr INNER JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id WHERE tt.taxonomy IN ($taxonomies) AND tt.term_id IN ($term_ids) ORDER BY tr.object_id $order";
+
+	$last_changed = wp_cache_get_last_changed( 'terms' );
+	$cache_key = 'get_objects_in_term:' . md5( $sql ) . ":$last_changed";
+	$cache = wp_cache_get( $cache_key, 'terms' );
+	if ( false === $cache ) {
+		$object_ids = $wpdb->get_col( $sql );
+		wp_cache_set( $cache_key, $object_ids, 'terms' );
+	} else {
+		$object_ids = (array) $cache;
+	}
 
 	if ( ! $object_ids ){
 		return array();
@@ -1241,6 +1251,27 @@ function update_termmeta_cache( $term_ids ) {
 }
 
 /**
+ * Get all meta data, including meta IDs, for the given term ID.
+ *
+ * @since 4.9.0
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @param int $term_id Term ID.
+ * @return array|false Array with meta data, or false when the meta table is not installed.
+ */
+function has_term_meta( $term_id ) {
+	// Bail if term meta table is not installed.
+	if ( get_option( 'db_version' ) < 34370 ) {
+		return false;
+	}
+
+	global $wpdb;
+
+	return $wpdb->get_results( $wpdb->prepare( "SELECT meta_key, meta_value, meta_id, term_id FROM $wpdb->termmeta WHERE term_id = %d ORDER BY meta_key,meta_id", $term_id ), ARRAY_A );
+}
+
+/**
  * Check if Term exists.
  *
  * Formerly is_term(), introduced in 2.3.0.
@@ -1795,7 +1826,7 @@ function wp_delete_term( $term, $taxonomy, $args = array() ) {
  *
  * @since 2.0.0
  *
- * @param int $cat_ID
+ * @param int $cat_ID Category term ID.
  * @return bool|int|WP_Error Returns true if completes delete action; false if term doesn't exist;
  * 	Zero on attempted deletion of default Category; WP_Error object is also a possibility.
  */
@@ -2982,11 +3013,7 @@ function clean_term_cache($ids, $taxonomy = '', $clean_taxonomy = true) {
 
 	foreach ( $taxonomies as $taxonomy ) {
 		if ( $clean_taxonomy ) {
-			wp_cache_delete('all_ids', $taxonomy);
-			wp_cache_delete('get', $taxonomy);
-			delete_option("{$taxonomy}_children");
-			// Regenerate {$taxonomy}_children
-			_get_term_hierarchy($taxonomy);
+			clean_taxonomy_cache( $taxonomy );
 		}
 
 		/**
@@ -3003,6 +3030,31 @@ function clean_term_cache($ids, $taxonomy = '', $clean_taxonomy = true) {
 	}
 
 	wp_cache_set( 'last_changed', microtime(), 'terms' );
+}
+
+/**
+ * Clean the caches for a taxonomy.
+ *
+ * @since 4.9.0
+ *
+ * @param string $taxonomy Taxonomy slug.
+ */
+function clean_taxonomy_cache( $taxonomy ) {
+	wp_cache_delete( 'all_ids', $taxonomy );
+	wp_cache_delete( 'get', $taxonomy );
+
+	// Regenerate cached hierarchy.
+	delete_option( "{$taxonomy}_children" );
+	_get_term_hierarchy( $taxonomy );
+
+	/**
+	 * Fires after a taxonomy's caches have been cleaned.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 */
+	do_action( 'clean_taxonomy_cache', $taxonomy );
 }
 
 /**
@@ -3506,19 +3558,27 @@ function _split_shared_term( $term_id, $term_taxonomy_id, $record = true ) {
 				array( 'parent' => $new_term_id ),
 				array( 'term_taxonomy_id' => $child_tt_id )
 			);
-			clean_term_cache( $term_id, $term_taxonomy->taxonomy );
+			clean_term_cache( (int) $child_tt_id, '', false );
 		}
 	} else {
 		// If the term has no children, we must force its taxonomy cache to be rebuilt separately.
-		clean_term_cache( $new_term_id, $term_taxonomy->taxonomy );
+		clean_term_cache( $new_term_id, $term_taxonomy->taxonomy, false );
 	}
 
+	clean_term_cache( $term_id, $term_taxonomy->taxonomy, false );
+
+	/*
+	 * Taxonomy cache clearing is delayed to avoid race conditions that may occur when
+	 * regenerating the taxonomy's hierarchy tree.
+	 */
+	$taxonomies_to_clean = array( $term_taxonomy->taxonomy );
+
 	// Clean the cache for term taxonomies formerly shared with the current term.
-	$shared_term_taxonomies = $wpdb->get_row( $wpdb->prepare( "SELECT taxonomy FROM $wpdb->term_taxonomy WHERE term_id = %d", $term_id ) );
-	if ( $shared_term_taxonomies ) {
-		foreach ( $shared_term_taxonomies as $shared_term_taxonomy ) {
-			clean_term_cache( $term_id, $shared_term_taxonomy );
-		}
+	$shared_term_taxonomies = $wpdb->get_col( $wpdb->prepare( "SELECT taxonomy FROM $wpdb->term_taxonomy WHERE term_id = %d", $term_id ) );
+	$taxonomies_to_clean = array_merge( $taxonomies_to_clean, $shared_term_taxonomies );
+
+	foreach ( $taxonomies_to_clean as $taxonomy_to_clean ) {
+		clean_taxonomy_cache( $taxonomy_to_clean );
 	}
 
 	// Keep a record of term_ids that have been split, keyed by old term_id. See wp_get_split_term().
@@ -3799,8 +3859,9 @@ function wp_get_split_term( $old_term_id, $taxonomy ) {
  *
  * @since 4.4.0
  *
- * @param int $term_id
- * @return bool
+ * @param int $term_id Term ID.
+ * @return bool Returns false if a term is not shared between multiple taxonomies or
+ *              if splittng shared taxonomy terms is finished. 
  */
 function wp_term_is_shared( $term_id ) {
 	global $wpdb;
