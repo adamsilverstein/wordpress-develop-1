@@ -586,6 +586,10 @@
 		this.toggleEditor(postid, 0);
 		// Editor is ready, move focus to the first focusable element.
 		$( '.imgedit-wrap .imgedit-help-toggle' ).eq( 0 ).focus();
+imageEdit.setDisabled($('#imgedit-crop-sel-' + postid), 1);
+			this.iasapi.setSelection(0, 0, img[0].width, img[0].height + 1, true);
+			this.iasapi.setOptions({ show: true });
+			this.iasapi.update();
 	},
 
 	/**
