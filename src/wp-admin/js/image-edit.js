@@ -19,6 +19,31 @@
 	_view : false,
 
 	/**
+	 * Handle crop tool clicks.
+	 */
+	handleCropToolClick: function( postid, nonce, cropButton ) {
+		var img = $( '#image-preview-' + postid ),
+			selection = this.iasapi.getSelection();
+
+		// Ensure selection is available, otherwise reset to full image.
+		if ( isNaN( selection.x1 ) ) {
+			this.setCropSelection( postid, { 'x1': 0, 'y1': 0, 'x2': img[0].width, 'y2': img[0].height, 'width': img[0].width, 'height': img[0].height } );
+			selection = this.iasapi.getSelection();
+		}
+
+		// If we don't already have a selection, select the entire image.
+		if ( 0 === selection.x1 && 0 === selection.y1 && 0 === selection.x2 && 0 === selection.y2 ) {
+			this.iasapi.setSelection( 0, 0, img[0].width, img[0].height + 1, true );
+			this.iasapi.setOptions( { show: true } );
+			this.iasapi.update();
+		} else {
+
+			// Otherwise, perform the crop.
+			imageEdit.crop( postid, nonce , cropButton );
+		}
+	},
+
+	/**
 	 * @summary Converts a value to an integer.
 	 *
 	 * @memberof imageEdit
@@ -351,7 +376,6 @@
 				t.hold.sizer = max1 > max2 ? max2 / max1 : 1;
 
 				t.initCrop(postid, img, parent);
-				t.setCropSelection(postid, 0);
 
 				if ( (typeof callback !== 'undefined') && callback !== null ) {
 					callback();
@@ -579,14 +603,11 @@
 		}
 
 		this.initCrop(postid, img, parent);
-		this.setCropSelection(postid, { 'x1': 0, 'y1': 0, 'width': img[0].width, 'height': img[0].height } );
+		this.setCropSelection( postid, { 'x1': 0, 'y1': 0, 'x2': 0, 'y2': 0, 'width': img[0].width, 'height': img[0].height } );
 
 		this.toggleEditor(postid, 0);
 		// Editor is ready, move focus to the first focusable element.
 		$( '.imgedit-wrap .imgedit-help-toggle' ).eq( 0 ).focus();
-			this.iasapi.setSelection(0, 0, img[0].width, img[0].height + 1, true);
-			this.iasapi.setOptions({ show: true });
-			this.iasapi.update();
 	},
 
 	/**
@@ -699,8 +720,8 @@
 		c = c || 0;
 
 		if ( !c || ( c.width < 3 && c.height < 3 ) ) {
-			this.setDisabled($('.imgedit-crop', '#imgedit-panel-' + postid), 0);
-			this.setDisabled($('#imgedit-crop-sel-' + postid), 0);
+			this.setDisabled( $( '.imgedit-crop', '#imgedit-panel-' + postid ), 1 );
+			this.setDisabled( $( '#imgedit-crop-sel-' + postid ), 1 );
 			$('#imgedit-sel-width-' + postid).val('');
 			$('#imgedit-sel-height-' + postid).val('');
 			$('#imgedit-selection-' + postid).val('');
