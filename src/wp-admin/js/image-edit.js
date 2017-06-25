@@ -27,13 +27,13 @@
 
 		// Ensure selection is available, otherwise reset to full image.
 		if ( isNaN( selection.x1 ) ) {
-			this.setCropSelection( postid, { 'x1': 0, 'y1': 0, 'x2': img[0].width, 'y2': img[0].height, 'width': img[0].width, 'height': img[0].height } );
+			this.setCropSelection( postid, { 'x1': 0, 'y1': 0, 'x2': img.innerWidth(), 'y2': img.innerHeight(), 'width': img.innerWidth(), 'height': img.innerHeight() } );
 			selection = this.iasapi.getSelection();
 		}
 
 		// If we don't already have a selection, select the entire image.
 		if ( 0 === selection.x1 && 0 === selection.y1 && 0 === selection.x2 && 0 === selection.y2 ) {
-			this.iasapi.setSelection( 0, 0, img[0].width, img[0].height + 1, true );
+			this.iasapi.setSelection( 0, 0, img.innerWidth(), img.innerHeight(), true );
 			this.iasapi.setOptions( { show: true } );
 			this.iasapi.update();
 		} else {
@@ -603,7 +603,7 @@
 		}
 
 		this.initCrop(postid, img, parent);
-		this.setCropSelection( postid, { 'x1': 0, 'y1': 0, 'x2': 0, 'y2': 0, 'width': img[0].width, 'height': img[0].height } );
+		this.setCropSelection( postid, { 'x1': 0, 'y1': 0, 'x2': 0, 'y2': 0, 'width': img.innerWidth(), 'height': img.innerHeight() } );
 
 		this.toggleEditor(postid, 0);
 		// Editor is ready, move focus to the first focusable element.
