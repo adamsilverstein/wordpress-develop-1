@@ -1,23 +1,17 @@
 /* jshint node:true */
+const webpackConfig = require('./webpack.config');
+
 module.exports = function(grunt) {
 	var path = require('path'),
 		fs = require( 'fs' ),
 		SOURCE_DIR = 'src/',
 		BUILD_DIR = 'build/',
-		autoprefixer = require('autoprefixer'),
-		mediaConfig = {},
-		mediaBuilds = ['audiovideo', 'grid', 'models', 'views'];
+		autoprefixer = require('autoprefixer');
 
 	// Load tasks.
 	require('matchdep').filterDev(['grunt-*', '!grunt-legacy-util']).forEach( grunt.loadNpmTasks );
 	// Load legacy utils
 	grunt.util = require('grunt-legacy-util');
-
-	mediaBuilds.forEach( function ( build ) {
-		var path = SOURCE_DIR + 'wp-includes/js/media';
-		mediaConfig[ build ] = { files : {} };
-		mediaConfig[ build ].files[ path + '-' + build + '.js' ] = [ path + '/' + build + '.manifest.js' ];
-	} );
 
 	// Project configuration.
 	grunt.initConfig({
@@ -157,7 +151,6 @@ module.exports = function(grunt) {
 				}
 			}
 		},
-		browserify: mediaConfig,
 		sass: {
 			colors: {
 				expand: true,
@@ -318,9 +311,6 @@ module.exports = function(grunt) {
 				]
 			},
 			media: {
-				options: {
-					browserify: true
-				},
 				src: [
 					SOURCE_DIR + 'wp-includes/js/media/**/*.js'
 				]
@@ -531,7 +521,13 @@ module.exports = function(grunt) {
 				dest: SOURCE_DIR + 'wp-includes/js/jquery/jquery.masonry.min.js'
 			}
 		},
-
+		webpack: {
+			options: {
+				stats: ! process.env.NODE_ENV || process.env.NODE_ENV === 'development'
+			},
+				prod: webpackConfig,
+				dev: Object.assign( { watch: true }, webpackConfig)
+		},
 		concat: {
 			tinymce: {
 				options: {
@@ -661,6 +657,9 @@ module.exports = function(grunt) {
 
 	// Register tasks.
 
+	// Webpack tash.
+	grunt.loadNpmTasks( 'grunt-webpack' );
+
 	// RTL task.
 	grunt.registerTask('rtl', ['rtlcss:core', 'rtlcss:colors']);
 
@@ -703,7 +702,7 @@ module.exports = function(grunt) {
 	] );
 
 	grunt.registerTask( 'precommit:js', [
-		'browserify',
+		'webpack',
 		'jshint:corejs',
 		'uglify:bookmarklet',
 		'uglify:masonry',
