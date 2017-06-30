@@ -683,15 +683,9 @@ module.exports = function(grunt) {
 	grunt.renameTask( 'watch', '_watch' );
 
 	grunt.registerTask( 'watch', function() {
-		if ( ! this.args.length || this.args.indexOf( 'browserify' ) > -1 ) {
-			grunt.config( 'browserify.options', {
-				browserifyOptions: {
-					debug: true
-				},
-				watch: true
-			} );
+		if ( ! this.args.length || this.args.indexOf( 'webpack' ) > -1 ) {
 
-			grunt.task.run( 'browserify' );
+			grunt.task.run( 'webpack' );
 		}
 
 		grunt.task.run( '_' + this.nameArgs );
@@ -859,7 +853,7 @@ module.exports = function(grunt) {
 	grunt.event.on('watch', function( action, filepath, target ) {
 		var src;
 
-		if ( [ 'all', 'rtl', 'browserify' ].indexOf( target ) === -1 ) {
+		if ( [ 'all', 'rtl', 'webpack' ].indexOf( target ) === -1 ) {
 			return;
 		}
 
