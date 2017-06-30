@@ -1,76 +1,45 @@
-/******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// identity function for calling harmony imports with the correct context
-/******/ 	__webpack_require__.i = function(value) { return value; };
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 98);
-/******/ })
-/************************************************************************/
-/******/ ({
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/**
+ * wp.media.controller.EditAttachmentMetadata
+ *
+ * A state for editing an attachment's metadata.
+ *
+ * @class
+ * @augments wp.media.controller.State
+ * @augments Backbone.Model
+ */
+var l10n = wp.media.view.l10n,
+	EditAttachmentMetadata;
 
-/***/ 26:
-/***/ (function(module, exports) {
+EditAttachmentMetadata = wp.media.controller.State.extend({
+	defaults: {
+		id:      'edit-attachment',
+		// Title string passed to the frame's title region view.
+		title:   l10n.attachmentDetails,
+		// Region mode defaults.
+		content: 'edit-metadata',
+		menu:    false,
+		toolbar: false,
+		router:  false
+	}
+});
 
+module.exports = EditAttachmentMetadata;
+
+},{}],2:[function(require,module,exports){
+var media = wp.media;
+
+media.controller.EditAttachmentMetadata = require( './controllers/edit-attachment-metadata.js' );
+media.view.MediaFrame.Manage = require( './views/frame/manage.js' );
+media.view.Attachment.Details.TwoColumn = require( './views/attachment/details-two-column.js' );
+media.view.MediaFrame.Manage.Router = require( './routers/manage.js' );
+media.view.EditImage.Details = require( './views/edit-image-details.js' );
+media.view.MediaFrame.EditAttachments = require( './views/frame/edit-attachments.js' );
+media.view.SelectModeToggleButton = require( './views/button/select-mode-toggle.js' );
+media.view.DeleteSelectedButton = require( './views/button/delete-selected.js' );
+media.view.DeleteSelectedPermanentlyButton = require( './views/button/delete-selected-permanently.js' );
+
+},{"./controllers/edit-attachment-metadata.js":1,"./routers/manage.js":3,"./views/attachment/details-two-column.js":4,"./views/button/delete-selected-permanently.js":5,"./views/button/delete-selected.js":6,"./views/button/select-mode-toggle.js":7,"./views/edit-image-details.js":8,"./views/frame/edit-attachments.js":9,"./views/frame/manage.js":10}],3:[function(require,module,exports){
 /**
  * wp.media.view.MediaFrame.Manage.Router
  *
@@ -118,12 +87,7 @@ var Router = Backbone.Router.extend({
 
 module.exports = Router;
 
-
-/***/ }),
-
-/***/ 34:
-/***/ (function(module, exports) {
-
+},{}],4:[function(require,module,exports){
 /**
  * wp.media.view.Attachment.Details.TwoColumn
  *
@@ -166,12 +130,7 @@ TwoColumn = Details.extend({
 
 module.exports = TwoColumn;
 
-
-/***/ }),
-
-/***/ 46:
-/***/ (function(module, exports) {
-
+},{}],5:[function(require,module,exports){
 /**
  * wp.media.view.DeleteSelectedPermanentlyButton
  *
@@ -218,12 +177,7 @@ DeleteSelectedPermanently = DeleteSelected.extend({
 
 module.exports = DeleteSelectedPermanently;
 
-
-/***/ }),
-
-/***/ 47:
-/***/ (function(module, exports) {
-
+},{}],6:[function(require,module,exports){
 /**
  * wp.media.view.DeleteSelectedButton
  *
@@ -276,12 +230,7 @@ DeleteSelected = Button.extend({
 
 module.exports = DeleteSelected;
 
-
-/***/ }),
-
-/***/ 48:
-/***/ (function(module, exports) {
-
+},{}],7:[function(require,module,exports){
 /**
  * wp.media.view.SelectModeToggleButton
  *
@@ -355,45 +304,7 @@ SelectModeToggle = Button.extend({
 
 module.exports = SelectModeToggle;
 
-
-/***/ }),
-
-/***/ 5:
-/***/ (function(module, exports) {
-
-/**
- * wp.media.controller.EditAttachmentMetadata
- *
- * A state for editing an attachment's metadata.
- *
- * @class
- * @augments wp.media.controller.State
- * @augments Backbone.Model
- */
-var l10n = wp.media.view.l10n,
-	EditAttachmentMetadata;
-
-EditAttachmentMetadata = wp.media.controller.State.extend({
-	defaults: {
-		id:      'edit-attachment',
-		// Title string passed to the frame's title region view.
-		title:   l10n.attachmentDetails,
-		// Region mode defaults.
-		content: 'edit-metadata',
-		menu:    false,
-		toolbar: false,
-		router:  false
-	}
-});
-
-module.exports = EditAttachmentMetadata;
-
-
-/***/ }),
-
-/***/ 50:
-/***/ (function(module, exports) {
-
+},{}],8:[function(require,module,exports){
 /**
  * wp.media.view.EditImage.Details
  *
@@ -428,12 +339,7 @@ Details = EditImage.extend({
 
 module.exports = Details;
 
-
-/***/ }),
-
-/***/ 59:
-/***/ (function(module, exports) {
-
+},{}],9:[function(require,module,exports){
 /**
  * wp.media.view.MediaFrame.EditAttachments
  *
@@ -676,12 +582,7 @@ EditAttachments = MediaFrame.extend({
 
 module.exports = EditAttachments;
 
-
-/***/ }),
-
-/***/ 61:
-/***/ (function(module, exports) {
-
+},{}],10:[function(require,module,exports){
 /**
  * wp.media.view.MediaFrame.Manage
  *
@@ -960,25 +861,4 @@ Manage = MediaFrame.extend({
 
 module.exports = Manage;
 
-
-/***/ }),
-
-/***/ 98:
-/***/ (function(module, exports, __webpack_require__) {
-
-var media = wp.media;
-
-media.controller.EditAttachmentMetadata = __webpack_require__( 5 );
-media.view.MediaFrame.Manage = __webpack_require__( 61 );
-media.view.Attachment.Details.TwoColumn = __webpack_require__( 34 );
-media.view.MediaFrame.Manage.Router = __webpack_require__( 26 );
-media.view.EditImage.Details = __webpack_require__( 50 );
-media.view.MediaFrame.EditAttachments = __webpack_require__( 59 );
-media.view.SelectModeToggleButton = __webpack_require__( 48 );
-media.view.DeleteSelectedButton = __webpack_require__( 47 );
-media.view.DeleteSelectedPermanentlyButton = __webpack_require__( 46 );
-
-
-/***/ })
-
-/******/ });
+},{}]},{},[2]);
