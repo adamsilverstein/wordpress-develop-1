@@ -12,14 +12,11 @@ mediaBuilds.forEach( function ( build ) {
 	mediaConfig[ build ] = './' + path + '/' + build + '.manifest.js';
 } );
 
-
-console.log( mediaConfig );
-
 module.exports = {
 	entry: mediaConfig,
 	output: {
-		path:     path.join( __dirname, 'build' ),
-		filename: '[name].js'
+		path:     path.join( __dirname, 'src/wp-includes/js' ),
+		filename: 'media-[name].js'
 	},
 
 	cache: true,
