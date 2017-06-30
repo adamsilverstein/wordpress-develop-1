@@ -1,12 +1,12 @@
 /* jshint node:true */
-const webpackConfig = require('./webpack.config');
+const webpackConfig = require( './webpack.config' );
 
 module.exports = function(grunt) {
 	var path = require('path'),
 		fs = require( 'fs' ),
 		SOURCE_DIR = 'src/',
 		BUILD_DIR = 'build/',
-		autoprefixer = require('autoprefixer');
+		autoprefixer = require( 'autoprefixer' );
 
 	// Load tasks.
 	require('matchdep').filterDev(['grunt-*', '!grunt-legacy-util']).forEach( grunt.loadNpmTasks );
