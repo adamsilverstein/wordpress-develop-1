@@ -1,4 +1,76 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// identity function for calling harmony imports with the correct context
+/******/ 	__webpack_require__.i = function(value) { return value; };
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 100);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */,
+/* 1 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.CollectionAdd
  *
@@ -99,7 +171,11 @@ CollectionAdd = Library.extend({
 
 module.exports = CollectionAdd;
 
-},{}],2:[function(require,module,exports){
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.CollectionEdit
  *
@@ -261,7 +337,11 @@ CollectionEdit = Library.extend({
 
 module.exports = CollectionEdit;
 
-},{}],3:[function(require,module,exports){
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.Cropper
  *
@@ -383,7 +463,11 @@ Cropper = wp.media.controller.State.extend({
 
 module.exports = Cropper;
 
-},{}],4:[function(require,module,exports){
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.CustomizeImageCropper
  *
@@ -426,7 +510,12 @@ CustomizeImageCropper = Controller.Cropper.extend({
 
 module.exports = CustomizeImageCropper;
 
-},{}],5:[function(require,module,exports){
+
+/***/ }),
+/* 5 */,
+/* 6 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.EditImage
  *
@@ -502,7 +591,11 @@ EditImage = wp.media.controller.State.extend({
 
 module.exports = EditImage;
 
-},{}],6:[function(require,module,exports){
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.Embed
  *
@@ -638,7 +731,11 @@ Embed = wp.media.controller.State.extend({
 
 module.exports = Embed;
 
-},{}],7:[function(require,module,exports){
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.FeaturedImage
  *
@@ -760,7 +857,11 @@ FeaturedImage = Library.extend({
 
 module.exports = FeaturedImage;
 
-},{}],8:[function(require,module,exports){
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.GalleryAdd
  *
@@ -851,7 +952,11 @@ GalleryAdd = Library.extend({
 
 module.exports = GalleryAdd;
 
-},{}],9:[function(require,module,exports){
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.GalleryEdit
  *
@@ -993,7 +1098,11 @@ GalleryEdit = Library.extend({
 
 module.exports = GalleryEdit;
 
-},{}],10:[function(require,module,exports){
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.ImageDetails
  *
@@ -1055,7 +1164,11 @@ ImageDetails = State.extend({
 
 module.exports = ImageDetails;
 
-},{}],11:[function(require,module,exports){
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.Library
  *
@@ -1348,7 +1461,11 @@ _.extend( Library.prototype, wp.media.selectionSync );
 
 module.exports = Library;
 
-},{}],12:[function(require,module,exports){
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.MediaLibrary
  *
@@ -1398,7 +1515,11 @@ MediaLibrary = Library.extend({
 
 module.exports = MediaLibrary;
 
-},{}],13:[function(require,module,exports){
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.Region
  *
@@ -1577,7 +1698,11 @@ _.extend( Region.prototype, {
 
 module.exports = Region;
 
-},{}],14:[function(require,module,exports){
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.ReplaceImage
  *
@@ -1685,7 +1810,11 @@ ReplaceImage = Library.extend({
 
 module.exports = ReplaceImage;
 
-},{}],15:[function(require,module,exports){
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.SiteIconCropper
  *
@@ -1734,7 +1863,11 @@ SiteIconCropper = Controller.Cropper.extend({
 
 module.exports = SiteIconCropper;
 
-},{}],16:[function(require,module,exports){
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.StateMachine
  *
@@ -1858,7 +1991,11 @@ _.each([ 'on', 'off', 'trigger' ], function( method ) {
 
 module.exports = StateMachine;
 
-},{}],17:[function(require,module,exports){
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.controller.State
  *
@@ -2099,7 +2236,19 @@ _.each(['toolbar','content'], function( region ) {
 
 module.exports = State;
 
-},{}],18:[function(require,module,exports){
+
+/***/ }),
+/* 19 */,
+/* 20 */,
+/* 21 */,
+/* 22 */,
+/* 23 */,
+/* 24 */,
+/* 25 */,
+/* 26 */,
+/* 27 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.selectionSync
  *
@@ -2165,158 +2314,11 @@ var selectionSync = {
 
 module.exports = selectionSync;
 
-},{}],19:[function(require,module,exports){
-var media = wp.media,
-	$ = jQuery,
-	l10n;
 
-media.isTouchDevice = ( 'ontouchend' in document );
+/***/ }),
+/* 28 */
+/***/ (function(module, exports) {
 
-// Link any localized strings.
-l10n = media.view.l10n = window._wpMediaViewsL10n || {};
-
-// Link any settings.
-media.view.settings = l10n.settings || {};
-delete l10n.settings;
-
-// Copy the `post` setting over to the model settings.
-media.model.settings.post = media.view.settings.post;
-
-// Check if the browser supports CSS 3.0 transitions
-$.support.transition = (function(){
-	var style = document.documentElement.style,
-		transitions = {
-			WebkitTransition: 'webkitTransitionEnd',
-			MozTransition:    'transitionend',
-			OTransition:      'oTransitionEnd otransitionend',
-			transition:       'transitionend'
-		}, transition;
-
-	transition = _.find( _.keys( transitions ), function( transition ) {
-		return ! _.isUndefined( style[ transition ] );
-	});
-
-	return transition && {
-		end: transitions[ transition ]
-	};
-}());
-
-/**
- * A shared event bus used to provide events into
- * the media workflows that 3rd-party devs can use to hook
- * in.
- */
-media.events = _.extend( {}, Backbone.Events );
-
-/**
- * Makes it easier to bind events using transitions.
- *
- * @param {string} selector
- * @param {Number} sensitivity
- * @returns {Promise}
- */
-media.transition = function( selector, sensitivity ) {
-	var deferred = $.Deferred();
-
-	sensitivity = sensitivity || 2000;
-
-	if ( $.support.transition ) {
-		if ( ! (selector instanceof $) ) {
-			selector = $( selector );
-		}
-
-		// Resolve the deferred when the first element finishes animating.
-		selector.first().one( $.support.transition.end, deferred.resolve );
-
-		// Just in case the event doesn't trigger, fire a callback.
-		_.delay( deferred.resolve, sensitivity );
-
-	// Otherwise, execute on the spot.
-	} else {
-		deferred.resolve();
-	}
-
-	return deferred.promise();
-};
-
-media.controller.Region = require( './controllers/region.js' );
-media.controller.StateMachine = require( './controllers/state-machine.js' );
-media.controller.State = require( './controllers/state.js' );
-
-media.selectionSync = require( './utils/selection-sync.js' );
-media.controller.Library = require( './controllers/library.js' );
-media.controller.ImageDetails = require( './controllers/image-details.js' );
-media.controller.GalleryEdit = require( './controllers/gallery-edit.js' );
-media.controller.GalleryAdd = require( './controllers/gallery-add.js' );
-media.controller.CollectionEdit = require( './controllers/collection-edit.js' );
-media.controller.CollectionAdd = require( './controllers/collection-add.js' );
-media.controller.FeaturedImage = require( './controllers/featured-image.js' );
-media.controller.ReplaceImage = require( './controllers/replace-image.js' );
-media.controller.EditImage = require( './controllers/edit-image.js' );
-media.controller.MediaLibrary = require( './controllers/media-library.js' );
-media.controller.Embed = require( './controllers/embed.js' );
-media.controller.Cropper = require( './controllers/cropper.js' );
-media.controller.CustomizeImageCropper = require( './controllers/customize-image-cropper.js' );
-media.controller.SiteIconCropper = require( './controllers/site-icon-cropper.js' );
-
-media.View = require( './views/view.js' );
-media.view.Frame = require( './views/frame.js' );
-media.view.MediaFrame = require( './views/media-frame.js' );
-media.view.MediaFrame.Select = require( './views/frame/select.js' );
-media.view.MediaFrame.Post = require( './views/frame/post.js' );
-media.view.MediaFrame.ImageDetails = require( './views/frame/image-details.js' );
-media.view.Modal = require( './views/modal.js' );
-media.view.FocusManager = require( './views/focus-manager.js' );
-media.view.UploaderWindow = require( './views/uploader/window.js' );
-media.view.EditorUploader = require( './views/uploader/editor.js' );
-media.view.UploaderInline = require( './views/uploader/inline.js' );
-media.view.UploaderStatus = require( './views/uploader/status.js' );
-media.view.UploaderStatusError = require( './views/uploader/status-error.js' );
-media.view.Toolbar = require( './views/toolbar.js' );
-media.view.Toolbar.Select = require( './views/toolbar/select.js' );
-media.view.Toolbar.Embed = require( './views/toolbar/embed.js' );
-media.view.Button = require( './views/button.js' );
-media.view.ButtonGroup = require( './views/button-group.js' );
-media.view.PriorityList = require( './views/priority-list.js' );
-media.view.MenuItem = require( './views/menu-item.js' );
-media.view.Menu = require( './views/menu.js' );
-media.view.RouterItem = require( './views/router-item.js' );
-media.view.Router = require( './views/router.js' );
-media.view.Sidebar = require( './views/sidebar.js' );
-media.view.Attachment = require( './views/attachment.js' );
-media.view.Attachment.Library = require( './views/attachment/library.js' );
-media.view.Attachment.EditLibrary = require( './views/attachment/edit-library.js' );
-media.view.Attachments = require( './views/attachments.js' );
-media.view.Search = require( './views/search.js' );
-media.view.AttachmentFilters = require( './views/attachment-filters.js' );
-media.view.DateFilter = require( './views/attachment-filters/date.js' );
-media.view.AttachmentFilters.Uploaded = require( './views/attachment-filters/uploaded.js' );
-media.view.AttachmentFilters.All = require( './views/attachment-filters/all.js' );
-media.view.AttachmentsBrowser = require( './views/attachments/browser.js' );
-media.view.Selection = require( './views/selection.js' );
-media.view.Attachment.Selection = require( './views/attachment/selection.js' );
-media.view.Attachments.Selection = require( './views/attachments/selection.js' );
-media.view.Attachment.EditSelection = require( './views/attachment/edit-selection.js' );
-media.view.Settings = require( './views/settings.js' );
-media.view.Settings.AttachmentDisplay = require( './views/settings/attachment-display.js' );
-media.view.Settings.Gallery = require( './views/settings/gallery.js' );
-media.view.Settings.Playlist = require( './views/settings/playlist.js' );
-media.view.Attachment.Details = require( './views/attachment/details.js' );
-media.view.AttachmentCompat = require( './views/attachment-compat.js' );
-media.view.Iframe = require( './views/iframe.js' );
-media.view.Embed = require( './views/embed.js' );
-media.view.Label = require( './views/label.js' );
-media.view.EmbedUrl = require( './views/embed/url.js' );
-media.view.EmbedLink = require( './views/embed/link.js' );
-media.view.EmbedImage = require( './views/embed/image.js' );
-media.view.ImageDetails = require( './views/image-details.js' );
-media.view.Cropper = require( './views/cropper.js' );
-media.view.SiteIconCropper = require( './views/site-icon-cropper.js' );
-media.view.SiteIconPreview = require( './views/site-icon-preview.js' );
-media.view.EditImage = require( './views/edit-image.js' );
-media.view.Spinner = require( './views/spinner.js' );
-
-},{"./controllers/collection-add.js":1,"./controllers/collection-edit.js":2,"./controllers/cropper.js":3,"./controllers/customize-image-cropper.js":4,"./controllers/edit-image.js":5,"./controllers/embed.js":6,"./controllers/featured-image.js":7,"./controllers/gallery-add.js":8,"./controllers/gallery-edit.js":9,"./controllers/image-details.js":10,"./controllers/library.js":11,"./controllers/media-library.js":12,"./controllers/region.js":13,"./controllers/replace-image.js":14,"./controllers/site-icon-cropper.js":15,"./controllers/state-machine.js":16,"./controllers/state.js":17,"./utils/selection-sync.js":18,"./views/attachment-compat.js":20,"./views/attachment-filters.js":21,"./views/attachment-filters/all.js":22,"./views/attachment-filters/date.js":23,"./views/attachment-filters/uploaded.js":24,"./views/attachment.js":25,"./views/attachment/details.js":26,"./views/attachment/edit-library.js":27,"./views/attachment/edit-selection.js":28,"./views/attachment/library.js":29,"./views/attachment/selection.js":30,"./views/attachments.js":31,"./views/attachments/browser.js":32,"./views/attachments/selection.js":33,"./views/button-group.js":34,"./views/button.js":35,"./views/cropper.js":36,"./views/edit-image.js":37,"./views/embed.js":38,"./views/embed/image.js":39,"./views/embed/link.js":40,"./views/embed/url.js":41,"./views/focus-manager.js":42,"./views/frame.js":43,"./views/frame/image-details.js":44,"./views/frame/post.js":45,"./views/frame/select.js":46,"./views/iframe.js":47,"./views/image-details.js":48,"./views/label.js":49,"./views/media-frame.js":50,"./views/menu-item.js":51,"./views/menu.js":52,"./views/modal.js":53,"./views/priority-list.js":54,"./views/router-item.js":55,"./views/router.js":56,"./views/search.js":57,"./views/selection.js":58,"./views/settings.js":59,"./views/settings/attachment-display.js":60,"./views/settings/gallery.js":61,"./views/settings/playlist.js":62,"./views/sidebar.js":63,"./views/site-icon-cropper.js":64,"./views/site-icon-preview.js":65,"./views/spinner.js":66,"./views/toolbar.js":67,"./views/toolbar/embed.js":68,"./views/toolbar/select.js":69,"./views/uploader/editor.js":70,"./views/uploader/inline.js":71,"./views/uploader/status-error.js":72,"./views/uploader/status.js":73,"./views/uploader/window.js":74,"./views/view.js":75}],20:[function(require,module,exports){
 /**
  * wp.media.view.AttachmentCompat
  *
@@ -2401,7 +2403,11 @@ AttachmentCompat = View.extend({
 
 module.exports = AttachmentCompat;
 
-},{}],21:[function(require,module,exports){
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.AttachmentFilters
  *
@@ -2478,7 +2484,11 @@ AttachmentFilters = wp.media.View.extend({
 
 module.exports = AttachmentFilters;
 
-},{}],22:[function(require,module,exports){
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.AttachmentFilters.All
  *
@@ -2568,7 +2578,11 @@ All = wp.media.view.AttachmentFilters.extend({
 
 module.exports = All;
 
-},{}],23:[function(require,module,exports){
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports) {
+
 /**
  * A filter dropdown for month/dates.
  *
@@ -2609,7 +2623,11 @@ DateFilter = wp.media.view.AttachmentFilters.extend({
 
 module.exports = DateFilter;
 
-},{}],24:[function(require,module,exports){
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.AttachmentFilters.Uploaded
  *
@@ -2668,7 +2686,11 @@ Uploaded = wp.media.view.AttachmentFilters.extend({
 
 module.exports = Uploaded;
 
-},{}],25:[function(require,module,exports){
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Attachment
  *
@@ -3214,7 +3236,12 @@ _.each({
 
 module.exports = Attachment;
 
-},{}],26:[function(require,module,exports){
+
+/***/ }),
+/* 34 */,
+/* 35 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Attachment.Details
  *
@@ -3352,7 +3379,11 @@ Details = Attachment.extend({
 
 module.exports = Details;
 
-},{}],27:[function(require,module,exports){
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Attachment.EditLibrary
  *
@@ -3370,7 +3401,11 @@ var EditLibrary = wp.media.view.Attachment.extend({
 
 module.exports = EditLibrary;
 
-},{}],28:[function(require,module,exports){
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Attachments.EditSelection
  *
@@ -3389,7 +3424,11 @@ var EditSelection = wp.media.view.Attachment.Selection.extend({
 
 module.exports = EditSelection;
 
-},{}],29:[function(require,module,exports){
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Attachment.Library
  *
@@ -3407,7 +3446,11 @@ var Library = wp.media.view.Attachment.extend({
 
 module.exports = Library;
 
-},{}],30:[function(require,module,exports){
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Attachment.Selection
  *
@@ -3429,7 +3472,11 @@ var Selection = wp.media.view.Attachment.extend({
 
 module.exports = Selection;
 
-},{}],31:[function(require,module,exports){
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Attachments
  *
@@ -3728,7 +3775,11 @@ Attachments = View.extend({
 
 module.exports = Attachments;
 
-},{}],32:[function(require,module,exports){
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.AttachmentsBrowser
  *
@@ -4204,7 +4255,11 @@ AttachmentsBrowser = View.extend({
 
 module.exports = AttachmentsBrowser;
 
-},{}],33:[function(require,module,exports){
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Attachments.Selection
  *
@@ -4234,7 +4289,12 @@ Selection = Attachments.extend({
 
 module.exports = Selection;
 
-},{}],34:[function(require,module,exports){
+
+/***/ }),
+/* 43 */,
+/* 44 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.ButtonGroup
  *
@@ -4280,7 +4340,11 @@ ButtonGroup = wp.media.View.extend({
 
 module.exports = ButtonGroup;
 
-},{}],35:[function(require,module,exports){
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Button
  *
@@ -4366,7 +4430,14 @@ var Button = wp.media.View.extend({
 
 module.exports = Button;
 
-},{}],36:[function(require,module,exports){
+
+/***/ }),
+/* 46 */,
+/* 47 */,
+/* 48 */,
+/* 49 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Cropper
  *
@@ -4433,7 +4504,12 @@ Cropper = View.extend({
 
 module.exports = Cropper;
 
-},{}],37:[function(require,module,exports){
+
+/***/ }),
+/* 50 */,
+/* 51 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.EditImage
  *
@@ -4489,7 +4565,11 @@ EditImage = View.extend({
 
 module.exports = EditImage;
 
-},{}],38:[function(require,module,exports){
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Embed
  *
@@ -4553,7 +4633,11 @@ var Embed = wp.media.View.extend({
 
 module.exports = Embed;
 
-},{}],39:[function(require,module,exports){
+
+/***/ }),
+/* 53 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.EmbedImage
  *
@@ -4586,7 +4670,11 @@ EmbedImage = AttachmentDisplay.extend({
 
 module.exports = EmbedImage;
 
-},{}],40:[function(require,module,exports){
+
+/***/ }),
+/* 54 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.EmbedLink
  *
@@ -4676,7 +4764,11 @@ EmbedLink = wp.media.view.Settings.extend({
 
 module.exports = EmbedLink;
 
-},{}],41:[function(require,module,exports){
+
+/***/ }),
+/* 55 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.EmbedUrl
  *
@@ -4755,7 +4847,11 @@ EmbedUrl = View.extend({
 
 module.exports = EmbedUrl;
 
-},{}],42:[function(require,module,exports){
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.FocusManager
  *
@@ -4801,7 +4897,11 @@ var FocusManager = wp.media.View.extend({
 
 module.exports = FocusManager;
 
-},{}],43:[function(require,module,exports){
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Frame
  *
@@ -4967,7 +5067,13 @@ _.extend( Frame.prototype, wp.media.controller.StateMachine.prototype );
 
 module.exports = Frame;
 
-},{}],44:[function(require,module,exports){
+
+/***/ }),
+/* 58 */,
+/* 59 */,
+/* 60 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.MediaFrame.ImageDetails
  *
@@ -5145,7 +5251,13 @@ ImageDetails = Select.extend({
 
 module.exports = ImageDetails;
 
-},{}],45:[function(require,module,exports){
+
+/***/ }),
+/* 61 */,
+/* 62 */,
+/* 63 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.MediaFrame.Post
  *
@@ -5880,7 +5992,11 @@ Post = Select.extend({
 
 module.exports = Post;
 
-},{}],46:[function(require,module,exports){
+
+/***/ }),
+/* 64 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.MediaFrame.Select
  *
@@ -6051,7 +6167,12 @@ Select = MediaFrame.extend({
 
 module.exports = Select;
 
-},{}],47:[function(require,module,exports){
+
+/***/ }),
+/* 65 */,
+/* 66 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Iframe
  *
@@ -6075,7 +6196,11 @@ var Iframe = wp.media.View.extend({
 
 module.exports = Iframe;
 
-},{}],48:[function(require,module,exports){
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.ImageDetails
  *
@@ -6243,7 +6368,11 @@ ImageDetails = AttachmentDisplay.extend({
 
 module.exports = ImageDetails;
 
-},{}],49:[function(require,module,exports){
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Label
  *
@@ -6269,7 +6398,12 @@ var Label = wp.media.View.extend({
 
 module.exports = Label;
 
-},{}],50:[function(require,module,exports){
+
+/***/ }),
+/* 69 */,
+/* 70 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.MediaFrame
  *
@@ -6516,7 +6650,11 @@ _.each(['open','close','attach','detach','escape'], function( method ) {
 
 module.exports = MediaFrame;
 
-},{}],51:[function(require,module,exports){
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.MenuItem
  *
@@ -6588,7 +6726,11 @@ MenuItem = wp.media.View.extend({
 
 module.exports = MenuItem;
 
-},{}],52:[function(require,module,exports){
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Menu
  *
@@ -6705,7 +6847,11 @@ Menu = PriorityList.extend({
 
 module.exports = Menu;
 
-},{}],53:[function(require,module,exports){
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Modal
  *
@@ -6926,7 +7072,11 @@ Modal = wp.media.View.extend({
 
 module.exports = Modal;
 
-},{}],54:[function(require,module,exports){
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.PriorityList
  *
@@ -7023,7 +7173,11 @@ var PriorityList = wp.media.View.extend({
 
 module.exports = PriorityList;
 
-},{}],55:[function(require,module,exports){
+
+/***/ }),
+/* 75 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.RouterItem
  *
@@ -7047,7 +7201,11 @@ var RouterItem = wp.media.view.MenuItem.extend({
 
 module.exports = RouterItem;
 
-},{}],56:[function(require,module,exports){
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Router
  *
@@ -7084,7 +7242,11 @@ Router = Menu.extend({
 
 module.exports = Router;
 
-},{}],57:[function(require,module,exports){
+
+/***/ }),
+/* 77 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Search
  *
@@ -7130,7 +7292,11 @@ Search = wp.media.View.extend({
 
 module.exports = Search;
 
-},{}],58:[function(require,module,exports){
+
+/***/ }),
+/* 78 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Selection
  *
@@ -7213,7 +7379,11 @@ Selection = wp.media.View.extend({
 
 module.exports = Selection;
 
-},{}],59:[function(require,module,exports){
+
+/***/ }),
+/* 79 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Settings
  *
@@ -7334,7 +7504,11 @@ Settings = View.extend({
 
 module.exports = Settings;
 
-},{}],60:[function(require,module,exports){
+
+/***/ }),
+/* 80 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Settings.AttachmentDisplay
  *
@@ -7428,7 +7602,11 @@ AttachmentDisplay = Settings.extend({
 
 module.exports = AttachmentDisplay;
 
-},{}],61:[function(require,module,exports){
+
+/***/ }),
+/* 81 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Settings.Gallery
  *
@@ -7445,7 +7623,11 @@ var Gallery = wp.media.view.Settings.extend({
 
 module.exports = Gallery;
 
-},{}],62:[function(require,module,exports){
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Settings.Playlist
  *
@@ -7462,7 +7644,11 @@ var Playlist = wp.media.view.Settings.extend({
 
 module.exports = Playlist;
 
-},{}],63:[function(require,module,exports){
+
+/***/ }),
+/* 83 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Sidebar
  *
@@ -7478,7 +7664,11 @@ var Sidebar = wp.media.view.PriorityList.extend({
 
 module.exports = Sidebar;
 
-},{}],64:[function(require,module,exports){
+
+/***/ }),
+/* 84 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.SiteIconCropper
  *
@@ -7521,7 +7711,11 @@ SiteIconCropper = View.Cropper.extend({
 
 module.exports = SiteIconCropper;
 
-},{}],65:[function(require,module,exports){
+
+/***/ }),
+/* 85 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.SiteIconPreview
  *
@@ -7577,7 +7771,11 @@ SiteIconPreview = View.extend({
 
 module.exports = SiteIconPreview;
 
-},{}],66:[function(require,module,exports){
+
+/***/ }),
+/* 86 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Spinner
  *
@@ -7612,7 +7810,11 @@ var Spinner = wp.media.View.extend({
 
 module.exports = Spinner;
 
-},{}],67:[function(require,module,exports){
+
+/***/ }),
+/* 87 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Toolbar
  *
@@ -7774,7 +7976,11 @@ Toolbar = View.extend({
 
 module.exports = Toolbar;
 
-},{}],68:[function(require,module,exports){
+
+/***/ }),
+/* 88 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Toolbar.Embed
  *
@@ -7811,7 +8017,11 @@ Embed = Select.extend({
 
 module.exports = Embed;
 
-},{}],69:[function(require,module,exports){
+
+/***/ }),
+/* 89 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.Toolbar.Select
  *
@@ -7881,7 +8091,11 @@ Select = Toolbar.extend({
 
 module.exports = Select;
 
-},{}],70:[function(require,module,exports){
+
+/***/ }),
+/* 90 */
+/***/ (function(module, exports) {
+
 /**
  * Creates a dropzone on WP editor instances (elements with .wp-editor-wrap)
  * and relays drag'n'dropped files to a media workflow.
@@ -8106,7 +8320,11 @@ EditorUploader = View.extend({
 
 module.exports = EditorUploader;
 
-},{}],71:[function(require,module,exports){
+
+/***/ }),
+/* 91 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.UploaderInline
  *
@@ -8246,7 +8464,11 @@ UploaderInline = View.extend({
 
 module.exports = UploaderInline;
 
-},{}],72:[function(require,module,exports){
+
+/***/ }),
+/* 92 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.UploaderStatusError
  *
@@ -8262,7 +8484,11 @@ var UploaderStatusError = wp.media.View.extend({
 
 module.exports = UploaderStatusError;
 
-},{}],73:[function(require,module,exports){
+
+/***/ }),
+/* 93 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.UploaderStatus
  *
@@ -8400,7 +8626,11 @@ UploaderStatus = View.extend({
 
 module.exports = UploaderStatus;
 
-},{}],74:[function(require,module,exports){
+
+/***/ }),
+/* 94 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.view.UploaderWindow
  *
@@ -8511,7 +8741,12 @@ UploaderWindow = wp.media.View.extend({
 
 module.exports = UploaderWindow;
 
-},{}],75:[function(require,module,exports){
+
+/***/ }),
+/* 95 */,
+/* 96 */
+/***/ (function(module, exports) {
+
 /**
  * wp.media.View
  *
@@ -8577,4 +8812,164 @@ var View = wp.Backbone.View.extend({
 
 module.exports = View;
 
-},{}]},{},[19]);
+
+/***/ }),
+/* 97 */,
+/* 98 */,
+/* 99 */,
+/* 100 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var media = wp.media,
+	$ = jQuery,
+	l10n;
+
+media.isTouchDevice = ( 'ontouchend' in document );
+
+// Link any localized strings.
+l10n = media.view.l10n = window._wpMediaViewsL10n || {};
+
+// Link any settings.
+media.view.settings = l10n.settings || {};
+delete l10n.settings;
+
+// Copy the `post` setting over to the model settings.
+media.model.settings.post = media.view.settings.post;
+
+// Check if the browser supports CSS 3.0 transitions
+$.support.transition = (function(){
+	var style = document.documentElement.style,
+		transitions = {
+			WebkitTransition: 'webkitTransitionEnd',
+			MozTransition:    'transitionend',
+			OTransition:      'oTransitionEnd otransitionend',
+			transition:       'transitionend'
+		}, transition;
+
+	transition = _.find( _.keys( transitions ), function( transition ) {
+		return ! _.isUndefined( style[ transition ] );
+	});
+
+	return transition && {
+		end: transitions[ transition ]
+	};
+}());
+
+/**
+ * A shared event bus used to provide events into
+ * the media workflows that 3rd-party devs can use to hook
+ * in.
+ */
+media.events = _.extend( {}, Backbone.Events );
+
+/**
+ * Makes it easier to bind events using transitions.
+ *
+ * @param {string} selector
+ * @param {Number} sensitivity
+ * @returns {Promise}
+ */
+media.transition = function( selector, sensitivity ) {
+	var deferred = $.Deferred();
+
+	sensitivity = sensitivity || 2000;
+
+	if ( $.support.transition ) {
+		if ( ! (selector instanceof $) ) {
+			selector = $( selector );
+		}
+
+		// Resolve the deferred when the first element finishes animating.
+		selector.first().one( $.support.transition.end, deferred.resolve );
+
+		// Just in case the event doesn't trigger, fire a callback.
+		_.delay( deferred.resolve, sensitivity );
+
+	// Otherwise, execute on the spot.
+	} else {
+		deferred.resolve();
+	}
+
+	return deferred.promise();
+};
+
+media.controller.Region = __webpack_require__( 14 );
+media.controller.StateMachine = __webpack_require__( 17 );
+media.controller.State = __webpack_require__( 18 );
+
+media.selectionSync = __webpack_require__( 27 );
+media.controller.Library = __webpack_require__( 12 );
+media.controller.ImageDetails = __webpack_require__( 11 );
+media.controller.GalleryEdit = __webpack_require__( 10 );
+media.controller.GalleryAdd = __webpack_require__( 9 );
+media.controller.CollectionEdit = __webpack_require__( 2 );
+media.controller.CollectionAdd = __webpack_require__( 1 );
+media.controller.FeaturedImage = __webpack_require__( 8 );
+media.controller.ReplaceImage = __webpack_require__( 15 );
+media.controller.EditImage = __webpack_require__( 6 );
+media.controller.MediaLibrary = __webpack_require__( 13 );
+media.controller.Embed = __webpack_require__( 7 );
+media.controller.Cropper = __webpack_require__( 3 );
+media.controller.CustomizeImageCropper = __webpack_require__( 4 );
+media.controller.SiteIconCropper = __webpack_require__( 16 );
+
+media.View = __webpack_require__( 96 );
+media.view.Frame = __webpack_require__( 57 );
+media.view.MediaFrame = __webpack_require__( 70 );
+media.view.MediaFrame.Select = __webpack_require__( 64 );
+media.view.MediaFrame.Post = __webpack_require__( 63 );
+media.view.MediaFrame.ImageDetails = __webpack_require__( 60 );
+media.view.Modal = __webpack_require__( 73 );
+media.view.FocusManager = __webpack_require__( 56 );
+media.view.UploaderWindow = __webpack_require__( 94 );
+media.view.EditorUploader = __webpack_require__( 90 );
+media.view.UploaderInline = __webpack_require__( 91 );
+media.view.UploaderStatus = __webpack_require__( 93 );
+media.view.UploaderStatusError = __webpack_require__( 92 );
+media.view.Toolbar = __webpack_require__( 87 );
+media.view.Toolbar.Select = __webpack_require__( 89 );
+media.view.Toolbar.Embed = __webpack_require__( 88 );
+media.view.Button = __webpack_require__( 45 );
+media.view.ButtonGroup = __webpack_require__( 44 );
+media.view.PriorityList = __webpack_require__( 74 );
+media.view.MenuItem = __webpack_require__( 71 );
+media.view.Menu = __webpack_require__( 72 );
+media.view.RouterItem = __webpack_require__( 75 );
+media.view.Router = __webpack_require__( 76 );
+media.view.Sidebar = __webpack_require__( 83 );
+media.view.Attachment = __webpack_require__( 33 );
+media.view.Attachment.Library = __webpack_require__( 38 );
+media.view.Attachment.EditLibrary = __webpack_require__( 36 );
+media.view.Attachments = __webpack_require__( 40 );
+media.view.Search = __webpack_require__( 77 );
+media.view.AttachmentFilters = __webpack_require__( 29 );
+media.view.DateFilter = __webpack_require__( 31 );
+media.view.AttachmentFilters.Uploaded = __webpack_require__( 32 );
+media.view.AttachmentFilters.All = __webpack_require__( 30 );
+media.view.AttachmentsBrowser = __webpack_require__( 41 );
+media.view.Selection = __webpack_require__( 78 );
+media.view.Attachment.Selection = __webpack_require__( 39 );
+media.view.Attachments.Selection = __webpack_require__( 42 );
+media.view.Attachment.EditSelection = __webpack_require__( 37 );
+media.view.Settings = __webpack_require__( 79 );
+media.view.Settings.AttachmentDisplay = __webpack_require__( 80 );
+media.view.Settings.Gallery = __webpack_require__( 81 );
+media.view.Settings.Playlist = __webpack_require__( 82 );
+media.view.Attachment.Details = __webpack_require__( 35 );
+media.view.AttachmentCompat = __webpack_require__( 28 );
+media.view.Iframe = __webpack_require__( 66 );
+media.view.Embed = __webpack_require__( 52 );
+media.view.Label = __webpack_require__( 68 );
+media.view.EmbedUrl = __webpack_require__( 55 );
+media.view.EmbedLink = __webpack_require__( 54 );
+media.view.EmbedImage = __webpack_require__( 53 );
+media.view.ImageDetails = __webpack_require__( 67 );
+media.view.Cropper = __webpack_require__( 49 );
+media.view.SiteIconCropper = __webpack_require__( 84 );
+media.view.SiteIconPreview = __webpack_require__( 85 );
+media.view.EditImage = __webpack_require__( 51 );
+media.view.Spinner = __webpack_require__( 86 );
+
+
+/***/ })
+/******/ ]);
