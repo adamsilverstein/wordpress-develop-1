@@ -523,10 +523,10 @@ module.exports = function(grunt) {
 		},
 		webpack: {
 			options: {
-				stats: ! process.env.NODE_ENV || process.env.NODE_ENV === 'development'
+				stats: ! process.env.NODE_ENV || 'development' === process.env.NODE_ENV
 			},
 				prod: webpackConfig,
-				dev: Object.assign( { watch: true }, webpackConfig)
+				dev: Object.assign( { watch: true }, webpackConfig )
 		},
 		concat: {
 			tinymce: {
