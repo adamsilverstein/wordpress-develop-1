@@ -20,6 +20,9 @@
 	function action_c() {
 		window.actionValue += 'c';
 	}
+	function filter_check() {
+		ok( wp.hooks.doingFilter( 'runtest.filter' ), 'The runtest.filter is running.' );
+	}
 	window.actionValue = '';
 
 	QUnit.test( 'add and remove a filter', function() {
@@ -185,7 +188,24 @@
 		wp.hooks.doAction( 'another.action' );
 		ok( ! wp.hooks.doingAction( 'test.action' ), 'The test.action is running.' );
 
+		// Verify hasAction returns false when no matching action.
+		ok( ! wp.hooks.hasAction( 'notatest.action' ), 'The notatest.action is registered.' );
 
 	} );
+
+	QUnit.test( 'Verify doingFilter, didFilter and hasFilter.', function() {
+		expect( 4 );
+		wp.hooks.addFilter( 'runtest.filter', filter_check );
+
+		// Verify filter added and running.
+		var test = wp.hooks.applyFilters( 'runtest.filter', true );
+		equal( wp.hooks.didFilter( 'runtest.filter' ), 1, 'The runtest.filter has run once.' );
+		ok( wp.hooks.hasFilter( 'runtest.filter' ), 'The runtest.filter is registered.' );
+		ok( ! wp.hooks.hasFilter( 'notatest.filter' ), 'The notatest.filter is not registered.' );
+
+		wp.hooks.removeFilter( 'runtest.filter' );
+	} );
+
+
 
 } )( window.QUnit );
