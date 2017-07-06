@@ -821,19 +821,21 @@ function parent_dropdown( $default = 0, $parent = 0, $level = 0, $post = null ) 
  * @param string $selected Slug for the role that should be already selected.
  */
 function wp_dropdown_roles( $selected = '' ) {
-	$p = '';
 	$r = '';
 
 	$editable_roles = array_reverse( get_editable_roles() );
 
 	foreach ( $editable_roles as $role => $details ) {
 		$name = translate_user_role($details['name'] );
-		if ( $selected == $role ) // preselect specified role
-			$p = "\n\t<option selected='selected' value='" . esc_attr($role) . "'>$name</option>";
-		else
-			$r .= "\n\t<option value='" . esc_attr($role) . "'>$name</option>";
+		// preselect specified role
+		if ( $selected == $role ) {
+			$r .= "\n\t<option selected='selected' value='" . esc_attr( $role ) . "'>$name</option>";
+		} else {
+			$r .= "\n\t<option value='" . esc_attr( $role ) . "'>$name</option>";
+		}
 	}
-	echo $p . $r;
+
+	echo $r;
 }
 
 /**
@@ -890,7 +892,10 @@ function wp_import_upload_form( $action ) {
  * @param string|array|WP_Screen $screen        Optional. The screen or screens on which to show the box
  *                                              (such as a post type, 'link', or 'comment'). Accepts a single
  *                                              screen ID, WP_Screen object, or array of screen IDs. Default
- *                                              is the current screen.
+ *                                              is the current screen.  If you have used add_menu_page() or 
+ *                                              add_submenu_page() to create a new screen (and hence screen_id),
+ *                                              make sure your menu slug conforms to the limits of sanitize_key()
+ *                                              otherwise the 'screen' menu may not correctly render on your page.
  * @param string                 $context       Optional. The context within the screen where the boxes
  *                                              should display. Available contexts vary from screen to
  *                                              screen. Post edit screen contexts include 'normal', 'side',
@@ -985,7 +990,11 @@ function add_meta_box( $id, $title, $callback, $screen = null, $context = 'advan
  * @global array $wp_meta_boxes
  *
  * @staticvar bool $already_sorted
- * @param string|WP_Screen $screen  Screen identifier
+ *
+ * @param string|WP_Screen $screen  Screen identifier. If you have used add_menu_page() or
+ *                                  add_submenu_page() to create a new screen (and hence screen_id)
+ *                                  make sure your menu slug conforms to the limits of sanitize_key()
+ *                                  otherwise the 'screen' menu may not correctly render on your page.
  * @param string           $context box context
  * @param mixed            $object  gets passed to the box callback function as first parameter
  * @return int number of meta_boxes
@@ -1518,7 +1527,7 @@ function find_posts_div($found_action = '') {
 	<div id="find-posts" class="find-box" style="display: none;">
 		<div id="find-posts-head" class="find-box-head">
 			<?php _e( 'Attach to existing content' ); ?>
-			<button type="button" id="find-posts-close"><span class="screen-reader-text"><?php _e( 'Close media attachment panel' ); ?></button>
+			<button type="button" id="find-posts-close"><span class="screen-reader-text"><?php _e( 'Close media attachment panel' ); ?></span></button>
 		</div>
 		<div class="find-box-inside">
 			<div class="find-box-search">

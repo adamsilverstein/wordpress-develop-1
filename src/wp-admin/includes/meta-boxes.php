@@ -50,10 +50,16 @@ function post_submit_meta_box( $post, $args = array() ) {
 <?php
 $preview_link = esc_url( get_preview_post_link( $post ) );
 if ( 'publish' == $post->post_status ) {
-	$preview_button = __( 'Preview Changes' );
+	$preview_button_text = __( 'Preview Changes' );
 } else {
-	$preview_button = __( 'Preview' );
+	$preview_button_text = __( 'Preview' );
 }
+
+$preview_button = sprintf( '%1$s<span class="screen-reader-text"> %2$s</span>',
+	$preview_button_text,
+	/* translators: accessibility text */
+	__( '(opens in a new window)' )
+);
 ?>
 <a class="preview button" href="<?php echo $preview_link; ?>" target="wp-preview-<?php echo (int) $post->ID; ?>" id="post-preview"><?php echo $preview_button; ?></a>
 <input type="hidden" name="wp-preview" id="wp-preview" value="" />
@@ -490,7 +496,7 @@ function post_categories_meta_box( $post, $box ) {
 	<div id="taxonomy-<?php echo $tax_name; ?>" class="categorydiv">
 		<ul id="<?php echo $tax_name; ?>-tabs" class="category-tabs">
 			<li class="tabs"><a href="#<?php echo $tax_name; ?>-all"><?php echo $taxonomy->labels->all_items; ?></a></li>
-			<li class="hide-if-no-js"><a href="#<?php echo $tax_name; ?>-pop"><?php _e( 'Most Used' ); ?></a></li>
+			<li class="hide-if-no-js"><a href="#<?php echo $tax_name; ?>-pop"><?php echo esc_html( $taxonomy->labels->most_used ); ?></a></li>
 		</ul>
 
 		<div id="<?php echo $tax_name; ?>-pop" class="tabs-panel" style="display: none;">

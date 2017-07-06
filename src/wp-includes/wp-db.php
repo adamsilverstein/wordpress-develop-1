@@ -45,8 +45,6 @@ define( 'ARRAY_N', 'ARRAY_N' );
  *
  * @link https://codex.wordpress.org/Function_Reference/wpdb_Class
  *
- * @package WordPress
- * @subpackage Database
  * @since 0.71
  */
 class wpdb {
@@ -3268,7 +3266,7 @@ class wpdb {
 	 *
 	 * @param string $db_cap The feature to check for. Accepts 'collation',
 	 *                       'group_concat', 'subqueries', 'set_charset',
-	 *                       or 'utf8mb4'.
+	 *                       'utf8mb4', or 'utf8mb4_520'.
 	 * @return int|false Whether the database feature is supported, false otherwise.
 	 */
 	public function has_cap( $db_cap ) {

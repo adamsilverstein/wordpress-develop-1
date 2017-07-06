@@ -17,6 +17,11 @@
  * set for a longer period depending on if the 'remember' credential is set to
  * true.
  *
+ * Note: wp_signon() doesn't handle setting the current user. This means that if the
+ * function is called before the {@see 'init'} hook is fired, is_user_logged_in() will
+ * evaluate as false until that point. If is_user_logged_in() is needed in conjunction
+ * with wp_signon(), wp_set_current_user() should be called explicitly.
+ *
  * @since 2.5.0
  *
  * @global string $auth_secure_cookie
@@ -857,7 +862,12 @@ function count_users($strategy = 'time') {
 		$select_count = implode(', ', $select_count);
 
 		// Add the meta_value index to the selection list, then run the query.
-		$row = $wpdb->get_row( "SELECT $select_count, COUNT(*) FROM $wpdb->usermeta WHERE meta_key = '{$blog_prefix}capabilities'", ARRAY_N );
+		$row = $wpdb->get_row( "
+			SELECT {$select_count}, COUNT(*)
+			FROM {$wpdb->usermeta}
+			INNER JOIN {$wpdb->users} ON user_id = ID
+			WHERE meta_key = '{$blog_prefix}capabilities'
+		", ARRAY_N );
 
 		// Run the previous loop again to associate results with role names.
 		$col = 0;
@@ -881,7 +891,12 @@ function count_users($strategy = 'time') {
 			'none' => 0,
 		);
 
-		$users_of_blog = $wpdb->get_col( "SELECT meta_value FROM $wpdb->usermeta WHERE meta_key = '{$blog_prefix}capabilities'" );
+		$users_of_blog = $wpdb->get_col( "
+			SELECT meta_value
+			FROM {$wpdb->usermeta}
+			INNER JOIN {$wpdb->users} ON user_id = ID
+			WHERE meta_key = '{$blog_prefix}capabilities'
+		" );
 
 		foreach ( $users_of_blog as $caps_meta ) {
 			$b_roles = maybe_unserialize($caps_meta);
@@ -1627,6 +1642,34 @@ function wp_insert_user( $userdata ) {
 	$compacted = compact( 'user_pass', 'user_email', 'user_url', 'user_nicename', 'display_name', 'user_registered' );
 	$data = wp_unslash( $compacted );
 
+	if ( ! $update ) {
+		$data = $data + compact( 'user_login' );
+	}
+
+	/**
+	 * Filters user data before the record is created or updated.
+	 *
+	 * It only includes data in the wp_users table wp_user, not any user metadata.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param array    $data {
+	 *     Values and keys for the user.
+	 *
+	 *     @type string $user_login      The user's login. Only included if $update == false
+	 *     @type string $user_pass       The user's password.
+	 *     @type string $user_email      The user's email.
+	 *     @type string $user_url        The user's url.
+	 *     @type string $user_nicename   The user's nice name. Defaults to a URL-safe version of user's login
+	 *     @type string $display_name    The user's display name.
+	 *     @type string $user_registered MySQL timestamp describing the moment when the user registered. Defaults to
+	 *                                   the current UTC timestamp.
+	 * }
+	 * @param bool     $update Whether the user is being updated rather than created.
+	 * @param int|null $id     ID of the user to be updated, or NULL if the user is being created.
+	 */
+	$data = apply_filters( 'wp_pre_insert_user_data', $data, $update, $update ? (int) $ID : null );
+
 	if ( $update ) {
 		if ( $user_email !== $old_user_data->user_email ) {
 			$data['user_activation_key'] = '';
@@ -1634,7 +1677,7 @@ function wp_insert_user( $userdata ) {
 		$wpdb->update( $wpdb->users, $data, compact( 'ID' ) );
 		$user_id = (int) $ID;
 	} else {
-		$wpdb->insert( $wpdb->users, $data + compact( 'user_login' ) );
+		$wpdb->insert( $wpdb->users, $data );
 		$user_id = (int) $wpdb->insert_id;
 	}
 
@@ -2121,6 +2164,7 @@ function get_password_reset_key( $user ) {
 
 	// Now insert the key, hashed, into the DB.
 	if ( empty( $wp_hasher ) ) {
+		require_once ABSPATH . WPINC . '/class-phpass.php';
 		$wp_hasher = new PasswordHash( 8, true );
 	}
 	$hashed = time() . ':' . $wp_hasher->HashPassword( $key );
@@ -2165,6 +2209,7 @@ function check_password_reset_key($key, $login) {
 		return new WP_Error('invalid_key', __('Invalid key'));
 
 	if ( empty( $wp_hasher ) ) {
+		require_once ABSPATH . WPINC . '/class-phpass.php';
 		$wp_hasher = new PasswordHash( 8, true );
 	}
 

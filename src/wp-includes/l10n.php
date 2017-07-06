@@ -221,7 +221,8 @@ function esc_attr__( $text, $domain = 'default' ) {
 /**
  * Retrieve the translation of $text and escapes it for safe use in HTML output.
  *
- * If there is no translation, or the text domain isn't loaded, the original text is returned.
+ * If there is no translation, or the text domain isn't loaded, the original text
+ * is escaped and returned..
  *
  * @since 2.8.0
  *
@@ -753,7 +754,7 @@ function load_muplugin_textdomain( $domain, $mu_plugin_rel_path = '' ) {
 		return true;
 	}
 
-	$path = trailingslashit( WPMU_PLUGIN_DIR . '/' . ltrim( $mu_plugin_rel_path, '/' ) );
+	$path = WPMU_PLUGIN_DIR . '/' . ltrim( $mu_plugin_rel_path, '/' );
 
 	return load_textdomain( $domain, $path . '/' . $mofile );
 }

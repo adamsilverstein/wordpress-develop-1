@@ -145,7 +145,8 @@ class WP_MS_Users_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * @global string $mode
+	 * @global string $mode List table view mode.
+	 *
 	 * @param string $which
 	 */
 	protected function pagination( $which ) {
@@ -257,7 +258,11 @@ class WP_MS_Users_List_Table extends WP_List_Table {
 	 * @param WP_User $user The current WP_User object.
 	 */
 	public function column_name( $user ) {
-		echo "$user->first_name $user->last_name";
+		if ( $user->first_name && $user->last_name ) {
+			echo "$user->first_name $user->last_name";
+		} else {
+			echo '<span aria-hidden="true">&#8212;</span><span class="screen-reader-text">' . _x( 'Unknown', 'name' ) . '</span>';
+		}
 	}
 
 	/**
@@ -278,7 +283,7 @@ class WP_MS_Users_List_Table extends WP_List_Table {
 	 * @since 4.3.0
 	 * @access public
 	 *
-	 * @global string $mode
+	 * @global string $mode List table view mode.
 	 *
 	 * @param WP_User $user The current WP_User object.
 	 */

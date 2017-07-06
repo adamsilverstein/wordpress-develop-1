@@ -21,7 +21,7 @@ require_once ABSPATH . WPINC . '/class-walker-nav-menu.php';
  * @param array $args {
  *     Optional. Array of nav menu arguments.
  *
- *     @type int|string|WP_Term $menu            Desired menu. Accepts (matching in order) id, slug, name, menu object. Default empty.
+ *     @type int|string|WP_Term $menu            Desired menu. Accepts a menu ID, slug, name, or object. Default empty.
  *     @type string             $menu_class      CSS class to use for the ul element which forms the menu. Default 'menu'.
  *     @type string             $menu_id         The ID that is applied to the ul element which forms the menu.
  *                                               Default is the menu slug, incremented.
@@ -397,6 +397,11 @@ function _wp_menu_item_classes_by_context( &$menu_items ) {
 		// if the menu item corresponds to the currently-requested URL
 		} elseif ( 'custom' == $menu_item->object && isset( $_SERVER['HTTP_HOST'] ) ) {
 			$_root_relative_current = untrailingslashit( $_SERVER['REQUEST_URI'] );
+
+			//if it is the customize page then it will strips the query var off the url before entering the comparison block.
+			if ( is_customize_preview() ) {
+				$_root_relative_current = strtok( untrailingslashit( $_SERVER['REQUEST_URI'] ), '?' );
+			}
 			$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_root_relative_current );
 			$raw_item_url = strpos( $menu_item->url, '#' ) ? substr( $menu_item->url, 0, strpos( $menu_item->url, '#' ) ) : $menu_item->url;
 			$item_url = set_url_scheme( untrailingslashit( $raw_item_url ) );

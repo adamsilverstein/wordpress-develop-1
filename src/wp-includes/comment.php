@@ -44,7 +44,7 @@ function check_comment($author, $email, $url, $comment, $user_ip, $user_agent, $
 		return false;
 
 	/** This filter is documented in wp-includes/comment-template.php */
-	$comment = apply_filters( 'comment_text', $comment );
+	$comment = apply_filters( 'comment_text', $comment, null, array() );
 
 	// Check for the number of external links if a max allowed number is set.
 	if ( $max_links = get_option( 'comment_max_links' ) ) {
@@ -2126,6 +2126,7 @@ function wp_set_comment_status($comment_id, $comment_status, $wp_error = false) 
  * Filters the comment and makes sure certain fields are valid before updating.
  *
  * @since 2.0.0
+ * @since 4.9.0 Add updating comment meta during comment update.
  *
  * @global wpdb $wpdb WordPress database abstraction object.
  *
@@ -2198,6 +2199,13 @@ function wp_update_comment($commentarr) {
 	$data = wp_array_slice_assoc( $data, $keys );
 
 	$rval = $wpdb->update( $wpdb->comments, $data, compact( 'comment_ID' ) );
+
+	// If metadata is provided, store it.
+	if ( isset( $commentarr['comment_meta'] ) && is_array( $commentarr['comment_meta'] ) ) {
+		foreach ( $commentarr['comment_meta'] as $meta_key => $meta_value ) {
+			update_comment_meta( $comment_ID, $meta_key, $meta_value );
+		}
+	}
 
 	clean_comment_cache( $comment_ID );
 	wp_update_comment_count( $comment_post_ID );
@@ -3065,7 +3073,7 @@ function wp_handle_comment_submission( $comment_data ) {
 	$comment_type = '';
 
 	if ( get_option( 'require_name_email' ) && ! $user->exists() ) {
-		if ( 6 > strlen( $comment_author_email ) || '' == $comment_author ) {
+		if ( '' == $comment_author_email || '' == $comment_author ) {
 			return new WP_Error( 'require_name_email', __( '<strong>ERROR</strong>: please fill the required fields (name, email).' ), 200 );
 		} elseif ( ! is_email( $comment_author_email ) ) {
 			return new WP_Error( 'require_valid_email', __( '<strong>ERROR</strong>: please enter a valid email address.' ), 200 );

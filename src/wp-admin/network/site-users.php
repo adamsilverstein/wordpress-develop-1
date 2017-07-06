@@ -11,7 +11,7 @@
 require_once( dirname( __FILE__ ) . '/admin.php' );
 
 if ( ! current_user_can('manage_sites') )
-	wp_die(__('Sorry, you are not allowed to edit this site.'));
+	wp_die( __( 'Sorry, you are not allowed to edit this site.' ), 403 );
 
 $wp_list_table = _get_list_table('WP_Users_List_Table');
 $wp_list_table->prepare_items();
@@ -115,7 +115,7 @@ if ( $action ) {
 
 		case 'remove':
 			if ( ! current_user_can( 'remove_users' ) ) {
-				wp_die( __( 'Sorry, you are not allowed to remove users.' ) );
+				wp_die( __( 'Sorry, you are not allowed to remove users.' ), 403 );
 			}
 
 			check_admin_referer( 'bulk-users' );
@@ -138,8 +138,15 @@ if ( $action ) {
 		case 'promote':
 			check_admin_referer( 'bulk-users' );
 			$editable_roles = get_editable_roles();
-			if ( empty( $editable_roles[ $_REQUEST['new_role'] ] ) ) {
-				wp_die( __( 'Sorry, you are not allowed to give users that role.' ) );
+			$role = false;
+			if ( ! empty( $_REQUEST['new_role2'] ) ) {
+				$role = $_REQUEST['new_role2'];
+			} elseif ( ! empty( $_REQUEST['new_role'] ) ) {
+				$role = $_REQUEST['new_role'];
+			}
+
+			if ( empty( $editable_roles[ $role ] ) ) {
+				wp_die( __( 'Sorry, you are not allowed to give users that role.' ), 403 );
 			}
 
 			if ( isset( $_REQUEST['users'] ) ) {
@@ -158,7 +165,7 @@ if ( $action ) {
 					}
 
 					$user = get_userdata( $user_id );
-					$user->set_role( $_REQUEST['new_role'] );
+					$user->set_role( $role );
 				}
 			} else {
 				$update = 'err_promote';

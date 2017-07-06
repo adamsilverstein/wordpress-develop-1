@@ -1,7 +1,9 @@
 /* global getUserSetting, setUserSetting */
 ( function( tinymce ) {
 // Set the minimum value for the modals z-index higher than #wpadminbar (100000)
-tinymce.ui.FloatPanel.zIndex = 100100;
+if ( tinymce.ui.FloatPanel.zIndex < 100100 ) {
+	tinymce.ui.FloatPanel.zIndex = 100100;
+}
 
 tinymce.PluginManager.add( 'wordpress', function( editor ) {
 	var wpAdvButton, style,
@@ -992,7 +994,7 @@ tinymce.PluginManager.add( 'wordpress', function( editor ) {
 
 		function hide( event ) {
 			if ( activeToolbar ) {
-				if ( activeToolbar.tempHide || event.type === 'hide' ) {
+				if ( activeToolbar.tempHide || event.type === 'hide' || event.type === 'blur' ) {
 					activeToolbar.hide();
 					activeToolbar = false;
 				} else if ( (

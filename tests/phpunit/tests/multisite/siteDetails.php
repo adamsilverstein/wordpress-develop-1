@@ -125,6 +125,68 @@ class Tests_Multisite_Site_Details extends WP_UnitTestCase {
 
 		$this->assertNotFalse( $cached_result );
 	}
+
+	/**
+	 * @ticket 40247
+	 */
+	public function test_site_details_cached_including_false_values() {
+		$id = self::factory()->blog->create();
+
+		$site = get_site( $id );
+
+		// Trigger retrieving site details (post_count is not set on new sites)
+		$post_count = $site->post_count;
+
+		$cached_details = wp_cache_get( $site->id, 'site-details' );
+
+		wpmu_delete_blog( $id, true );
+		wp_update_network_site_counts();
+
+		$this->assertNotFalse( $cached_details );
+	}
+
+	public function test_site_details_filter_with_blogname() {
+		add_filter( 'site_details', array( $this, '_filter_site_details_blogname' ) );
+		$site = get_site();
+		$blogname = $site->blogname;
+		remove_filter( 'site_details', array( $this, '_filter_site_details_blogname' ) );
+
+		$this->assertSame( 'Foo Bar', $blogname );
+	}
+
+	public function _filter_site_details_blogname( $details ) {
+		$details->blogname = 'Foo Bar';
+		return $details;
+	}
+
+	/**
+	 * @ticket 40458
+	 */
+	public function test_site_details_filter_with_custom_value_isetter() {
+		add_filter( 'site_details', array( $this, '_filter_site_details_custom_value' ) );
+		$site = get_site();
+		$custom_value_isset = isset( $site->custom_value );
+		remove_filter( 'site_details', array( $this, '_filter_site_details_custom_value' ) );
+
+		$this->assertTrue( $custom_value_isset );
+	}
+
+	/**
+	 * @ticket 40458
+	 */
+	public function test_site_details_filter_with_custom_value_getter() {
+		add_filter( 'site_details', array( $this, '_filter_site_details_custom_value' ) );
+		$site = get_site();
+		$custom_value = $site->custom_value;
+		remove_filter( 'site_details', array( $this, '_filter_site_details_custom_value' ) );
+
+		$this->assertSame( 'foo', $custom_value );
+	}
+
+	public function _filter_site_details_custom_value( $details ) {
+		$details->custom_value = 'foo';
+		return $details;
+	}
 }
 
 endif;

@@ -158,6 +158,8 @@ function date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
  *
  * @since 4.4.0
  *
+ * @global WP_Locale $wp_locale
+ *
  * @param string $date Formatted date string.
  * @return string The date, declined if locale specifies it.
  */
@@ -2367,7 +2369,8 @@ function wp_get_image_mime( $file ) {
 	 */
 	try {
 		if ( is_callable( 'exif_imagetype' ) ) {
-			$mime = image_type_to_mime_type( exif_imagetype( $file ) );
+			$imagetype = exif_imagetype( $file );
+			$mime = ( $imagetype ) ? image_type_to_mime_type( $imagetype ) : false;
 		} elseif ( function_exists( 'getimagesize' ) ) {
 			$imagesize = getimagesize( $file );
 			$mime = ( isset( $imagesize['mime'] ) ) ? $imagesize['mime'] : false;
@@ -5452,6 +5455,8 @@ function wp_delete_file( $file ) {
  * This prevents reusing the same tab for a preview when the user has navigated away.
  *
  * @since 4.3.0
+ *
+ * @global WP_Post $post
  */
 function wp_post_preview_js() {
 	global $post;

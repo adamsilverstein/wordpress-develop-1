@@ -258,6 +258,7 @@ class WP_Users_List_Table extends WP_List_Table {
 	 */
 	protected function extra_tablenav( $which ) {
 		$id = 'bottom' === $which ? 'new_role2' : 'new_role';
+		$button_id = 'bottom' === $which ? 'changeit2' : 'changeit';
 	?>
 	<div class="alignleft actions">
 		<?php if ( current_user_can( 'promote_users' ) && $this->has_items() ) : ?>
@@ -267,7 +268,7 @@ class WP_Users_List_Table extends WP_List_Table {
 			<?php wp_dropdown_roles(); ?>
 		</select>
 	<?php
-			submit_button( __( 'Change' ), '', 'changeit', false );
+			submit_button( __( 'Change' ), '', $button_id, false );
 		endif;
 
 		/**
@@ -280,7 +281,18 @@ class WP_Users_List_Table extends WP_List_Table {
 		 * @param string $which The location of the extra table nav markup: 'top' or 'bottom'.
 		 */
 		do_action( 'restrict_manage_users', $which );
-		echo '</div>';
+	?>
+		</div>
+	<?php
+		/**
+		 * Fires immediately following the closing "actions" div in the tablenav for the users
+		 * list table.
+		 *
+		 * @since 4.9.0
+		 *
+		 * @param string $which The location of the extra table nav markup: 'top' or 'bottom'.
+		 */
+		do_action( 'manage_users_extra_tablenav', $which );
 	}
 
 	/**
@@ -295,7 +307,7 @@ class WP_Users_List_Table extends WP_List_Table {
 	 * @return string The bulk action required.
 	 */
 	public function current_action() {
-		if ( isset( $_REQUEST['changeit'] ) &&
+		if ( ( isset( $_REQUEST['changeit'] ) || isset( $_REQUEST['changeit2'] ) ) &&
 			( ! empty( $_REQUEST['new_role'] ) || ! empty( $_REQUEST['new_role2'] ) ) ) {
 			return 'promote';
 		}
@@ -470,7 +482,11 @@ class WP_Users_List_Table extends WP_List_Table {
 						$r .= "$avatar $edit";
 						break;
 					case 'name':
-						$r .= "$user_object->first_name $user_object->last_name";
+						if ( $user_object->first_name && $user_object->last_name ) {
+							$r .= "$user_object->first_name $user_object->last_name";
+						} else {
+							$r .= '<span aria-hidden="true">&#8212;</span><span class="screen-reader-text">' . _x( 'Unknown', 'name' ) . '</span>';
+						}
 						break;
 					case 'email':
 						$r .= "<a href='" . esc_url( "mailto:$email" ) . "'>$email</a>";
