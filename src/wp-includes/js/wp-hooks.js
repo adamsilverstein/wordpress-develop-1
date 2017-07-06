@@ -153,7 +153,6 @@
 			handlers[ i ].callback.apply( null, args );
 			HOOKS.actions[ action ].runs = HOOKS.actions[ action ].runs ? HOOKS.actions[ action ].runs + 1 : 1;
 		}
-		delete( HOOKS.actions.current );
 
 	}
 
@@ -181,7 +180,7 @@
 		for ( i = 0; i < handlers.length; i++ ) {
 			args[ 0 ] = handlers[ i ].callback.apply( null, args );
 		}
-		delete( HOOKS.actions.current );
+		delete( HOOKS.filters.current );
 
 		return args[ 0 ];
 	}
@@ -316,8 +315,8 @@
 		addFilter: createAddHookByType( 'filters' ),
 
 		// Doing functions.
-		doingAction: createDoingHookByType( 'actions' ),
-		doingFilter: createDoingHookByType( 'filters' ),
+		doingAction: createDoingHookByType( 'actions' ), /* True for actions until next action fired. */
+		doingFilter: createDoingHookByType( 'filters' ), /* True for filters while filter is being applied. */
 
 		// Did functions.
 		didAction: createDidHookByType( 'actions' ),
@@ -332,6 +331,6 @@
 		removeAllFilters: createRemoveAllByType( 'filters' ),
 
 		// Current filter.
-		currentFilter: createCurrentHookByType( 'filters' );
+		currentFilter: createCurrentHookByType( 'filters' )
 	};
 } )( window.wp = window.wp || {} );
