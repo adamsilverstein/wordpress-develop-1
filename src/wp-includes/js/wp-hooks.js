@@ -153,6 +153,8 @@
 			handlers[ i ].callback.apply( null, args );
 			HOOKS.actions[ action ].runs = HOOKS.actions[ action ].runs ? HOOKS.actions[ action ].runs + 1 : 1;
 		}
+		delete( HOOKS.actions.current );
+
 	}
 
 	/**
@@ -179,6 +181,7 @@
 		for ( i = 0; i < handlers.length; i++ ) {
 			args[ 0 ] = handlers[ i ].callback.apply( null, args );
 		}
+		delete( HOOKS.actions.current );
 
 		return args[ 0 ];
 	}
@@ -206,6 +209,32 @@
 
 		return hooks;
 	}
+
+
+	/**
+	 * See what action is currently being executed.
+	 *
+	 * @param  {string} type   Type of hooks to check, one of 'action' or 'filter'.
+	 * @param {string}  action The name of the action to check for.
+	 *
+	 * @return {[type]}      [description]
+	 */
+	function createCurrentHookByType( type ) {
+		return function( action ) {
+
+			// If the action was not passed, check for any current hook.
+			if ( 'undefined' === typeof action ) {
+				return false;
+			}
+
+			// Return the current hook.
+			return HOOKS[ type ] && HOOKS[ type ].current ?
+				HOOKS[ type ].current :
+				false;
+		};
+	}
+
+
 
 	/**
 	 * Checks to see if an action is currently being executed.
@@ -262,15 +291,47 @@
 		};
 	}
 
+	/**
+	 * Remove all the actions registered to a hook,
+	 */
+	function createRemoveAllByType( type ) {
+		return function( action, type ) {
+
+		};
+	}
+
 	wp.hooks = {
+
+		// Remove functions,
 		removeFilter: createRemoveHookByType( 'filters' ),
-		applyFilters: createRunHookByType( 'filters', runApplyFilters ),
-		addFilter: createAddHookByType( 'filters' ),
 		removeAction: createRemoveHookByType( 'actions' ),
-		doAction: createRunHookByType( 'actions', runDoAction ),
+
+
+		// Do action/apply filter functions.
+		doAction:     createRunHookByType( 'actions', runDoAction ),
+		applyFilters: createRunHookByType( 'filters', runApplyFilters ),
+
+		// Add functions.
 		addAction: createAddHookByType( 'actions' ),
+		addFilter: createAddHookByType( 'filters' ),
+
+		// Doing functions.
 		doingAction: createDoingHookByType( 'actions' ),
+		doingFilter: createDoingHookByType( 'filters' ),
+
+		// Did functions.
 		didAction: createDidHookByType( 'actions' ),
-		hasAction: createHasHookByType( 'actions' )
+		didFilter: createDidHookByType( 'filters' ),
+
+		// Has functions.
+		hasAction: createHasHookByType( 'actions' ),
+		hasFilter: createHasHookByType( 'filters' ),
+
+		// Remove all functions.
+		removeAllActions: createRemoveAllByType( 'actions' ),
+		removeAllFilters: createRemoveAllByType( 'filters' ),
+
+		// Current filter.
+		currentFilter: createCurrentHookByType( 'filters' );
 	};
 } )( window.wp = window.wp || {} );
