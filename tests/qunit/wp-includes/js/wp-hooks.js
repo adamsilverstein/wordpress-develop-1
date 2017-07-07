@@ -206,6 +206,4 @@
 		wp.hooks.removeFilter( 'runtest.filter' );
 	} );
 
-
-
 } )( window.QUnit );
