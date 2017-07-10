@@ -687,7 +687,7 @@ module.exports = function(grunt) {
 		if ( ! this.args.length || this.args.indexOf( 'browserify' ) > -1 ) {
 			grunt.config( 'browserify.options', {
 				browserifyOptions: {
-					debug: false
+					debug: true
 				},
 				watch: true
 			} );
