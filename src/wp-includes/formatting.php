@@ -26,13 +26,23 @@
  *
  * @global array $wp_cockneyreplace Array of formatted entities for certain common phrases
  * @global array $shortcode_tags
- * @staticvar array $static_characters
- * @staticvar array $static_replacements
- * @staticvar array $dynamic_characters
- * @staticvar array $dynamic_replacements
- * @staticvar array $default_no_texturize_tags
- * @staticvar array $default_no_texturize_shortcodes
- * @staticvar bool  $run_texturize
+ * @staticvar array  $static_characters
+ * @staticvar array  $static_replacements
+ * @staticvar array  $dynamic_characters
+ * @staticvar array  $dynamic_replacements
+ * @staticvar array  $default_no_texturize_tags
+ * @staticvar array  $default_no_texturize_shortcodes
+ * @staticvar bool   $run_texturize
+ * @staticvar string $apos
+ * @staticvar string $prime
+ * @staticvar string $double_prime
+ * @staticvar string $opening_quote
+ * @staticvar string $closing_quote
+ * @staticvar string $opening_single_quote
+ * @staticvar string $closing_single_quote
+ * @staticvar string $open_q_flag
+ * @staticvar string $open_sq_flag
+ * @staticvar string $apos_flag
  *
  * @param string $text The text to be formatted
  * @param bool   $reset Set to true for unit testing. Translated patterns will reset.
@@ -5012,7 +5022,7 @@ function _print_emoji_detection_script() {
 		 *
 		 * @param string The emoji base URL for png images.
 		 */
-		'baseUrl' => apply_filters( 'emoji_url', 'https://s.w.org/images/core/emoji/2.2.5/72x72/' ),
+		'baseUrl' => apply_filters( 'emoji_url', 'https://s.w.org/images/core/emoji/2.3/72x72/' ),
 
 		/**
 		 * Filters the extension of the emoji png files.
@@ -5030,7 +5040,7 @@ function _print_emoji_detection_script() {
 		 *
 		 * @param string The emoji base URL for svg images.
 		 */
-		'svgUrl' => apply_filters( 'emoji_svg_url', 'https://s.w.org/images/core/emoji/2.2.5/svg/' ),
+		'svgUrl' => apply_filters( 'emoji_svg_url', 'https://s.w.org/images/core/emoji/2.3/svg/' ),
 
 		/**
 		 * Filters the extension of the emoji SVG files.
@@ -5142,7 +5152,7 @@ function wp_staticize_emoji( $text ) {
 	$text = wp_encode_emoji( $text );
 
 	/** This filter is documented in wp-includes/formatting.php */
-	$cdn_url = apply_filters( 'emoji_url', 'https://s.w.org/images/core/emoji/2.2.5/72x72/' );
+	$cdn_url = apply_filters( 'emoji_url', 'https://s.w.org/images/core/emoji/2.3/72x72/' );
 
 	/** This filter is documented in wp-includes/formatting.php */
 	$ext = apply_filters( 'emoji_ext', '.png' );

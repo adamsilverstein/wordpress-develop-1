@@ -2697,7 +2697,7 @@ Attachment = View.extend({
 	},
 
 	events: {
-		'click .js--select-attachment':   'toggleSelectionHandler',
+		'click':                          'toggleSelectionHandler',
 		'change [data-setting]':          'updateSetting',
 		'change [data-setting] input':    'updateSetting',
 		'change [data-setting] select':   'updateSetting',
@@ -5116,6 +5116,7 @@ ImageDetails = Select.extend({
 					style:    'primary',
 					text:     l10n.replace,
 					priority: 80,
+					requires: { selection: true },
 
 					click: function() {
 						var controller = this.controller,
@@ -8227,13 +8228,13 @@ UploaderInline = View.extend({
 	},
 	show: function() {
 		this.$el.removeClass( 'hidden' );
-		if ( this.controller.$uploaderToggler.length ) {
+		if ( this.controller.$uploaderToggler && this.controller.$uploaderToggler.length ) {
 			this.controller.$uploaderToggler.attr( 'aria-expanded', 'true' );
 		}
 	},
 	hide: function() {
 		this.$el.addClass( 'hidden' );
-		if ( this.controller.$uploaderToggler.length ) {
+		if ( this.controller.$uploaderToggler && this.controller.$uploaderToggler.length ) {
 			this.controller.$uploaderToggler
 				.attr( 'aria-expanded', 'false' )
 				// Move focus back to the toggle button when closing the uploader.

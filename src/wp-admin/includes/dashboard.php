@@ -48,7 +48,7 @@ function wp_dashboard_setup() {
 
 	// QuickPress Widget
 	if ( is_blog_admin() && current_user_can( get_post_type_object( 'post' )->cap->create_posts ) ) {
-		$quick_draft_title = sprintf( '<span class="hide-if-no-js">%1$s</span> <span class="hide-if-js">%2$s</span>', __( 'Quick Draft' ), __( 'Drafts' ) );
+		$quick_draft_title = sprintf( '<span class="hide-if-no-js">%1$s</span> <span class="hide-if-js">%2$s</span>', __( 'Quick Draft' ), __( 'Your Recent Drafts' ) );
 		wp_add_dashboard_widget( 'dashboard_quick_press', $quick_draft_title, 'wp_dashboard_quick_press' );
 	}
 
@@ -565,9 +565,9 @@ function wp_dashboard_recent_drafts( $drafts = false ) {
 
 	echo '<div class="drafts">';
 	if ( count( $drafts ) > 3 ) {
-		echo '<p class="view-all"><a href="' . esc_url( admin_url( 'edit.php?post_status=draft' ) ) . '" aria-label="' . __( 'View all drafts' ) . '">' . _x( 'View all', 'drafts' ) . "</a></p>\n";
+		echo '<p class="view-all"><a href="' . esc_url( admin_url( 'edit.php?post_status=draft' ) ) . '">' . __( 'View all drafts' ) . "</a></p>\n";
  	}
-	echo '<h2 class="hide-if-no-js">' . __( 'Drafts' ) . "</h2>\n<ul>";
+	echo '<h2 class="hide-if-no-js">' . __( 'Your Recent Drafts' ) . "</h2>\n<ul>";
 
 	$drafts = array_slice( $drafts, 0, 3 );
 	foreach ( $drafts as $draft ) {
@@ -1114,7 +1114,7 @@ function wp_dashboard_events_news() {
 			printf(
 				'<a href="%1$s" target="_blank">%2$s <span class="screen-reader-text">%3$s</span><span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
 				/* translators: If a Rosetta site exists (e.g. https://es.wordpress.org/news/), then use that. Otherwise, leave untranslated. */
-				esc_url( __( 'https://wordpress.org/news/' ) ),
+				esc_url( _x( 'https://wordpress.org/news/', 'Events and News dashboard widget' ) ),
 				__( 'News' ),
 				/* translators: accessibility text */
 				__( '(opens in a new window)' )
@@ -1169,7 +1169,16 @@ function wp_print_community_events_markup() {
 				<label for="community-events-location">
 					<?php _e( 'City:' ); ?>
 				</label>
-				<?php /* translators: Replace with the name of a city in your locale that shows events. Use only the city name itself, without any region or country. Use the endonym instead of the English name. */ ?>
+				<?php
+				/* translators: Replace with a city related to your locale.
+				 * Test that it matches the expected location and has upcoming
+				 * events before including it. If no cities related to your
+				 * locale have events, then use a city related to your locale
+				 * that would be recognizable to most users. Use only the city
+				 * name itself, without any region or country. Use the endonym
+				 * (native locale name) instead of the English name if possible.
+				 */
+				?>
 				<input id="community-events-location" class="regular-text" type="text" name="community-events-location" placeholder="<?php esc_attr_e( 'Cincinnati' ); ?>" />
 
 				<?php submit_button( __( 'Submit' ), 'secondary', 'community-events-submit', false ); ?>
@@ -1206,7 +1215,11 @@ function wp_print_community_events_templates() {
 
 	<script id="tmpl-community-events-could-not-locate" type="text/template">
 		<?php printf(
-			/* translators: %s is the name of the city we couldn't locate. Replace the examples with cities in your locale, but test that they match the expected location before including them. Use endonyms (native locale names) whenever possible. */
+			/* translators: %s is the name of the city we couldn't locate.
+			 * Replace the examples with cities in your locale, but test
+			 * that they match the expected location before including them.
+			 * Use endonyms (native locale names) whenever possible.
+			 */
 			__( 'We couldn&#8217;t locate %s. Please try another nearby city. For example: Kansas City; Springfield; Portland.' ),
 			'<em>{{data.unknownCity}}</em>'
 		); ?>
@@ -1446,7 +1459,7 @@ function wp_dashboard_browser_nag() {
 		}
 		$notice .= "<p class='browser-update-nag{$browser_nag_class}'>{$msg}</p>";
 
-		$browsehappy = 'http://browsehappy.com/';
+		$browsehappy = 'https://browsehappy.com/';
 		$locale = get_user_locale();
 		if ( 'en_US' !== $locale )
 			$browsehappy = add_query_arg( 'locale', $locale, $browsehappy );
@@ -1508,12 +1521,13 @@ function wp_check_browser_version() {
 
 		/**
 		 * Response should be an array with:
-		 *  'name' - string - A user friendly browser name
+		 *  'platform' - string - A user-friendly platform name, if it can be determined
+		 *  'name' - string - A user-friendly browser name
 		 *  'version' - string - The version of the browser the user is using
 		 *  'current_version' - string - The most recent version of the browser
 		 *  'upgrade' - boolean - Whether the browser needs an upgrade
 		 *  'insecure' - boolean - Whether the browser is deemed insecure
-		 *  'upgrade_url' - string - The url to visit to upgrade
+		 *  'update_url' - string - The url to visit to upgrade
 		 *  'img_src' - string - An image representing the browser
 		 *  'img_src_ssl' - string - An image (over SSL) representing the browser
 		 */

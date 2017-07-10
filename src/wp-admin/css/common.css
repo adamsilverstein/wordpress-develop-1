@@ -1074,7 +1074,7 @@ th.action-links {
 .wp-filter .search-form input[type="search"] {
 	margin: 0;
 	padding: 3px 5px;
-	width: 100%;
+	width: 280px;
 	max-width: 100%;
 	font-size: 16px;
 	font-weight: 300;
@@ -2358,12 +2358,8 @@ body.iframe {
 
 .importer-action {
 	line-height: 20px; /* Same as with .updating-message */
-	color: #ddd;
-	margin-bottom: 1em;
-}
-
-.not-installed-main-site .importer-action {
 	color: #555;
+	margin-bottom: 1em;
 }
 
 #post-body #post-body-content #namediv h3, /* Back-compat for pre-4.4 */

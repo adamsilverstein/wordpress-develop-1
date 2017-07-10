@@ -104,7 +104,7 @@ class WP_Term_Query {
 	 *     @type int|array    $object_ids             Optional. Object ID, or array of object IDs. Results will be
 	 *                                                limited to terms associated with these objects.
 	 *     @type string       $orderby                Field(s) to order terms by. Accepts term fields ('name',
-	 *                                                'slug', 'term_group', 'term_id', 'id', 'description'),
+	 *                                                'slug', 'term_group', 'term_id', 'id', 'description', 'parent'),
 	 *                                                'count' for term taxonomy count, 'include' to match the
 	 *                                                'order' of the $include param, 'meta_value', 'meta_value_num',
 	 *                                                the value of `$meta_key`, the array keys of `$meta_query`, or
@@ -429,7 +429,7 @@ class WP_Term_Query {
 			foreach ( $exclude_tree as $extrunk ) {
 				$excluded_children = array_merge(
 					$excluded_children,
-					(array) get_terms( $taxonomies[0], array(
+					(array) get_terms( reset( $taxonomies ), array(
 						'child_of' => intval( $extrunk ),
 						'fields' => 'ids',
 						'hide_empty' => 0

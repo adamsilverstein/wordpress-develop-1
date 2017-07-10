@@ -60,3 +60,6 @@ require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-tag-cloud.php' );
 
 /** WP_Nav_Menu_Widget class */
 require_once( ABSPATH . WPINC . '/widgets/class-wp-nav-menu-widget.php' );
+
+/** WP_Widget_Custom_HTML class */
+require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-custom-html.php' );
