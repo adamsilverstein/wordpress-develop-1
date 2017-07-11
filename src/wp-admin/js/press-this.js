@@ -64,7 +64,7 @@
 			url = $.trim( url || '' );
 
 			if ( /^(?:https?:)?\/\//.test( url ) ) {
-				url = wp.utils.stripTags( url );
+				url = wp.sanitize.stripTags( url );
 				return url.replace( /["\\]+/g, '' );
 			}
 
@@ -191,7 +191,7 @@
 				$image.replaceWith( $( '<span>' ).text( $image.attr( 'alt' ) ) );
 			});
 
-			return wp.utils.sanitizeText( $element.text() );
+			return wp.sanitize.sanitizeText( $element.text() );
 		}
 
 		/**
