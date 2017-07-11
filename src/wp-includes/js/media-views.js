@@ -2697,7 +2697,7 @@ Attachment = View.extend({
 	},
 
 	events: {
-		'click .js--select-attachment':   'toggleSelectionHandler',
+		'click':                          'toggleSelectionHandler',
 		'change [data-setting]':          'updateSetting',
 		'change [data-setting] input':    'updateSetting',
 		'change [data-setting] select':   'updateSetting',
@@ -4050,7 +4050,7 @@ AttachmentsBrowser = View.extend({
 
 		if ( this.options.suggestedWidth && this.options.suggestedHeight ) {
 			this.toolbar.set( 'suggestedDimensions', new View({
-				el: $( '<div class="instructions">' + l10n.suggestedDimensions + ' ' + this.options.suggestedWidth + ' &times; ' + this.options.suggestedHeight + '</div>' )[0],
+				el: $( '<div class="instructions">' + l10n.suggestedDimensions.replace( '%1$s', this.options.suggestedWidth ).replace( '%2$s', this.options.suggestedHeight ) + '</div>' )[0],
 				priority: -40
 			}) );
 		}
@@ -4624,7 +4624,6 @@ EmbedLink = wp.media.view.Settings.extend({
 	}, wp.media.controller.Embed.sensitivity ),
 
 	fetch: function() {
-		var embed;
 
 		// check if they haven't typed in 500 ms
 		if ( $('#embed-url-field').val() !== this.model.get('url') ) {
@@ -4635,23 +4634,25 @@ EmbedLink = wp.media.view.Settings.extend({
 			this.dfd.abort();
 		}
 
-		embed = new wp.shortcode({
-			tag: 'embed',
-			attrs: _.pick( this.model.attributes, [ 'width', 'height', 'src' ] ),
-			content: this.model.get('url')
-		});
-
 		this.dfd = $.ajax({
-			type:    'POST',
-			url:     wp.ajax.settings.url,
-			context: this,
-			data:    {
-				action: 'parse-embed',
-				post_ID: wp.media.view.settings.post.id,
-				shortcode: embed.string()
-			}
+			url: wp.media.view.settings.oEmbedProxyUrl,
+			data: {
+				url: this.model.get( 'url' ),
+				maxwidth: this.model.get( 'width' ),
+				maxheight: this.model.get( 'height' ),
+				_wpnonce: wp.media.view.settings.nonce.wpRestApi
+			},
+			type: 'GET',
+			dataType: 'json',
+			context: this
 		})
-			.done( this.renderoEmbed )
+			.done( function( response ) {
+				this.renderoEmbed( {
+					data: {
+						body: response.html || ''
+					}
+				} );
+			} )
 			.fail( this.renderFail );
 	},
 
@@ -4738,7 +4739,7 @@ EmbedUrl = View.extend({
 	},
 
 	url: function( event ) {
-		this.model.set( 'url', event.target.value );
+		this.model.set( 'url', $.trim( event.target.value ) );
 	},
 
 	/**
@@ -5115,6 +5116,7 @@ ImageDetails = Select.extend({
 					style:    'primary',
 					text:     l10n.replace,
 					priority: 80,
+					requires: { selection: true },
 
 					click: function() {
 						var controller = this.controller,
@@ -8226,13 +8228,13 @@ UploaderInline = View.extend({
 	},
 	show: function() {
 		this.$el.removeClass( 'hidden' );
-		if ( this.controller.$uploaderToggler.length ) {
+		if ( this.controller.$uploaderToggler && this.controller.$uploaderToggler.length ) {
 			this.controller.$uploaderToggler.attr( 'aria-expanded', 'true' );
 		}
 	},
 	hide: function() {
 		this.$el.addClass( 'hidden' );
-		if ( this.controller.$uploaderToggler.length ) {
+		if ( this.controller.$uploaderToggler && this.controller.$uploaderToggler.length ) {
 			this.controller.$uploaderToggler
 				.attr( 'aria-expanded', 'false' )
 				// Move focus back to the toggle button when closing the uploader.
