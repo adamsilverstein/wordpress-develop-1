@@ -1,6 +1,6 @@
-window.wp = window.wp || {};
+( function () {
 
-( function ( $ ) {
+	window.wp = window.wp || {};
 
 	/**
 	 * wp.sanitize
@@ -45,4 +45,4 @@ window.wp = window.wp || {};
 			}
 	};
 
-}( jQuery ) );
+}() );
