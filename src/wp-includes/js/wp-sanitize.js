@@ -28,7 +28,7 @@
 		/**
 		 * Strip HTML tags and convert HTML entities.
 		 *
-		 * @param {string} text Text.
+		 * @param {string} text Text to strip tags and convert HTML entities.
 		 *
 		 * @return Sanitized text. False on failure.
 		 */
