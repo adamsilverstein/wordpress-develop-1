@@ -2,18 +2,24 @@ window.wp = window.wp || {};
 
 ( function ( $ ) {
 
+	/**
+	 * wp.sanitize
+	 *
+	 * Helper functions to sanitize strings.
+	 */
 	wp.sanitize = {
 
 			/**
 			 * Strip HTML tags.
 			 *
-			 * @param string string Text to have the HTML tags striped out of.
-			 * @return Stripped text.
+			 * @param {string} text Text to have the HTML tags striped out of.
+			 *
+			 * @return  Stripped text.
 			 */
-			stripTags: function( string ) {
-				string = string || '';
+			stripTags: function( text ) {
+				text = text || '';
 
-				return string
+				return text
 					.replace( /<!--[\s\S]*?(-->|$)/g, '' )
 					.replace( /<(script|style)[^>]*>[\s\S]*?(<\/\1>|$)/ig, '' )
 					.replace( /<\/?[a-z][\s\S]*?(>|$)/ig, '' );
@@ -22,8 +28,9 @@ window.wp = window.wp || {};
 			/**
 			 * Strip HTML tags and convert HTML entities.
 			 *
-			 * @param text string Text.
-			 * @return Sanitized text.
+			 * @param {string} text Text.
+			 *
+			 * @return Sanitized text. False on failure.
 			 */
 			sanitizeText: function( text ) {
 				var _text = wp.utils.stripTags( text ),
