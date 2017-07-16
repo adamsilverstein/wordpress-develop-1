@@ -4412,14 +4412,32 @@ Cropper = View.extend({
 		};
 	},
 	onImageLoad: function() {
-		var imgOptions = this.controller.get('imgSelectOptions');
+		var imgOptions = this.controller.get('imgSelectOptions'),
+			imgSelect;
+
 		if (typeof imgOptions === 'function') {
 			imgOptions = imgOptions(this.options.attachment, this.controller);
 		}
 
-		imgOptions = _.extend(imgOptions, {parent: this.$el});
+		imgOptions = _.extend(imgOptions, {
+			parent: this.$el,
+			onInit: function( img ) {
+				this.parent.children().on( 'mousedown touchstart', function( e ){
+
+					if ( e.shiftKey ) {
+						imgSelect.setOptions( {
+							aspectRatio: '1:1'
+						} );
+					} else {
+						imgSelect.setOptions( {
+							aspectRatio: false
+						} );
+					}
+				} );
+			}
+		} );
 		this.trigger('image-loaded');
-		this.controller.imgSelect = this.$image.imgAreaSelect(imgOptions);
+		imgSelect = this.controller.imgSelect = this.$image.imgAreaSelect(imgOptions);
 	},
 	onError: function() {
 		var filename = this.options.attachment.get('filename');
