@@ -1147,14 +1147,18 @@ function wpmu_create_user( $user_name, $password, $email ) {
  * @param string $path    The new site's path.
  * @param string $title   The new site's title.
  * @param int    $user_id The user ID of the new site's admin.
- * @param array  $meta    Optional. Used to set initial site options.
- * @param int    $site_id Optional. Only relevant on multi-network installs.
- * @return int|WP_Error Returns WP_Error object on failure, int $blog_id on success
+ * @param array  $meta    Optional. Array of key=>value pairs used to set initial site options.
+ *                        If valid status keys are included ('public', 'archived', 'mature',
+ *                        'spam', 'deleted', or 'lang_id') the given site status(es) will be
+ *                        updated. Otherwise, keys and values will be used to set options for
+ *                        the new site. Default empty array.
+ * @param int    $site_id Optional. Network ID. Only relevant on multi-network installs.
+ * @return int|WP_Error Returns WP_Error object on failure, the new site ID on success.
  */
 function wpmu_create_blog( $domain, $path, $title, $user_id, $meta = array(), $site_id = 1 ) {
 	$defaults = array(
 		'public' => 0,
-		'WPLANG' => get_site_option( 'WPLANG' ),
+		'WPLANG' => get_network_option( $site_id, 'WPLANG' ),
 	);
 	$meta = wp_parse_args( $meta, $defaults );
 
@@ -1204,11 +1208,11 @@ function wpmu_create_blog( $domain, $path, $title, $user_id, $meta = array(), $s
 	 *
 	 * @since MU
 	 *
-	 * @param int    $blog_id Blog ID.
+	 * @param int    $blog_id Site ID.
 	 * @param int    $user_id User ID.
 	 * @param string $domain  Site domain.
 	 * @param string $path    Site path.
-	 * @param int    $site_id Site ID. Only relevant on multi-network installs.
+	 * @param int    $site_id Network ID. Only relevant on multi-network installs.
 	 * @param array  $meta    Meta data. Used to set initial site options.
 	 */
 	do_action( 'wpmu_new_blog', $blog_id, $user_id, $domain, $path, $site_id, $meta );
@@ -1860,7 +1864,7 @@ function update_posts_count( $deprecated = '' ) {
 }
 
 /**
- * Logs user registrations.
+ * Logs the user email, IP, and registration date of a new site.
  *
  * @since MU
  *
