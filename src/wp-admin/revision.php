@@ -63,8 +63,18 @@ default :
 	if ( ! $post = get_post( $revision->post_parent ) )
 		break;
 
-	if ( ! current_user_can( 'read_post', $revision->ID ) || ! current_user_can( 'edit_post', $revision->post_parent ) )
+	if (
+		(
+			! current_user_can( 'read_post', $revision->ID ) ||
+			! current_user_can( 'edit_post', $revision->post_parent )
+		) &&
+		(
+			! current_user_can( 'read_revision', $revision->ID ) ||
+			! current_user_can( 'read_revisions', $revision->post_parent )
+		)
+	) {
 		break;
+	}
 
 	// Revisions disabled and we're not looking at an autosave
 	if ( ! wp_revisions_enabled( $post ) && ! wp_is_post_autosave( $revision ) ) {
