@@ -1114,8 +1114,8 @@
 				}
 			},
 
-			singleModels = routeModel.get( 'singleModels' ),
-			modelRegex   = new RegExp( '(?:.*[+)]|\/(' + singleModels.join( '|' ) + '))$' );
+			modelEndpoints = routeModel.get( 'modelEndpoints' ),
+			modelRegex     = new RegExp( '(?:.*[+)]|\/(' + modelEndpoints.join( '|' ) + '))$' );
 
 			/**
 			 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
@@ -1363,11 +1363,11 @@
 	wp.api.init = function( args ) {
 		var endpoint, attributes = {}, deferred, promise;
 
-		args                     = args || {};
-		attributes.apiRoot       = args.apiRoot || wpApiSettings.root || '/wp-json';
-		attributes.versionString = args.versionString || wpApiSettings.versionString || 'wp/v2/';
-		attributes.schema        = args.schema || null;
-		attributes.singleModels  = args.singleModels || [ 'me', 'settings' ];
+		args                      = args || {};
+		attributes.apiRoot        = args.apiRoot || wpApiSettings.root || '/wp-json';
+		attributes.versionString  = args.versionString || wpApiSettings.versionString || 'wp/v2/';
+		attributes.schema         = args.schema || null;
+		attributes.modelEndpoints = args.modelEndpoints || [ 'me', 'settings' ];
 		if ( ! attributes.schema && attributes.apiRoot === wpApiSettings.root && attributes.versionString === wpApiSettings.versionString ) {
 			attributes.schema = wpApiSettings.schema;
 		}
