@@ -13,10 +13,10 @@
 	/**
 	 * Returns a function which, when invoked, will add a hook.
 	 *
-	 * @param  {string}   type Type for which hooks are to be added
+	 * @param  {string}   hooksArray ype for which hooks are to be added
 	 * @return {Function}      Hook added
 	 */
-	function createAddHookByType( hooksArray ) {
+	function createAddHook( hooksArray ) {
 		/**
 		 * Adds the hook to the appropriate hooks container
 		 *
@@ -64,12 +64,12 @@
 	/**
 	 * Returns a function which, when invoked, will remove a specified hook.
 	 *
-	 * @param  {string}   type      Type for which hooks are to be removed.
+	 * @param  {string}   hooksArray     Type for which hooks are to be removed.
 	 * @param  {bool}     removeAll Whether to always remove all hooked callbacks.
 	 *
 	 * @return {Function}           Hook remover.
 	 */
-	function createRemoveHookByType( hooksArray, removeAll ) {
+	function createRemoveHook( hooksArray, removeAll ) {
 		/**
 		 * Removes the specified hook by resetting its value.
 		 *
@@ -105,11 +105,10 @@
 	 * hooks of the specified type by calling upon runner with its hook name
 	 * and arguments.
 	 *
-	 * @param  {string}   type   Type for which hooks are to be run, one of 'action' or 'filter'.
 	 * @param  {Function} runner Function to invoke for each hook callback
 	 * @return {Function}        Hook runner
 	 */
-	function createRunHookByType( type, runner ) {
+	function createRunHook( runner ) {
 		/**
 		 * Runs the specified hook.
 		 *
@@ -218,7 +217,7 @@
 	 *
 	 * @return {[type]}      [description]
 	 */
-	function createCurrentHookByType( hooksArray ) {
+	function createCurrentHook( hooksArray ) {
 		return function( action ) {
 
 			// If the action was not passed, check for any current hook.
@@ -243,7 +242,7 @@
 	 *
 	 * @return {[type]}      [description]
 	 */
-	function createDoingHookByType( hooksArray ) {
+	function createDoingHook( hooksArray ) {
 		return function( action ) {
 
 			// If the action was not passed, check for any current hook.
@@ -266,7 +265,7 @@
 	 *
 	 * @return {[type]}      [description]
 	 */
-	function createDidHookByType( hooksArray ) {
+	function createDidHook( hooksArray ) {
 		return function( action ) {
 			return hooksArray && hooksArray[ action ] && hooksArray[ action ].runs ?
 				hooksArray[ action ].runs :
@@ -282,7 +281,7 @@
 	 *
 	 * @return {bool}      Whether an action has been registered for a hook.
 	 */
-	function createHasHookByType( hooksArray ) {
+	function createHasHook( hooksArray ) {
 		return function( action ) {
 			return hooksArray && hooksArray[ action ] ?
 				!! hooksArray[ action ] :
@@ -293,42 +292,42 @@
 	/**
 	 * Remove all the actions registered to a hook.
 	 */
-	function createRemoveAllByType( type ) {
-		return createRemoveHookByType( type, true );
+	function createRemoveAllHook( type ) {
+		return createRemoveHook( type, true );
 	}
 
 	wp.hooks = {
 
-		// Remove functions,
-		removeFilter: createRemoveHookByType( HOOKS.filters ),
-		removeAction: createRemoveHookByType( HOOKS.actions ),
-
+		// Remove functions.
+		removeFilter: createRemoveHook( HOOKS.filters ),
+		removeAction: createRemoveHook( HOOKS.actions ),
 
 		// Do action/apply filter functions.
-		doAction:     createRunHookByType( HOOKS.actions, runDoAction ),
-		applyFilters: createRunHookByType( HOOKS.filters, runApplyFilters ),
+		doAction:     createRunHook( runDoAction ),
+		applyFilters: createRunHook( runApplyFilters ),
 
 		// Add functions.
-		addAction: createAddHookByType( HOOKS.actions ),
-		addFilter: createAddHookByType( HOOKS.filters ),
+		addAction: createAddHook( HOOKS.actions ),
+		addFilter: createAddHook( HOOKS.filters ),
 
-		// Doing functions.
-		doingAction: createDoingHookByType( HOOKS.actions ), /* True for actions until next action fired. */
-		doingFilter: createDoingHookByType( HOOKS.filters ), /* True for filters while filter is being applied. */
+		// Doing action: true until next action fired.
+		doingAction: createDoingHook( HOOKS.actions ),
+		// Doing filter: true while filter is being applied.
+		doingFilter: createDoingHook( HOOKS.filters ),
 
 		// Did functions.
-		didAction: createDidHookByType( HOOKS.actions ),
-		didFilter: createDidHookByType( HOOKS.filters ),
+		didAction: createDidHook( HOOKS.actions ),
+		didFilter: createDidHook( HOOKS.filters ),
 
 		// Has functions.
-		hasAction: createHasHookByType( HOOKS.actions ),
-		hasFilter: createHasHookByType( HOOKS.filters ),
+		hasAction: createHasHook( HOOKS.actions ),
+		hasFilter: createHasHook( HOOKS.filters ),
 
 		// Remove all functions.
-		removeAllActions: createRemoveAllByType( HOOKS.actions ),
-		removeAllFilters: createRemoveAllByType( HOOKS.filters ),
+		removeAllActions: createRemoveAllHook( HOOKS.actions ),
+		removeAllFilters: createRemoveAllHook( HOOKS.filters ),
 
 		// Current filter.
-		currentFilter: createCurrentHookByType( HOOKS.filters )
+		currentFilter: createCurrentHook( HOOKS.filters )
 	};
 } )( window.wp = window.wp || {} );
