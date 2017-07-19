@@ -5,7 +5,10 @@
 	 * Contains the registered hooks, keyed by hook type. Each hook type is an
 	 * array of objects with priority and callback of each registered hook.
 	 */
-	var HOOKS = {};
+	var HOOKS = {
+		actions: [],
+		filters: []
+	};
 
 	/**
 	 * Returns a function which, when invoked, will add a hook.
@@ -13,7 +16,7 @@
 	 * @param  {string}   type Type for which hooks are to be added
 	 * @return {Function}      Hook added
 	 */
-	function createAddHookByType( type ) {
+	function createAddHookByType( hooksArray ) {
 		/**
 		 * Adds the hook to the appropriate hooks container
 		 *
@@ -39,19 +42,14 @@
 				return;
 			}
 
-			// Check if adding first of type
-			if ( ! HOOKS[ type ] ) {
-				HOOKS[ type ] = {};
-			}
-
 			hookObject = {
 				callback: callback,
 				priority: priority
 			};
 
-			if ( HOOKS[ type ].hasOwnProperty( hook ) ) {
+			if ( hooksArray.hasOwnProperty( hook ) ) {
 				// Append and re-sort amongst existing
-				hooks = HOOKS[ type ][ hook ];
+				hooks = hooksArray[ hook ];
 				hooks.push( hookObject );
 				hooks = sortHooks( hooks );
 			} else {
@@ -59,7 +57,7 @@
 				hooks = [ hookObject ];
 			}
 
-			HOOKS[ type ][ hook ] = hooks;
+			hooksArray[ hook ] = hooks;
 		};
 	}
 
@@ -71,25 +69,25 @@
 	 *
 	 * @return {Function}           Hook remover.
 	 */
-	function createRemoveHookByType( type, removeAll ) {
+	function createRemoveHookByType( hooksArray, removeAll ) {
 		/**
 		 * Removes the specified hook by resetting its value.
 		 *
 		 * @param {string}    hook     Name of hook to remove
-		 * @param {Function} callback The specific callback to be removed. If
+		 * @param {?Function} callback The specific callback to be removed. Optional, if
 		 *                             omitted, clears all callbacks.
 		 */
 		return function( hook, callback ) {
 			var handlers, i;
 
 			// Baily early if no hooks exist by this name
-			if ( ! HOOKS[ type ] || ! HOOKS[ type ].hasOwnProperty( hook ) ) {
+			if ( ! hooksArray || ! hooksArray.hasOwnProperty( hook ) ) {
 				return;
 			}
 
 			if ( callback && ! removeAll ) {
 				// Try to find specified callback to remove
-				handlers = HOOKS[ type ][ hook ];
+				handlers = hooksArray[ hook ];
 				for ( i = handlers.length - 1; i >= 0; i-- ) {
 					if ( handlers[ i ].callback === callback ) {
 						handlers.splice( i, 1 );
@@ -97,7 +95,7 @@
 				}
 			} else {
 				// Reset hooks to empty
-				delete HOOKS[ type ][ hook ];
+				delete hooksArray[ hook ];
 			}
 		};
 	}
@@ -220,7 +218,7 @@
 	 *
 	 * @return {[type]}      [description]
 	 */
-	function createCurrentHookByType( type ) {
+	function createCurrentHookByType( hooksArray ) {
 		return function( action ) {
 
 			// If the action was not passed, check for any current hook.
@@ -229,8 +227,8 @@
 			}
 
 			// Return the current hook.
-			return HOOKS[ type ] && HOOKS[ type ].current ?
-				HOOKS[ type ].current :
+			return hooksArray && hooksArray.current ?
+				hooksArray.current :
 				false;
 		};
 	}
@@ -245,17 +243,17 @@
 	 *
 	 * @return {[type]}      [description]
 	 */
-	function createDoingHookByType( type ) {
+	function createDoingHookByType( hooksArray ) {
 		return function( action ) {
 
 			// If the action was not passed, check for any current hook.
 			if ( 'undefined' === typeof action ) {
-				return 'undefined' !== typeof HOOKS[ type ].current;
+				return 'undefined' !== typeof hooksArray.current;
 			}
 
 			// Return the current hook.
-			return HOOKS[ type ] && HOOKS[ type ].current ?
-				action === HOOKS[ type ].current :
+			return hooksArray && hooksArray.current ?
+				action === hooksArray.current :
 				false;
 		};
 	}
@@ -268,10 +266,10 @@
 	 *
 	 * @return {[type]}      [description]
 	 */
-	function createDidHookByType( type ) {
+	function createDidHookByType( hooksArray ) {
 		return function( action ) {
-			return HOOKS[ type ] && HOOKS[ type ][ action ] && HOOKS[ type ][ action ].runs ?
-				HOOKS[ type ][ action ].runs :
+			return hooksArray && hooksArray[ action ] && hooksArray[ action ].runs ?
+				hooksArray[ action ].runs :
 				0;
 		};
 	}
@@ -284,10 +282,10 @@
 	 *
 	 * @return {bool}      Whether an action has been registered for a hook.
 	 */
-	function createHasHookByType( type ) {
+	function createHasHookByType( hooksArray ) {
 		return function( action ) {
-			return HOOKS[ type ] && HOOKS[ type ][ action ] ?
-				!! HOOKS[ type ][ action ] :
+			return hooksArray && hooksArray[ action ] ?
+				!! hooksArray[ action ] :
 				false;
 		};
 	}
@@ -302,35 +300,35 @@
 	wp.hooks = {
 
 		// Remove functions,
-		removeFilter: createRemoveHookByType( 'filters' ),
-		removeAction: createRemoveHookByType( 'actions' ),
+		removeFilter: createRemoveHookByType( HOOKS.filters ),
+		removeAction: createRemoveHookByType( HOOKS.actions ),
 
 
 		// Do action/apply filter functions.
-		doAction:     createRunHookByType( 'actions', runDoAction ),
-		applyFilters: createRunHookByType( 'filters', runApplyFilters ),
+		doAction:     createRunHookByType( HOOKS.actions, runDoAction ),
+		applyFilters: createRunHookByType( HOOKS.filters, runApplyFilters ),
 
 		// Add functions.
-		addAction: createAddHookByType( 'actions' ),
-		addFilter: createAddHookByType( 'filters' ),
+		addAction: createAddHookByType( HOOKS.actions ),
+		addFilter: createAddHookByType( HOOKS.filters ),
 
 		// Doing functions.
-		doingAction: createDoingHookByType( 'actions' ), /* True for actions until next action fired. */
-		doingFilter: createDoingHookByType( 'filters' ), /* True for filters while filter is being applied. */
+		doingAction: createDoingHookByType( HOOKS.actions ), /* True for actions until next action fired. */
+		doingFilter: createDoingHookByType( HOOKS.filters ), /* True for filters while filter is being applied. */
 
 		// Did functions.
-		didAction: createDidHookByType( 'actions' ),
-		didFilter: createDidHookByType( 'filters' ),
+		didAction: createDidHookByType( HOOKS.actions ),
+		didFilter: createDidHookByType( HOOKS.filters ),
 
 		// Has functions.
-		hasAction: createHasHookByType( 'actions' ),
-		hasFilter: createHasHookByType( 'filters' ),
+		hasAction: createHasHookByType( HOOKS.actions ),
+		hasFilter: createHasHookByType( HOOKS.filters ),
 
 		// Remove all functions.
-		removeAllActions: createRemoveAllByType( 'actions' ),
-		removeAllFilters: createRemoveAllByType( 'filters' ),
+		removeAllActions: createRemoveAllByType( HOOKS.actions ),
+		removeAllFilters: createRemoveAllByType( HOOKS.filters ),
 
 		// Current filter.
-		currentFilter: createCurrentHookByType( 'filters' )
+		currentFilter: createCurrentHookByType( HOOKS.filters )
 	};
 } )( window.wp = window.wp || {} );
