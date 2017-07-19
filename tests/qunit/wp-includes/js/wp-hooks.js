@@ -138,6 +138,17 @@
 		wp.hooks.removeAction( 'test.action' );
 	} );
 
+	QUnit.test( 'remove all action callbacks', function() {
+		window.actionValue = '';
+		wp.hooks.addAction( 'test.action', action_a );
+		wp.hooks.addAction( 'test.action', action_b, 2 );
+		wp.hooks.addAction( 'test.action', action_c, 8 );
+
+		wp.hooks.removeAllActions( 'test.action' );
+		wp.hooks.doAction( 'test.action' );
+		equal( window.actionValue, '' );
+	} );
+
 	QUnit.test( 'remove specific filter callback', function() {
 		wp.hooks.addFilter( 'test.filter', filter_a );
 		wp.hooks.addFilter( 'test.filter', filter_b, 2 );
@@ -146,6 +157,15 @@
 		wp.hooks.removeFilter( 'test.filter', filter_b );
 		equal( wp.hooks.applyFilters( 'test.filter', 'test' ), 'testca' );
 		wp.hooks.removeFilter( 'test.filter' );
+	} );
+
+	QUnit.test( 'remove all filter callbacks', function() {
+		wp.hooks.addFilter( 'test.filter', filter_a );
+		wp.hooks.addFilter( 'test.filter', filter_b, 2 );
+		wp.hooks.addFilter( 'test.filter', filter_c, 8 );
+
+		wp.hooks.removeAllFilters( 'test.filter' );
+		equal( wp.hooks.applyFilters( 'test.filter', 'test' ), 'test' );
 	} );
 
 	// Test doingAction, didAction, hasAction.

@@ -66,15 +66,17 @@
 	/**
 	 * Returns a function which, when invoked, will remove a specified hook.
 	 *
-	 * @param  {string}   type Type for which hooks are to be removed
-	 * @return {Function}      Hook remover
+	 * @param  {string}   type      Type for which hooks are to be removed.
+	 * @param  {bool}     removeAll Whether to always remove all hooked callbacks.
+	 *
+	 * @return {Function}           Hook remover.
 	 */
-	function createRemoveHookByType( type ) {
+	function createRemoveHookByType( type, removeAll ) {
 		/**
 		 * Removes the specified hook by resetting its value.
 		 *
 		 * @param {string}    hook     Name of hook to remove
-		 * @param {?Function} callback The specific callback to be removed. If
+		 * @param {Function} callback The specific callback to be removed. If
 		 *                             omitted, clears all callbacks.
 		 */
 		return function( hook, callback ) {
@@ -85,7 +87,7 @@
 				return;
 			}
 
-			if ( callback ) {
+			if ( callback && ! removeAll ) {
 				// Try to find specified callback to remove
 				handlers = HOOKS[ type ][ hook ];
 				for ( i = handlers.length - 1; i >= 0; i-- ) {
@@ -291,12 +293,10 @@
 	}
 
 	/**
-	 * Remove all the actions registered to a hook,
+	 * Remove all the actions registered to a hook.
 	 */
 	function createRemoveAllByType( type ) {
-		return function( action, type ) {
-
-		};
+		return createRemoveHookByType( type, true );
 	}
 
 	wp.hooks = {
