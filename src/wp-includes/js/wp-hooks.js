@@ -13,8 +13,8 @@
 	/**
 	 * Returns a function which, when invoked, will add a hook.
 	 *
-	 * @param  {string}   hooksArray ype for which hooks are to be added
-	 * @return {Function}      Hook added
+	 * @param  {string}   hooksArray Hooks array to which hooks are to be added
+	 * @return {Function}            Hook added.
 	 */
 	function createAddHook( hooksArray ) {
 		/**
@@ -64,8 +64,8 @@
 	/**
 	 * Returns a function which, when invoked, will remove a specified hook.
 	 *
-	 * @param  {string}   hooksArray     Type for which hooks are to be removed.
-	 * @param  {bool}     removeAll Whether to always remove all hooked callbacks.
+	 * @param  {string}   hooksArray Hooks array from which hooks are to be removed.
+	 * @param  {bool}     removeAll  Whether to always remove all hooked callbacks.
 	 *
 	 * @return {Function}           Hook remover.
 	 */
@@ -212,13 +212,21 @@
 	/**
 	 * See what action is currently being executed.
 	 *
-	 * @param  {string} type   Type of hooks to check, one of 'action' or 'filter'.
-	 * @param {string}  action The name of the action to check for.
+	 * @param  {string} hooksArray Hooks array of hooks to check.
+	 * @param {string}  action     The name of the action to check for.
 	 *
-	 * @return {[type]}      [description]
+	 * @return {Function}          A function that gets the currently executing filter,
 	 */
 	function createCurrentHook( hooksArray ) {
-		return function( action ) {
+
+		/**
+		 * Get the current active hook.
+		 *
+		 * @param {string}  action The name of the action to check for, if omitted will check for any action being performed.
+		 *
+		 * @return {string}          Returns the currently executing action, or false if none.
+		 */
+		return function() {
 
 			// If the action was not passed, check for any current hook.
 			if ( 'undefined' === typeof action ) {
@@ -237,7 +245,7 @@
 	/**
 	 * Checks to see if an action is currently being executed.
 	 *
-	 * @param  {string} type   Type of hooks to check, one of 'action' or 'filter'.
+	 * @param  {string} type   Type of hooks to check.
 	 * @param {string}  action The name of the action to check for, if omitted will check for any action being performed.
 	 *
 	 * @return {[type]}      [description]
@@ -260,8 +268,8 @@
 	/**
 	 * Retrieve the number of times an action is fired.
 	 *
-	 * @param  {string} type   Type for which hooks to check, one of 'action' or 'filter'.
-	 * @param {string}  action The action to check.
+	 * @param {string} hooksArray Hooks array of hooks to check.
+	 * @param {string} action     The action to check.
 	 *
 	 * @return {[type]}      [description]
 	 */
@@ -276,8 +284,8 @@
 	/**
 	 * Check to see if an action is registered for a hook.
 	 *
-	 * @param  {string} type   Type for which hooks to check, one of 'action' or 'filter'.
-	 * @param {string}  action  The action to check.
+	 * @param {string} hooksArray Hooks array of hooks to check.
+	 * @param {string} action     The action to check.
 	 *
 	 * @return {bool}      Whether an action has been registered for a hook.
 	 */
@@ -291,9 +299,13 @@
 
 	/**
 	 * Remove all the actions registered to a hook.
+	 *
+	 * @param {string} hooksArray Hooks array of hooks to check.
+	 *
+	 * @return {Function}         All hook remover.
 	 */
-	function createRemoveAllHook( type ) {
-		return createRemoveHook( type, true );
+	function createRemoveAllHook( hooksArray ) {
+		return createRemoveHook( hooksArray, true );
 	}
 
 	wp.hooks = {
@@ -312,6 +324,7 @@
 
 		// Doing action: true until next action fired.
 		doingAction: createDoingHook( HOOKS.actions ),
+
 		// Doing filter: true while filter is being applied.
 		doingFilter: createDoingHook( HOOKS.filters ),
 
