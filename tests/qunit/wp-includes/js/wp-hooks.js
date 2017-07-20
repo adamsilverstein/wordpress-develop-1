@@ -216,7 +216,6 @@
 		wp.hooks.addFilter( 'runtest.filter', filter_check );
 
 		// Verify filter added and running.
-		var test = wp.hooks.applyFilters( 'runtest.filter', true );
 		equal( wp.hooks.didFilter( 'runtest.filter' ), 1, 'The runtest.filter has run once.' );
 		ok( wp.hooks.hasFilter( 'runtest.filter' ), 'The runtest.filter is registered.' );
 		ok( ! wp.hooks.hasFilter( 'notatest.filter' ), 'The notatest.filter is not registered.' );
