@@ -28,7 +28,7 @@
 	QUnit.test( 'add and remove a filter', function() {
 		expect( 1 );
 		wp.hooks.addFilter( 'test.filter', filter_a );
-		wp.hooks.removeFilter( 'test.filter' );
+		wp.hooks.removeFilter( 'test.filter', filter_a  );
 		equal( wp.hooks.applyFilters( 'test.filter', 'test' ), 'test' );
 	} );
 
@@ -36,7 +36,7 @@
 		expect( 1 );
 		wp.hooks.addFilter( 'test.filter', filter_a );
 		equal( wp.hooks.applyFilters( 'test.filter', 'test' ), 'testa' );
-		wp.hooks.removeFilter( 'test.filter' );
+		wp.hooks.removeAllFilters( 'test.filter' );
 	} );
 
 	QUnit.test( 'add 2 filters in a row and run them', function() {
@@ -44,7 +44,7 @@
 		wp.hooks.addFilter( 'test.filter', filter_a );
 		wp.hooks.addFilter( 'test.filter', filter_b );
 		equal( wp.hooks.applyFilters( 'test.filter', 'test' ), 'testab' );
-		wp.hooks.removeFilter( 'test.filter' );
+		wp.hooks.removeAllFilters( 'test.filter' );
 	} );
 
 	QUnit.test( 'add 3 filters with different priorities and run them', function() {
@@ -53,14 +53,14 @@
 		wp.hooks.addFilter( 'test.filter', filter_b, 2 );
 		wp.hooks.addFilter( 'test.filter', filter_c, 8 );
 		equal( wp.hooks.applyFilters( 'test.filter', 'test' ), 'testbca' );
-		wp.hooks.removeFilter( 'test.filter' );
+		wp.hooks.removeAllFilters( 'test.filter' );
 	} );
 
 	QUnit.test( 'add and remove an action', function() {
 		expect( 1 );
 		window.actionValue = '';
 		wp.hooks.addAction( 'test.action', action_a );
-		wp.hooks.removeAction( 'test.action' );
+		wp.hooks.removeAction( 'test.action', action_a );
 		wp.hooks.doAction( 'test.action' );
 		equal( window.actionValue, '' );
 	} );
@@ -71,7 +71,7 @@
 		wp.hooks.addAction( 'test.action', action_a );
 		wp.hooks.doAction( 'test.action' );
 		equal( window.actionValue, 'a' );
-		wp.hooks.removeAction( 'test.action' );
+		wp.hooks.removeAllActions( 'test.action' );
 	} );
 
 	QUnit.test( 'add 2 actions in a row and then run them', function() {
@@ -81,7 +81,7 @@
 		wp.hooks.addAction( 'test.action', action_b );
 		wp.hooks.doAction( 'test.action' );
 		equal( window.actionValue, 'ab' );
-		wp.hooks.removeAction( 'test.action' );
+		wp.hooks.removeAllActions( 'test.action' );
 	} );
 
 	QUnit.test( 'add 3 actions with different priorities and run them', function() {
@@ -92,7 +92,7 @@
 		wp.hooks.addAction( 'test.action', action_c, 8 );
 		wp.hooks.doAction( 'test.action' );
 		equal( window.actionValue, 'bca' );
-		wp.hooks.removeAction( 'test.action' );
+		wp.hooks.removeAllActions( 'test.action' );
 	} );
 
 	QUnit.test( 'pass in two arguments to an action', function() {
@@ -106,7 +106,7 @@
 			equal( arg2, b );
 		} );
 		wp.hooks.doAction( 'test.action', arg1, arg2 );
-		wp.hooks.removeAction( 'test.action' );
+		wp.hooks.removeAllActions( 'test.action' );
 
 		equal( arg1, 10 );
 		equal( arg2, 20 );
@@ -123,7 +123,7 @@
 		wp.hooks.addAction( 'test.action', func );
 		wp.hooks.doAction( 'test.action' );
 		wp.hooks.doAction( 'test.action' );
-		wp.hooks.removeAction( 'test.action' );
+		wp.hooks.removeAllActions( 'test.action' );
 	} );
 
 	QUnit.test( 'remove specific action callback', function() {
@@ -135,7 +135,7 @@
 		wp.hooks.removeAction( 'test.action', action_b );
 		wp.hooks.doAction( 'test.action' );
 		equal( window.actionValue, 'ca' );
-		wp.hooks.removeAction( 'test.action' );
+		wp.hooks.removeAllActions( 'test.action' );
 	} );
 
 	QUnit.test( 'remove all action callbacks', function() {
@@ -156,7 +156,7 @@
 
 		wp.hooks.removeFilter( 'test.filter', filter_b );
 		equal( wp.hooks.applyFilters( 'test.filter', 'test' ), 'testca' );
-		wp.hooks.removeFilter( 'test.filter' );
+		wp.hooks.removeAllFilters( 'test.filter' );
 	} );
 
 	QUnit.test( 'remove all filter callbacks', function() {
@@ -172,13 +172,13 @@
 	QUnit.test( 'Test doingAction, didAction and hasAction.', function() {
 
 		// Reset state for testing.
-		wp.hooks.removeAction( 'test.action' );
+		wp.hooks.removeAllActions( 'test.action' );
 		wp.hooks.addAction( 'another.action', function(){} );
 		wp.hooks.doAction( 'another.action' );
 
 		// Verify no action is running yet.
 		ok( ! wp.hooks.doingAction( 'test.action' ), 'The test.action is not running.' );
-		equal( wp.hooks.didAction( 'test.action' ), 0, 'The test.action has not run.' );
+		equal( wp.hooks.didAction( 'new.test.action' ), 0, 'The test.action has not run.' );
 		ok( ! wp.hooks.hasAction( 'test.action' ), 'The test.action is not registered.' );
 
 		wp.hooks.addAction( 'test.action', action_a );
@@ -191,18 +191,16 @@
 		wp.hooks.doAction( 'test.action' );
 
 		// Verify action added and running.
-		ok( wp.hooks.doingAction( 'test.action' ), 'The test.action is running.' );
 		equal( wp.hooks.didAction( 'test.action' ), 1, 'The test.action has run once.' );
 		ok( wp.hooks.hasAction( 'test.action' ), 'The test.action is registered.' );
 
 		wp.hooks.doAction( 'test.action' );
 		equal( wp.hooks.didAction( 'test.action' ), 2, 'The test.action has run twice.' );
 
-		wp.hooks.removeAction( 'test.action' );
+		wp.hooks.removeAllActions( 'test.action' );
 
 		// Verify state is reset appropriately.
-		ok( wp.hooks.doingAction( 'test.action' ), 'The test.action is running.' );
-		equal( wp.hooks.didAction( 'test.action' ), 0, 'The test.action has not run.' );
+		equal( wp.hooks.didAction( 'test.action' ), 2, 'The test.action has run twice.' );
 		ok( ! wp.hooks.hasAction( 'test.action' ), 'The test.action is not registered.' );
 
 		wp.hooks.doAction( 'another.action' );
@@ -223,7 +221,7 @@
 		ok( wp.hooks.hasFilter( 'runtest.filter' ), 'The runtest.filter is registered.' );
 		ok( ! wp.hooks.hasFilter( 'notatest.filter' ), 'The notatest.filter is not registered.' );
 
-		wp.hooks.removeFilter( 'runtest.filter' );
+		wp.hooks.removeAllFilters( 'runtest.filter' );
 	} );
 
 } )( window.QUnit );
