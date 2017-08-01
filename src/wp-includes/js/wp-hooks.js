@@ -1,3 +1,4 @@
+this["wp"] = this["wp"] || {}; this["wp"]["hooks"] =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -60,7 +61,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,85 +74,31 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-/**
- * Contains the registered hooks, keyed by hook type. Each hook type is an
- * array of objects with priority and callback of each registered hook.
- */
-var HOOKS = {
-  actions: {},
-  filters: {}
-};
-
-exports.default = HOOKS;
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _hooks = __webpack_require__(0);
-
-var _hooks2 = _interopRequireDefault(_hooks);
-
-var _ = __webpack_require__(2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var hooks = {
-	addAction: _.addAction,
-	addFilter: _.addFilter,
-	removeAction: _.removeAction,
-	removeFilter: _.removeFilter,
-	removeAllActions: _.removeAllActions,
-	removeAllFilters: _.removeAllFilters,
-	hasAction: _.hasAction,
-	hasFilter: _.hasFilter,
-	doAction: _.doAction,
-	applyFilters: _.applyFilters,
-	currentAction: _.currentAction,
-	currentFilter: _.currentFilter,
-	doingAction: _.doingAction,
-	doingFilter: _.doingFilter,
-	didAction: _.didAction,
-	didFilter: _.didFilter
-};
-
-window.wp = window.wp || {};
-window.wp.hooks = hooks;
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.didFilter = exports.didAction = exports.doingFilter = exports.doingAction = exports.currentFilter = exports.currentAction = exports.applyFilters = exports.doAction = exports.removeAllFilters = exports.removeAllActions = exports.hasFilter = exports.hasAction = exports.removeFilter = exports.removeAction = exports.addFilter = exports.addAction = undefined;
 
-var _hooks = __webpack_require__(0);
+var _hooks = __webpack_require__(1);
 
 var _hooks2 = _interopRequireDefault(_hooks);
 
-var _createAddHook = __webpack_require__(3);
+var _createAddHook = __webpack_require__(2);
 
 var _createAddHook2 = _interopRequireDefault(_createAddHook);
 
-var _createRemoveHook = __webpack_require__(4);
+var _createRemoveHook = __webpack_require__(3);
 
 var _createRemoveHook2 = _interopRequireDefault(_createRemoveHook);
 
-var _createHasHook = __webpack_require__(5);
+var _createHasHook = __webpack_require__(4);
 
 var _createHasHook2 = _interopRequireDefault(_createHasHook);
 
-var _createRunHook = __webpack_require__(6);
+var _createRunHook = __webpack_require__(5);
 
 var _createRunHook2 = _interopRequireDefault(_createRunHook);
+
+var _createCurrentHook = __webpack_require__(6);
+
+var _createCurrentHook2 = _interopRequireDefault(_createCurrentHook);
 
 var _createDoingHook = __webpack_require__(7);
 
@@ -184,12 +131,8 @@ var doAction = exports.doAction = (0, _createRunHook2.default)(_hooks2.default.a
 var applyFilters = exports.applyFilters = (0, _createRunHook2.default)(_hooks2.default.filters, true);
 
 // Current action/filter functions.
-var currentAction = exports.currentAction = function currentAction() {
-  return _hooks2.default.actions.current || null;
-};
-var currentFilter = exports.currentFilter = function currentFilter() {
-  return _hooks2.default.filters.current || null;
-};
+var currentAction = exports.currentAction = (0, _createCurrentHook2.default)(_hooks2.default.actions);
+var currentFilter = exports.currentFilter = (0, _createCurrentHook2.default)(_hooks2.default.filters);
 
 // Doing action/filter: true while a hook is being run.
 var doingAction = exports.doingAction = (0, _createDoingHook2.default)(_hooks2.default.actions);
@@ -200,7 +143,28 @@ var didAction = exports.didAction = (0, _createDidHook2.default)(_hooks2.default
 var didFilter = exports.didFilter = (0, _createDidHook2.default)(_hooks2.default.filters);
 
 /***/ }),
-/* 3 */
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/**
+ * Contains the registered hooks, keyed by hook type. Each hook type is an
+ * array of objects with priority and callback of each registered hook.
+ */
+var HOOKS = {
+  actions: {},
+  filters: {}
+};
+
+exports.default = HOOKS;
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -232,6 +196,11 @@ function createAddHook(hooks) {
 			return;
 		}
 
+		if (/^__/.test(hookName)) {
+			console.error('The hook name cannot begin with `__`.');
+			return;
+		}
+
 		if (typeof callback !== 'function') {
 			console.error('The hook callback must be a function.');
 			return;
@@ -257,6 +226,15 @@ function createAddHook(hooks) {
 			}
 			// Insert (or append) the new hook.
 			handlers.splice(i, 0, handler);
+			// We may also be currently executing this hook.  If the callback
+			// we're adding would come after the current callback, there's no
+			// problem; otherwise we need to increase the execution index of
+			// any other runs by 1 to account for the added element.
+			(hooks.__current || []).forEach(function (hookInfo) {
+				if (hookInfo.name === hookName && hookInfo.currentIndex >= i) {
+					hookInfo.currentIndex++;
+				}
+			});
 		} else {
 			// This is the first hook of its type.
 			hooks[hookName] = {
@@ -270,7 +248,7 @@ function createAddHook(hooks) {
 exports.default = createAddHook;
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -297,34 +275,62 @@ function createRemoveHook(hooks, removeAll) {
   * @param {?Function} callback The specific callback to be removed.  If
   *                             omitted (and `removeAll` is truthy), clears
   *                             all callbacks.
+  *
+  * @return {number}            The number of callbacks removed.
   */
 	return function removeHook(hookName, callback) {
-		// Bail if no hooks exist by this name
-		if (!hooks.hasOwnProperty(hookName)) {
+		if (!removeAll && typeof callback !== 'function') {
+			console.error('The hook callback to remove must be a function.');
 			return;
 		}
 
+		// Bail if no hooks exist by this name
+		if (!hooks.hasOwnProperty(hookName)) {
+			return 0;
+		}
+
+		var handlersRemoved = 0;
+
 		if (removeAll) {
+			handlersRemoved = hooks[hookName].handlers.length;
 			hooks[hookName] = {
 				runs: hooks[hookName].runs,
 				handlers: []
 			};
-		} else if (callback) {
+		} else {
 			// Try to find the specified callback to remove.
 			var handlers = hooks[hookName].handlers;
-			for (var i = handlers.length - 1; i >= 0; i--) {
+
+			var _loop = function _loop(i) {
 				if (handlers[i].callback === callback) {
 					handlers.splice(i, 1);
+					handlersRemoved++;
+					// This callback may also be part of a hook that is
+					// currently executing.  If the callback we're removing
+					// comes after the current callback, there's no problem;
+					// otherwise we need to decrease the execution index of any
+					// other runs by 1 to account for the removed element.
+					(hooks.__current || []).forEach(function (hookInfo) {
+						if (hookInfo.name === hookName && hookInfo.currentIndex >= i) {
+							hookInfo.currentIndex--;
+						}
+					});
 				}
+			};
+
+			for (var i = handlers.length - 1; i >= 0; i--) {
+				_loop(i);
 			}
 		}
+
+		return handlersRemoved;
 	};
 }
 
 exports.default = createRemoveHook;
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -359,7 +365,7 @@ function createHasHook(hooks) {
 exports.default = createHasHook;
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -389,8 +395,14 @@ function createRunHook(hooks, returnFirstArg) {
   * @return {*}               Return value of runner, if applicable.
   */
 	return function runHooks(hookName) {
-		for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-			args[_key - 1] = arguments[_key];
+		if (typeof hookName !== 'string') {
+			console.error('The hook name must be a string.');
+			return;
+		}
+
+		if (/^__/.test(hookName)) {
+			console.error('The hook name cannot begin with `__`.');
+			return;
 		}
 
 		if (!hooks.hasOwnProperty(hookName)) {
@@ -402,22 +414,35 @@ function createRunHook(hooks, returnFirstArg) {
 
 		var handlers = hooks[hookName].handlers;
 
+		for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+			args[_key - 1] = arguments[_key];
+		}
+
 		if (!handlers.length) {
 			return returnFirstArg ? args[0] : undefined;
 		}
 
-		hooks.current = hookName;
+		var hookInfo = {
+			name: hookName,
+			currentIndex: 0
+		};
+
+		hooks.__current = hooks.__current || [];
+		hooks.__current.push(hookInfo);
 		hooks[hookName].runs++;
 
 		var maybeReturnValue = args[0];
-		handlers.forEach(function (handler) {
+
+		while (hookInfo.currentIndex < handlers.length) {
+			var handler = handlers[hookInfo.currentIndex];
 			maybeReturnValue = handler.callback.apply(null, args);
 			if (returnFirstArg) {
 				args[0] = maybeReturnValue;
 			}
-		});
+			hookInfo.currentIndex++;
+		}
 
-		delete hooks.current;
+		hooks.__current.pop();
 
 		if (returnFirstArg) {
 			return maybeReturnValue;
@@ -426,6 +451,44 @@ function createRunHook(hooks, returnFirstArg) {
 }
 
 exports.default = createRunHook;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+/**
+ * Returns a function which, when invoked, will return the name of the
+ * currently running hook, or `null` if no hook of the given type is currently
+ * running.
+ *
+ * @param  {Object}   hooks          Stored hooks, keyed by hook name.
+ *
+ * @return {Function}                Function that returns the current hook.
+ */
+function createCurrentHook(hooks, returnFirstArg) {
+	/**
+  * Returns the name of the currently running hook, or `null` if no hook of
+  * the given type is currently running.
+  *
+  * @return {?string}             The name of the currently running hook, or
+  *                               `null` if no hook is currently running.
+  */
+	return function currentHook() {
+		if (!hooks.__current || !hooks.__current.length) {
+			return null;
+		}
+
+		return hooks.__current[hooks.__current.length - 1].name;
+	};
+}
+
+exports.default = createCurrentHook;
 
 /***/ }),
 /* 7 */
@@ -458,11 +521,11 @@ function createDoingHook(hooks) {
 	return function doingHook(hookName) {
 		// If the hookName was not passed, check for any current hook.
 		if ('undefined' === typeof hookName) {
-			return 'undefined' !== typeof hooks.current;
+			return 'undefined' !== typeof hooks.__current[0];
 		}
 
-		// Return the current hook.
-		return hooks.current ? hookName === hooks.current : false;
+		// Return the __current hook.
+		return hooks.__current[0] ? hookName === hooks.__current[0].name : false;
 	};
 }
 
