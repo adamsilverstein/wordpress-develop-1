@@ -2662,18 +2662,25 @@ class Tests_Comment_Query extends WP_UnitTestCase {
 	public function test_comment_query_should_be_cached() {
 		global $wpdb;
 
-		$q = new WP_Comment_Query( array(
-			'post_id' => self::$post_id,
-			'fields' => 'ids',
-		) );
-
 		$c = wp_insert_comment( array(
 			'comment_author' => 'Foo',
 			'comment_author_email' => 'foo@example.com',
 			'comment_post_ID' => self::$post_id,
 		) );
 
+		$q = new WP_Comment_Query( array(
+			'post_id' => self::$post_id,
+			'fields' => 'ids',
+		) );
+
 		$num_queries = $wpdb->num_queries;
+
+		$q2 = new WP_Comment_Query( array(
+			'post_id' => self::$post_id,
+			'fields' => 'ids',
+		) );
+
+		$this->assertSame( $num_queries, $wpdb->num_queries );
 	}
 
 	public function test_created_comment_should_invalidate_query_cache() {
@@ -2869,5 +2876,79 @@ class Tests_Comment_Query extends WP_UnitTestCase {
 		$num_queries++;
 		$this->assertSame( $num_queries, $wpdb->num_queries );
 		$this->assertEqualSets( array( $c ), $q->comments );
+	}
+
+	/**
+	 * @ticket 41348
+	 */
+	public function test_count_query_should_miss_noncount_cache() {
+		global $wpdb;
+
+		$q = new WP_Comment_Query();
+
+		$query_1 = $q->query( array(
+			'fields' => 'ids',
+			'number' => 3,
+			'order' => 'ASC',
+		) );
+
+		$number_of_queries = $wpdb->num_queries;
+
+		$query_2 = $q->query( array(
+			'fields' => 'ids',
+			'number' => 3,
+			'order' => 'ASC',
+			'count' => true,
+		) );
+		$this->assertEquals( $number_of_queries + 1, $wpdb->num_queries );
+	}
+
+	/**
+	 * @ticket 41348
+	 */
+	public function test_count_query_should_hit_count_cache() {
+		global $wpdb;
+
+		$q = new WP_Comment_Query();
+
+		$query_1 = $q->query( array(
+			'fields' => 'ids',
+			'number' => 3,
+			'order' => 'ASC',
+			'count' => true,
+		) );
+		$number_of_queries = $wpdb->num_queries;
+
+		$query_2 = $q->query( array(
+			'fields' => 'ids',
+			'number' => 3,
+			'order' => 'ASC',
+			'count' => true,
+		) );
+		$this->assertEquals( $number_of_queries, $wpdb->num_queries );
+	}
+
+	/**
+	 * @ticket 41348
+	 */
+	public function test_different_values_of_fields_should_share_cached_values() {
+		global $wpdb;
+
+		$q = new WP_Comment_Query();
+
+		$query_1 = $q->query( array(
+			'fields' => 'all',
+			'number' => 3,
+			'order' => 'ASC',
+		) );
+		$number_of_queries = $wpdb->num_queries;
+
+		$query_2 = $q->query( array(
+			'fields' => 'ids',
+			'number' => 3,
+			'order' => 'ASC',
+		) );
+
+		$this->assertEquals( $number_of_queries, $wpdb->num_queries );
 	}
 }
