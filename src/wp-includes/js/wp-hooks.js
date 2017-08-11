@@ -61,7 +61,7 @@ this["wp"] = this["wp"] || {}; this["wp"]["hooks"] =
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -72,39 +72,112 @@ this["wp"] = this["wp"] || {}; this["wp"]["hooks"] =
 
 
 Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+/**
+ * Validate a hook name.
+ *
+ * @param  {string} hookName The hook name to validate.
+ *
+ * @return {bool}            Whether the hook name is valid.
+ */
+function validateHookName(hookName) {
+
+	if ('string' !== typeof hookName) {
+		console.error('The hook name must be a string.');
+		return false;
+	}
+
+	if (/^__/.test(hookName)) {
+		console.error('The hook name cannot begin with `__`.');
+		return false;
+	}
+
+	if (!/^[a-z][a-z0-9_.-]*$/.test(hookName)) {
+		console.error('The hook name can only contain numbers, letters, dashes, periods and underscores.');
+		return false;
+	}
+
+	return true;
+}
+
+exports.default = validateHookName;
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+/**
+ * Validate a namespace.
+ *
+ * @param  {string} namespace The namespace to validate.
+ *
+ * @return {bool}             Whether the namespace is valid.
+ */
+function validateNamespace(namespace) {
+
+	if ('string' !== typeof namespace) {
+		console.error('The namespace must be a string.');
+		return false;
+	}
+
+	if (!/^.*\/.*$/.test(namespace)) {
+		console.error('The namespace must take the form `my-plugin-slug/functionDescription');
+		return false;
+	}
+
+	return true;
+}
+
+exports.default = validateNamespace;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.didFilter = exports.didAction = exports.doingFilter = exports.doingAction = exports.currentFilter = exports.currentAction = exports.applyFilters = exports.doAction = exports.removeAllFilters = exports.removeAllActions = exports.hasFilter = exports.hasAction = exports.removeFilter = exports.removeAction = exports.addFilter = exports.addAction = undefined;
 
-var _hooks = __webpack_require__(1);
+var _hooks = __webpack_require__(3);
 
 var _hooks2 = _interopRequireDefault(_hooks);
 
-var _createAddHook = __webpack_require__(2);
+var _createAddHook = __webpack_require__(4);
 
 var _createAddHook2 = _interopRequireDefault(_createAddHook);
 
-var _createRemoveHook = __webpack_require__(3);
+var _createRemoveHook = __webpack_require__(5);
 
 var _createRemoveHook2 = _interopRequireDefault(_createRemoveHook);
 
-var _createHasHook = __webpack_require__(4);
+var _createHasHook = __webpack_require__(6);
 
 var _createHasHook2 = _interopRequireDefault(_createHasHook);
 
-var _createRunHook = __webpack_require__(5);
+var _createRunHook = __webpack_require__(7);
 
 var _createRunHook2 = _interopRequireDefault(_createRunHook);
 
-var _createCurrentHook = __webpack_require__(6);
+var _createCurrentHook = __webpack_require__(8);
 
 var _createCurrentHook2 = _interopRequireDefault(_createCurrentHook);
 
-var _createDoingHook = __webpack_require__(7);
+var _createDoingHook = __webpack_require__(9);
 
 var _createDoingHook2 = _interopRequireDefault(_createDoingHook);
 
-var _createDidHook = __webpack_require__(8);
+var _createDidHook = __webpack_require__(10);
 
 var _createDidHook2 = _interopRequireDefault(_createDidHook);
 
@@ -143,7 +216,7 @@ var didAction = exports.didAction = (0, _createDidHook2.default)(_hooks2.default
 var didFilter = exports.didFilter = (0, _createDidHook2.default)(_hooks2.default.filters);
 
 /***/ }),
-/* 1 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -164,7 +237,7 @@ var HOOKS = {
 exports.default = HOOKS;
 
 /***/ }),
-/* 2 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -173,6 +246,17 @@ exports.default = HOOKS;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _validateNamespace = __webpack_require__(1);
+
+var _validateNamespace2 = _interopRequireDefault(_validateNamespace);
+
+var _validateHookName = __webpack_require__(0);
+
+var _validateHookName2 = _interopRequireDefault(_validateHookName);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Returns a function which, when invoked, will add a hook.
  *
@@ -184,35 +268,35 @@ function createAddHook(hooks) {
 	/**
   * Adds the hook to the appropriate hooks container.
   *
-  * @param {string}   hookName Name of hook to add
-  * @param {Function} callback Function to call when the hook is run
-  * @param {?number}  priority Priority of this hook (default=10)
+  * @param {string}   hookName  Name of hook to add
+  * @param {string}   namespace The unique namespace identifying the callback in the form `my-plugin-slug/functionDescription`.
+  * @param {Function} callback  Function to call when the hook is run
+  * @param {?number}  priority  Priority of this hook (default=10)
   */
-	return function addHook(hookName, callback) {
-		var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
+	return function addHook(hookName, namespace, callback) {
+		var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 10;
 
-		if (typeof hookName !== 'string') {
-			console.error('The hook name must be a string.');
+
+		if (!(0, _validateHookName2.default)(hookName)) {
 			return;
 		}
 
-		if (/^__/.test(hookName)) {
-			console.error('The hook name cannot begin with `__`.');
+		if (!(0, _validateNamespace2.default)(namespace)) {
 			return;
 		}
 
-		if (typeof callback !== 'function') {
+		if ('function' !== typeof callback) {
 			console.error('The hook callback must be a function.');
 			return;
 		}
 
 		// Validate numeric priority
-		if (typeof priority !== 'number') {
+		if ('number' !== typeof priority) {
 			console.error('If specified, the hook priority must be a number.');
 			return;
 		}
 
-		var handler = { callback: callback, priority: priority };
+		var handler = { callback: callback, priority: priority, namespace: namespace };
 
 		if (hooks.hasOwnProperty(hookName)) {
 			// Find the correct insert index of the new hook.
@@ -248,7 +332,7 @@ function createAddHook(hooks) {
 exports.default = createAddHook;
 
 /***/ }),
-/* 3 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -257,30 +341,42 @@ exports.default = createAddHook;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _validateNamespace = __webpack_require__(1);
+
+var _validateNamespace2 = _interopRequireDefault(_validateNamespace);
+
+var _validateHookName = __webpack_require__(0);
+
+var _validateHookName2 = _interopRequireDefault(_validateHookName);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Returns a function which, when invoked, will remove a specified hook or all
  * hooks by the given name.
  *
  * @param  {Object}   hooks      Stored hooks, keyed by hook name.
- * @param  {bool}     removeAll  Whether to remove all hooked callbacks.
+ * @param  {bool}     removeAll  Whether to remove all callbacks for a hookName, without regard to namespace. Used to create `removeAll*` functions.
  *
  * @return {Function}            Function that removes hooks.
  */
 function createRemoveHook(hooks, removeAll) {
 	/**
   * Removes the specified callback (or all callbacks) from the hook with a
-  * given name.
+  * given hookName and namespace.
   *
-  * @param {string}    hookName The name of the hook to modify.
-  * @param {?Function} callback The specific callback to be removed.  If
-  *                             omitted (and `removeAll` is truthy), clears
-  *                             all callbacks.
+  * @param {string}    hookName  The name of the hook to modify.
+  * @param {string}    namespace The unique namespace identifying the callback in the form `my-plugin-slug/functionDescription`.
   *
-  * @return {number}            The number of callbacks removed.
+  * @return {number}             The number of callbacks removed.
   */
-	return function removeHook(hookName, callback) {
-		if (!removeAll && typeof callback !== 'function') {
-			console.error('The hook callback to remove must be a function.');
+	return function removeHook(hookName, namespace) {
+
+		if (!(0, _validateHookName2.default)(hookName)) {
+			return;
+		}
+		if (!removeAll && !(0, _validateNamespace2.default)(namespace)) {
 			return;
 		}
 
@@ -302,7 +398,7 @@ function createRemoveHook(hooks, removeAll) {
 			var handlers = hooks[hookName].handlers;
 
 			var _loop = function _loop(i) {
-				if (handlers[i].callback === callback) {
+				if (handlers[i].namespace === namespace) {
 					handlers.splice(i, 1);
 					handlersRemoved++;
 					// This callback may also be part of a hook that is
@@ -330,7 +426,7 @@ function createRemoveHook(hooks, removeAll) {
 exports.default = createRemoveHook;
 
 /***/ }),
-/* 4 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -365,7 +461,7 @@ function createHasHook(hooks) {
 exports.default = createHasHook;
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -374,6 +470,13 @@ exports.default = createHasHook;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _validateHookName = __webpack_require__(0);
+
+var _validateHookName2 = _interopRequireDefault(_validateHookName);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Returns a function which, when invoked, will execute all callbacks
  * registered to a hook of the specified type, optionally returning the final
@@ -395,13 +498,8 @@ function createRunHook(hooks, returnFirstArg) {
   * @return {*}               Return value of runner, if applicable.
   */
 	return function runHooks(hookName) {
-		if (typeof hookName !== 'string') {
-			console.error('The hook name must be a string.');
-			return;
-		}
 
-		if (/^__/.test(hookName)) {
-			console.error('The hook name cannot begin with `__`.');
+		if (!(0, _validateHookName2.default)(hookName)) {
 			return;
 		}
 
@@ -453,7 +551,7 @@ function createRunHook(hooks, returnFirstArg) {
 exports.default = createRunHook;
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -491,7 +589,7 @@ function createCurrentHook(hooks, returnFirstArg) {
 exports.default = createCurrentHook;
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -532,7 +630,7 @@ function createDoingHook(hooks) {
 exports.default = createDoingHook;
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -541,6 +639,13 @@ exports.default = createDoingHook;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _validateHookName = __webpack_require__(0);
+
+var _validateHookName2 = _interopRequireDefault(_validateHookName);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Returns a function which, when invoked, will return the number of times a
  * hook has been called.
@@ -558,6 +663,11 @@ function createDidHook(hooks) {
   * @return {number}          The number of times the hook has run.
   */
 	return function didHook(hookName) {
+
+		if (!(0, _validateHookName2.default)(hookName)) {
+			return;
+		}
+
 		return hooks.hasOwnProperty(hookName) && hooks[hookName].runs ? hooks[hookName].runs : 0;
 	};
 }
