@@ -423,7 +423,7 @@ function count_many_users_posts( $users, $post_type = 'post', $public_only = fal
 /**
  * Get the current user's ID
  *
- * @since MU
+ * @since MU (3.0.0)
  *
  * @return int The current user's ID, or 0 if no user is logged in.
  */
@@ -679,7 +679,7 @@ function get_blogs_of_user( $user_id, $all = false ) {
 	/**
 	 * Filters the list of sites a user belongs to.
 	 *
-	 * @since MU
+	 * @since MU (3.0.0)
 	 *
 	 * @param array $sites   An array of site objects belonging to the user.
 	 * @param int   $user_id User ID.
@@ -692,7 +692,7 @@ function get_blogs_of_user( $user_id, $all = false ) {
 /**
  * Find out whether a user is a member of a given blog.
  *
- * @since MU 1.1
+ * @since MU (3.0.0) 1.1
  *
  * @global wpdb $wpdb WordPress database abstraction object.
  *
@@ -2591,7 +2591,7 @@ function _wp_get_current_user() {
 }
 
 /**
- * Sends an email when an email address change is requested.
+ * Send a confirmation request email when a change of user email address is attempted.
  *
  * @since 3.0.0
  * @since 4.9.0 This function was moved from wp-admin/includes/ms.php so it's no longer Multisite specific.
@@ -2660,7 +2660,7 @@ All at ###SITENAME###
 ###SITEURL###' );
 
 		/**
-		 * Filters the email text sent when a user changes emails.
+		 * Filters the text of the email sent when a change of user email address is attempted.
 		 *
 		 * The following strings have a special meaning and will get replaced dynamically:
 		 * ###USERNAME###  The current user's username.
@@ -2669,11 +2669,16 @@ All at ###SITENAME###
 		 * ###SITENAME###  The name of the site.
 		 * ###SITEURL###   The URL to the site.
 		 *
-		 * @since MU
+		 * @since MU (3.0.0)
 		 * @since 4.9.0 This filter is no longer Multisite specific.
 		 *
 		 * @param string $email_text     Text in the email.
-		 * @param string $new_user_email New user email that the current user has changed to.
+		 * @param array  $new_user_email {
+		 *     Data relating to the new user email address.
+		 *
+		 *     @type string $hash     The secure hash used in the confirmation link URL.
+		 *     @type string $newemail The proposed new email address.
+		 * }
 		 */
 		$content = apply_filters( 'new_user_email_content', $email_text, $new_user_email );
 
@@ -2690,7 +2695,7 @@ All at ###SITENAME###
 }
 
 /**
- * Adds an admin notice alerting the user to check for confirmation email
+ * Adds an admin notice alerting the user to check for confirmation request email
  * after email address change.
  *
  * @since 3.0.0
