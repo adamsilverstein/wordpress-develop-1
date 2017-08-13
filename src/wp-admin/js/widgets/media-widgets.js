@@ -145,7 +145,7 @@ wp.mediaWidgets = ( function( $ ) {
 					 * @returns {void}
 					 */
 					fetch: function() {
-						var embedLinkView = this, fetchSuccess, matches, fileExt, urlParser; // eslint-disable-line consistent-this
+						var embedLinkView = this, fetchSuccess, matches, fileExt, urlParser, url, re, youTubeEmbedMatch; // eslint-disable-line consistent-this
 
 						if ( embedLinkView.dfd && 'pending' === embedLinkView.dfd.state() ) {
 							embedLinkView.dfd.abort();
@@ -190,13 +190,22 @@ wp.mediaWidgets = ( function( $ ) {
 							return;
 						}
 
-						embedLinkView.dfd = $.ajax({
+						// Support YouTube embed links.
+						url = embedLinkView.model.get( 'url' );
+						re = /https?:\/\/www\.youtube\.com\/embed\/([^/]+)/;
+						youTubeEmbedMatch = re.exec( url );
+						if ( youTubeEmbedMatch ) {
+							url = 'https://www.youtube.com/watch?v=' + youTubeEmbedMatch[ 1 ];
+							// silently change url to proper oembed-able version.
+							embedLinkView.model.attributes.url = url;
+						}
+
+						embedLinkView.dfd = wp.apiRequest({
 							url: wp.media.view.settings.oEmbedProxyUrl,
 							data: {
-								url: embedLinkView.model.get( 'url' ),
+								url: url,
 								maxwidth: embedLinkView.model.get( 'width' ),
 								maxheight: embedLinkView.model.get( 'height' ),
-								_wpnonce: wp.media.view.settings.nonce.wpRestApi,
 								discover: false
 							},
 							type: 'GET',
@@ -699,10 +708,14 @@ wp.mediaWidgets = ( function( $ ) {
 				control.model.set( control.getModelPropsFromMediaFrame( mediaFrame ) );
 			});
 
-			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
+			// Disable syncing of attachment changes back to server (except for deletions). See <https://core.trac.wordpress.org/ticket/40403>.
 			defaultSync = wp.media.model.Attachment.prototype.sync;
-			wp.media.model.Attachment.prototype.sync = function rejectedSync() {
-				return $.Deferred().rejectWith( this ).promise();
+			wp.media.model.Attachment.prototype.sync = function( method ) {
+				if ( 'delete' === method ) {
+					return defaultSync.apply( this, arguments );
+				} else {
+					return $.Deferred().rejectWith( this ).promise();
+				}
 			};
 			mediaFrame.on( 'close', function onClose() {
 				wp.media.model.Attachment.prototype.sync = defaultSync;
@@ -1017,7 +1030,7 @@ wp.mediaWidgets = ( function( $ ) {
 	 * @returns {void}
 	 */
 	component.handleWidgetAdded = function handleWidgetAdded( event, widgetContainer ) {
-		var fieldContainer, syncContainer, widgetForm, idBase, ControlConstructor, ModelConstructor, modelAttributes, widgetControl, widgetModel, widgetId, widgetInside, animatedCheckDelay = 50, renderWhenAnimationDone;
+		var fieldContainer, syncContainer, widgetForm, idBase, ControlConstructor, ModelConstructor, modelAttributes, widgetControl, widgetModel, widgetId, animatedCheckDelay = 50, renderWhenAnimationDone;
 		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' ); // Note: '.form' appears in the customizer, whereas 'form' on the widgets admin screen.
 		idBase = widgetForm.find( '> .id_base' ).val();
 		widgetId = widgetForm.find( '> .widget-id' ).val();
@@ -1075,9 +1088,8 @@ wp.mediaWidgets = ( function( $ ) {
 		 * This ensures that the container's dimensions are fixed so that ME.js
 		 * can initialize with the proper dimensions.
 		 */
-		widgetInside = widgetContainer.parent();
 		renderWhenAnimationDone = function() {
-			if ( widgetInside.is( ':animated' ) ) {
+			if ( ! widgetContainer.hasClass( 'open' ) ) {
 				setTimeout( renderWhenAnimationDone, animatedCheckDelay );
 			} else {
 				widgetControl.render();

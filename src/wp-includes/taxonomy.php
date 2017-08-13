@@ -921,7 +921,7 @@ function get_term_by( $field, $value, $taxonomy = '', $output = OBJECT, $filter 
  *
  * @since 2.3.0
  *
- * @param string $term_id  ID of Term to get children.
+ * @param int    $term_id  ID of Term to get children.
  * @param string $taxonomy Taxonomy Name.
  * @return array|WP_Error List of Term IDs. WP_Error returned if `$taxonomy` does not exist.
  */
@@ -1917,7 +1917,10 @@ function wp_get_object_terms($object_ids, $taxonomies, $args = array()) {
 	$args['taxonomy'] = $taxonomies;
 	$args['object_ids'] = $object_ids;
 
-	$terms = array_merge( $terms, get_terms( $args ) );
+	// Taxonomies registered without an 'args' param are handled here.
+	if ( ! empty( $taxonomies ) ) {
+		$terms = array_merge( $terms, get_terms( $args ) );
+	}
 
 	/**
 	 * Filters the terms for a given object or objects.
@@ -3928,6 +3931,16 @@ function get_term_link( $term, $taxonomy = '' ) {
 	$taxonomy = $term->taxonomy;
 
 	$termlink = $wp_rewrite->get_extra_permastruct($taxonomy);
+
+	/**
+	 * Filters the permalink structure for a terms before token replacement occurs.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param string  $termlink The permalink structure for the term's taxonomy.
+	 * @param WP_Term $term     The term object.
+	 */
+	$termlink = apply_filters( 'pre_term_link', $termlink, $term );
 
 	$slug = $term->slug;
 	$t = get_taxonomy($taxonomy);

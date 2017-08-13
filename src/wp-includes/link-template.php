@@ -2872,8 +2872,10 @@ function get_the_comments_pagination( $args = array() ) {
 	) );
 	$args['echo'] = false;
 
-	// Make sure we get plain links, so we get a string we can work with.
-	$args['type'] = 'plain';
+	// Make sure we get a string back. Plain is the next best thing.
+	if ( isset( $args['type'] ) && 'array' == $args['type'] ) {
+		$args['type'] = 'plain';
+	}
 
 	$links = paginate_comments_links( $args );
 
@@ -3397,12 +3399,24 @@ function user_admin_url( $path = '', $scheme = 'admin' ) {
  * @return string Admin URL link with optional path appended.
  */
 function self_admin_url( $path = '', $scheme = 'admin' ) {
-	if ( is_network_admin() )
-		return network_admin_url($path, $scheme);
-	elseif ( is_user_admin() )
-		return user_admin_url($path, $scheme);
-	else
-		return admin_url($path, $scheme);
+	if ( is_network_admin() ) {
+		$url = network_admin_url( $path, $scheme );
+	} elseif ( is_user_admin() ) {
+		$url = user_admin_url( $path, $scheme );
+	} else {
+		$url = admin_url( $path, $scheme );
+	}
+
+	/**
+	 * Filters the admin URL for the current site or network depending on context.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param string $url    The complete URL including scheme and path.
+	 * @param string $path   Path relative to the URL. Blank string if no path is specified.
+	 * @param string $scheme The scheme to use.
+	 */
+	return apply_filters( 'self_admin_url', $url, $path, $scheme );
 }
 
 /**

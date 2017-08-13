@@ -1747,8 +1747,39 @@ function wp_password_change_notification( $user ) {
 		// The blogname option is escaped with esc_html on the way into the database in sanitize_option
 		// we want to reverse this for the plain text arena of emails.
 		$blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
-		/* translators: %s: site title */
-		wp_mail( get_option( 'admin_email' ), sprintf( __( '[%s] Password Changed' ), $blogname ), $message );
+
+		$wp_password_change_notification_email = array(
+			'to'      => get_option( 'admin_email' ),
+			/* translators: Password change notification email subject. %s: Site title */
+			'subject' => __( '[%s] Password Changed' ),
+			'message' => $message,
+			'headers' => '',
+		);
+
+		/**
+		 * Filters the contents of the password change notification email sent to the site admin.
+		 *
+		 * @since 4.9.0
+		 *
+		 * @param array   $wp_password_change_notification_email {
+		 *     Used to build wp_mail().
+		 *
+		 *     @type string $to      The intended recipient - site admin email address.
+		 *     @type string $subject The subject of the email.
+		 *     @type string $message The body of the email.
+		 *     @type string $headers The headers of the email.
+		 * }
+		 * @param WP_User $user     User object for user whose password was changed.
+		 * @param string  $blogname The site title.
+		 */
+		$wp_password_change_notification_email = apply_filters( 'wp_password_change_notification_email', $wp_password_change_notification_email, $user, $blogname );
+
+		wp_mail(
+			$wp_password_change_notification_email['to'],
+			wp_specialchars_decode( sprintf( $wp_password_change_notification_email['subject'], $blogname ) ),
+			$wp_password_change_notification_email['message'],
+			$wp_password_change_notification_email['headers']
+		);
 	}
 }
 endif;
@@ -1786,11 +1817,46 @@ function wp_new_user_notification( $user_id, $deprecated = null, $notify = '' ) 
 
 	if ( 'user' !== $notify ) {
 		$switched_locale = switch_to_locale( get_locale() );
+
+		/* translators: %s: site title */
 		$message  = sprintf( __( 'New user registration on your site %s:' ), $blogname ) . "\r\n\r\n";
+		/* translators: %s: user login */
 		$message .= sprintf( __( 'Username: %s' ), $user->user_login ) . "\r\n\r\n";
+		/* translators: %s: user email address */
 		$message .= sprintf( __( 'Email: %s' ), $user->user_email ) . "\r\n";
 
-		@wp_mail( get_option( 'admin_email' ), sprintf( __( '[%s] New User Registration' ), $blogname ), $message );
+		$wp_new_user_notification_email_admin = array(
+			'to'      => get_option( 'admin_email' ),
+			/* translators: Password change notification email subject. %s: Site title */
+			'subject' => __( '[%s] New User Registration' ),
+			'message' => $message,
+			'headers' => '',
+		);
+
+		/**
+		 * Filters the contents of the new user notification email sent to the site admin.
+		 *
+		 * @since 4.9.0
+		 *
+		 * @param array   $wp_new_user_notification_email {
+		 *     Used to build wp_mail().
+		 *
+		 *     @type string $to      The intended recipient - site admin email address.
+		 *     @type string $subject The subject of the email.
+		 *     @type string $message The body of the email.
+		 *     @type string $headers The headers of the email.
+		 * }
+		 * @param WP_User $user     User object for new user.
+		 * @param string  $blogname The site title.
+		 */
+		$wp_new_user_notification_email_admin = apply_filters( 'wp_new_user_notification_email_admin', $wp_new_user_notification_email_admin, $user, $blogname );
+
+		@wp_mail(
+			$wp_new_user_notification_email_admin['to'],
+			wp_specialchars_decode( sprintf( $wp_new_user_notification_email_admin['subject'], $blogname ) ),
+			$wp_new_user_notification_email_admin['message'],
+			$wp_new_user_notification_email_admin['headers']
+		);
 
 		if ( $switched_locale ) {
 			restore_previous_locale();
@@ -1818,13 +1884,45 @@ function wp_new_user_notification( $user_id, $deprecated = null, $notify = '' ) 
 
 	$switched_locale = switch_to_locale( get_user_locale( $user ) );
 
+	/* translators: %s: user login */
 	$message = sprintf(__('Username: %s'), $user->user_login) . "\r\n\r\n";
 	$message .= __('To set your password, visit the following address:') . "\r\n\r\n";
 	$message .= '<' . network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user->user_login), 'login') . ">\r\n\r\n";
 
 	$message .= wp_login_url() . "\r\n";
 
-	wp_mail($user->user_email, sprintf(__('[%s] Your username and password info'), $blogname), $message);
+	$wp_new_user_notification_email = array(
+		'to'      => $user->user_email,
+		/* translators: Password change notification email subject. %s: Site title */
+		'subject' => __( '[%s] Your username and password info' ),
+		'message' => $message,
+		'headers' => '',
+	);
+
+	/**
+	 * Filters the contents of the new user notification email sent to the new user.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param array   $wp_new_user_notification_email {
+	 *     Used to build wp_mail().
+	 *
+	 *     @type string $to      The intended recipient - New user email address.
+	 *     @type string $subject The subject of the email.
+	 *     @type string $message The body of the email.
+	 *     @type string $headers The headers of the email.
+	 * }
+	 * @param WP_User $user     User object for new user.
+	 * @param string  $blogname The site title.
+	 */
+	$wp_new_user_notification_email = apply_filters( 'wp_new_user_notification_email', $wp_new_user_notification_email, $user, $blogname );
+
+	wp_mail(
+		$wp_new_user_notification_email['to'],
+		wp_specialchars_decode( sprintf( $wp_new_user_notification_email['subject'], $blogname ) ),
+		$wp_new_user_notification_email['message'],
+		$wp_new_user_notification_email['headers']
+	);
 
 	if ( $switched_locale ) {
 		restore_previous_locale();
@@ -2429,7 +2527,7 @@ function get_avatar( $id_or_email, $size = 96, $default = '', $alt = '', $args =
 		"<img alt='%s' src='%s' srcset='%s' class='%s' height='%d' width='%d' %s/>",
 		esc_attr( $args['alt'] ),
 		esc_url( $url ),
-		esc_attr( "$url2x 2x" ),
+		esc_url( $url2x ) . ' 2x',
 		esc_attr( join( ' ', $class ) ),
 		(int) $args['height'],
 		(int) $args['width'],
