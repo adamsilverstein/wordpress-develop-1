@@ -4,7 +4,8 @@ wp.textWidgets = ( function( $ ) {
 	'use strict';
 
 	var component = {
-		dismissedPointers: []
+		dismissedPointers: [],
+		idBases: [ 'text' ]
 	};
 
 	/**
@@ -353,11 +354,11 @@ wp.textWidgets = ( function( $ ) {
 	 * @returns {void}
 	 */
 	component.handleWidgetAdded = function handleWidgetAdded( event, widgetContainer ) {
-		var widgetForm, idBase, widgetControl, widgetId, animatedCheckDelay = 50, widgetInside, renderWhenAnimationDone, fieldContainer, syncContainer;
+		var widgetForm, idBase, widgetControl, widgetId, animatedCheckDelay = 50, renderWhenAnimationDone, fieldContainer, syncContainer;
 		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' ); // Note: '.form' appears in the customizer, whereas 'form' on the widgets admin screen.
 
 		idBase = widgetForm.find( '> .id_base' ).val();
-		if ( 'text' !== idBase ) {
+		if ( -1 === component.idBases.indexOf( idBase ) ) {
 			return;
 		}
 
@@ -400,9 +401,8 @@ wp.textWidgets = ( function( $ ) {
 		 * This ensures that the textarea is visible and an iframe can be embedded
 		 * with TinyMCE being able to set contenteditable on it.
 		 */
-		widgetInside = widgetContainer.parent();
 		renderWhenAnimationDone = function() {
-			if ( widgetInside.is( ':animated' ) ) {
+			if ( ! widgetContainer.hasClass( 'open' ) ) {
 				setTimeout( renderWhenAnimationDone, animatedCheckDelay );
 			} else {
 				widgetControl.initializeEditor();
@@ -424,7 +424,7 @@ wp.textWidgets = ( function( $ ) {
 		}
 
 		idBase = widgetForm.find( '> .widget-control-actions > .id_base' ).val();
-		if ( 'text' !== idBase ) {
+		if ( -1 === component.idBases.indexOf( idBase ) ) {
 			return;
 		}
 
@@ -461,7 +461,7 @@ wp.textWidgets = ( function( $ ) {
 		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' );
 
 		idBase = widgetForm.find( '> .id_base' ).val();
-		if ( 'text' !== idBase ) {
+		if ( -1 === component.idBases.indexOf( idBase ) ) {
 			return;
 		}
 
