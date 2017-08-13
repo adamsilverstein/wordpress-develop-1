@@ -32,9 +32,9 @@
     "grunt-replace": "~1.0.1",
     "grunt-rtlcss": "~2.0.1",
     "grunt-sass": "~1.2.1",
-    "grunt-webpack": "^3.0.0",
+    "grunt-webpack": "^3.0.2",
     "matchdep": "~1.0.0",
-    "webpack": "^3.0.0",
-    "webpack-dev-server": "^2.5.0"
+    "webpack": "^3.5.4",
+    "webpack-dev-server": "^2.7.1"
   }
 }
