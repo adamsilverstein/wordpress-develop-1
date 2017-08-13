@@ -1,5 +1,5 @@
 /* jshint node:true */
-const webpackConfig = require( './webpack.config' );
+var webpackConfig = require( './webpack.config' );
 
 module.exports = function(grunt) {
 	var path = require('path'),
@@ -782,7 +782,7 @@ module.exports = function(grunt) {
 	grunt.registerTask( 'watch', function() {
 		if ( ! this.args.length || this.args.indexOf( 'webpack' ) > -1 ) {
 
-			grunt.task.run( 'webpack' );
+			grunt.task.run( 'webpack:dev' );
 		}
 
 		grunt.task.run( '_' + this.nameArgs );
@@ -793,7 +793,7 @@ module.exports = function(grunt) {
 	] );
 
 	grunt.registerTask( 'precommit:js', [
-		'webpack',
+		'webpack:prod',
 		'jshint:corejs',
 		'uglify:bookmarklet',
 		'uglify:masonry',
