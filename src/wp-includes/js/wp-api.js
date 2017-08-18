@@ -39,8 +39,8 @@
 	 *
 	 * @return {Backbone Model} The model found at given route. Undefined if not found.
 	 */
-	wp.api.getModelByRoute = function( route ) {
-		return _.find( wp.api.models, function( model ) {
+	wp.api.getModelByRoute = function( route, models ) {
+		return _.find( models || wp.api.models, function( model ) {
 			return model.prototype.route && route === model.prototype.route.index;
 		} );
 	};
@@ -52,8 +52,8 @@
 	 *
 	 * @return {Backbone Model} The collection found at given route. Undefined if not found.
 	 */
-	wp.api.getCollectionByRoute = function( route ) {
-		return _.find( wp.api.collections, function( collection ) {
+	wp.api.getCollectionByRoute = function( route, collections ) {
+		return _.find( collections || wp.api.collections, function( collection ) {
 			return collection.prototype.route && route === collection.prototype.route.index;
 		} );
 	};
@@ -1101,6 +1101,28 @@
 					}
 				} );
 			}
+		},
+
+		/**
+		 * Determine model based on API route.
+		 *
+		 * @param {string} route    The API route.
+		 *
+		 * @return {Backbone Model} The model found at given route. Undefined if not found.
+		 */
+		getModelByRoute: function( route ) {
+			wp.api.getModelByRoute( route, this.get( 'models' ) );
+		},
+
+		/**
+		 * Determine collection based on API route.
+		 *
+		 * @param {string} route    The API route.
+		 *
+		 * @return {Backbone Model} The collection found at given route. Undefined if not found.
+		 */
+		getCollectionByRoute: function( route ) {
+			wp.api.getCollectionByRoute( route, this.get( 'collections' ) );
 		},
 
 		constructFromSchema: function() {
