@@ -41,6 +41,7 @@
 				color;
 
 			el.hide();
+
 			// Set the saturation to the maximum level.
 			color = 'hsl(' + el.val() + ', 100, 50)';
 
@@ -53,7 +54,7 @@
 				/**
 				 * @summary Handles the onChange event if one has been defined in the options.
 				 *
-				 * @param {Event} event The event that's being called.
+				 * @param {Event} event    The event that's being called.
 				 * @param {HTMLElement} ui The HTMLElement containing the color picker.
 				 *
 				 * @returns {void}
@@ -124,12 +125,12 @@
 				/**
 				 * @summary Handles the onChange event if one has been defined in the options.
 				 *
-				 * Handles the onChange event if one has been defined in the options and additionally sets the background color
-				 * for the toggler element.
+				 * Handles the onChange event if one has been defined in the options and additionally
+				 * sets the background color for the toggler element.
 				 *
 				 * @since 3.5.0
 				 *
-				 * @param {Event} event The event that's being called.
+				 * @param {Event} event    The event that's being called.
 				 * @param {HTMLElement} ui The HTMLElement containing the color picker.
 				 *
 				 * @returns {void}
@@ -312,7 +313,7 @@
 		 *
 		 * @since 3.5.0
 		 *
-		 * @returns {boolean|string} The element's color
+		 * @returns {boolean|string} The element's color.
 		 */
 		defaultColor: function( newDefaultColor ) {
 			if ( newDefaultColor === undef ) {
@@ -323,6 +324,6 @@
 		}
 	};
 
-	// Registers the color picker as a widget.
+	// Register the color picker as a widget.
 	$.widget( 'wp.wpColorPicker', ColorPicker );
 }( jQuery ) );
