@@ -1402,4 +1402,30 @@
 	// The wp.api.init function returns a promise that will resolve with the endpoint once it is ready.
 	wp.api.loadPromise = wp.api.init();
 
+	/**
+	 * Determine model based on API route.
+	 *
+	 * @param {string} route    The API route.
+	 *
+	 * @return {Backbone Model} The model found at given route.
+	 */
+	wp.api.getModelByRoute = function( route ) {
+		return _.first( _.filter( wp.api.models, function( model ) {
+			return model.prototype.route && route === model.prototype.route.index;
+		} ) );
+	};
+
+	/**
+	 * Determine collection based on API route.
+	 *
+	 * @param {string} route    The API route.
+	 *
+	 * @return {Backbone Model} The collection found at given route.
+	 */
+	wp.api.getCollectionByRoute = function( route ) {
+		return _.first( _.filter( wp.api.collections, function( collection ) {
+			return collection.prototype.route && route === collection.prototype.route.index;
+		} ) );
+	};
+
 } )();
