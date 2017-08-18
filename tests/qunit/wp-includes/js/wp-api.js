@@ -207,7 +207,7 @@
 		'Tag',
 		'Taxonomy',
 		'Type',
-		'User',
+		'User'
 	];
 
 	_.each( modelsToFetchByRoute, function( model ) {
@@ -247,7 +247,7 @@
 		'Tags',
 		'Taxonomies',
 		'Types',
-		'Users',
+		'Users'
 	];
 
 	_.each( collectionsToFetchByRoute, function( collection ) {
