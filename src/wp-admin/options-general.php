@@ -9,7 +9,7 @@
 /** WordPress Administration Bootstrap */
 require_once( dirname( __FILE__ ) . '/admin.php' );
 
-/** WordPress Translation Install API */
+/** WordPress Translation Installation API */
 require_once( ABSPATH . 'wp-admin/includes/translation-install.php' );
 
 if ( ! current_user_can( 'manage_options' ) )
@@ -151,7 +151,7 @@ if ( ! empty( $languages ) || ! empty( $translations ) ) {
 				'selected'     => $locale,
 				'languages'    => $languages,
 				'translations' => $translations,
-				'show_available_translations' => ( ! is_multisite() || is_super_admin() ) && wp_can_install_language_pack(),
+				'show_available_translations' => current_user_can( 'install_languages' ),
 			) );
 
 			// Add note about deprecated WPLANG constant.
