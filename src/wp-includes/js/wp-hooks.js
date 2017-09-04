@@ -61,7 +61,7 @@ this["wp"] = this["wp"] || {}; this["wp"]["hooks"] =
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -75,16 +75,18 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 /**
- * Validate a hook name.
+ * Validate a hookName string.
  *
- * @param  {string} hookName The hook name to validate.
+ * @param  {string} hookName The hook name to validate. Should be a non empty string containing
+ *                           only numbers, letters, dashes, periods and underscores. Also,
+ *                           the hook name cannot begin with `__`.
  *
  * @return {bool}            Whether the hook name is valid.
  */
 function validateHookName(hookName) {
 
-	if ('string' !== typeof hookName) {
-		console.error('The hook name must be a string.');
+	if ('string' !== typeof hookName || '' === hookName) {
+		console.error('The hook name must be a non-empty string.');
 		return false;
 	}
 
@@ -93,7 +95,7 @@ function validateHookName(hookName) {
 		return false;
 	}
 
-	if (!/^[a-z][a-z0-9_.-]*$/.test(hookName)) {
+	if (!/^[a-zA-Z][a-zA-Z0-9_.-]*$/.test(hookName)) {
 		console.error('The hook name can only contain numbers, letters, dashes, periods and underscores.');
 		return false;
 	}
@@ -114,21 +116,27 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 /**
- * Validate a namespace.
+ * Validate a namespace string.
  *
- * @param  {string} namespace The namespace to validate.
+ * @param  {string} namespace The namespace to validate - should take the form
+ *                            `my-plugin-slug/functionDescription`.
  *
  * @return {bool}             Whether the namespace is valid.
  */
 function validateNamespace(namespace) {
 
-	if ('string' !== typeof namespace) {
-		console.error('The namespace must be a string.');
+	if ('string' !== typeof namespace || '' === namespace) {
+		console.error('The namespace must be a non-empty string.');
 		return false;
 	}
 
-	if (!/^.*\/.*$/.test(namespace)) {
-		console.error('The namespace must take the form `my-plugin-slug/functionDescription');
+	if (!/^[a-zA-Z][a-zA-Z0-9_.-/]*$/.test(namespace)) {
+		console.error('The namespace can only contain numbers, letters, dashes, periods and underscores, plus the forward slash dividing slug and description in the namespace.');
+		return false;
+	}
+
+	if (!/^[a-zA-Z][a-zA-Z0-9_.-]*\/[a-zA-Z][a-zA-Z0-9_.-]*\/[a-zA-Z][a-zA-Z0-9_.-]*$/.test(namespace)) {
+		console.error('The namespace must take the form `vendorName/pluginName/functionName`.');
 		return false;
 	}
 
@@ -138,7 +146,18 @@ function validateNamespace(namespace) {
 exports.default = validateNamespace;
 
 /***/ }),
-/* 2 */
+/* 2 */,
+/* 3 */,
+/* 4 */,
+/* 5 */,
+/* 6 */,
+/* 7 */,
+/* 8 */,
+/* 9 */,
+/* 10 */,
+/* 11 */,
+/* 12 */,
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -149,35 +168,35 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.didFilter = exports.didAction = exports.doingFilter = exports.doingAction = exports.currentFilter = exports.currentAction = exports.applyFilters = exports.doAction = exports.removeAllFilters = exports.removeAllActions = exports.hasFilter = exports.hasAction = exports.removeFilter = exports.removeAction = exports.addFilter = exports.addAction = undefined;
 
-var _hooks = __webpack_require__(3);
+var _hooks = __webpack_require__(14);
 
 var _hooks2 = _interopRequireDefault(_hooks);
 
-var _createAddHook = __webpack_require__(4);
+var _createAddHook = __webpack_require__(15);
 
 var _createAddHook2 = _interopRequireDefault(_createAddHook);
 
-var _createRemoveHook = __webpack_require__(5);
+var _createRemoveHook = __webpack_require__(16);
 
 var _createRemoveHook2 = _interopRequireDefault(_createRemoveHook);
 
-var _createHasHook = __webpack_require__(6);
+var _createHasHook = __webpack_require__(17);
 
 var _createHasHook2 = _interopRequireDefault(_createHasHook);
 
-var _createRunHook = __webpack_require__(7);
+var _createRunHook = __webpack_require__(18);
 
 var _createRunHook2 = _interopRequireDefault(_createRunHook);
 
-var _createCurrentHook = __webpack_require__(8);
+var _createCurrentHook = __webpack_require__(19);
 
 var _createCurrentHook2 = _interopRequireDefault(_createCurrentHook);
 
-var _createDoingHook = __webpack_require__(9);
+var _createDoingHook = __webpack_require__(20);
 
 var _createDoingHook2 = _interopRequireDefault(_createDoingHook);
 
-var _createDidHook = __webpack_require__(10);
+var _createDidHook = __webpack_require__(21);
 
 var _createDidHook2 = _interopRequireDefault(_createDidHook);
 
@@ -216,7 +235,7 @@ var didAction = exports.didAction = (0, _createDidHook2.default)(_hooks2.default
 var didFilter = exports.didFilter = (0, _createDidHook2.default)(_hooks2.default.filters);
 
 /***/ }),
-/* 3 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -237,7 +256,7 @@ var HOOKS = {
 exports.default = HOOKS;
 
 /***/ }),
-/* 4 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -332,7 +351,7 @@ function createAddHook(hooks) {
 exports.default = createAddHook;
 
 /***/ }),
-/* 5 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -376,6 +395,7 @@ function createRemoveHook(hooks, removeAll) {
 		if (!(0, _validateHookName2.default)(hookName)) {
 			return;
 		}
+
 		if (!removeAll && !(0, _validateNamespace2.default)(namespace)) {
 			return;
 		}
@@ -426,7 +446,7 @@ function createRemoveHook(hooks, removeAll) {
 exports.default = createRemoveHook;
 
 /***/ }),
-/* 6 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -461,7 +481,7 @@ function createHasHook(hooks) {
 exports.default = createHasHook;
 
 /***/ }),
-/* 7 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -551,7 +571,7 @@ function createRunHook(hooks, returnFirstArg) {
 exports.default = createRunHook;
 
 /***/ }),
-/* 8 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -589,7 +609,7 @@ function createCurrentHook(hooks, returnFirstArg) {
 exports.default = createCurrentHook;
 
 /***/ }),
-/* 9 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -630,7 +650,7 @@ function createDoingHook(hooks) {
 exports.default = createDoingHook;
 
 /***/ }),
-/* 10 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
