@@ -119,7 +119,7 @@ Object.defineProperty(exports, "__esModule", {
  * Validate a namespace string.
  *
  * @param  {string} namespace The namespace to validate - should take the form
- *                            `my-plugin-slug/functionDescription`.
+ *                            `vendorName/pluginName/functionName`.
  *
  * @return {bool}             Whether the namespace is valid.
  */
@@ -288,7 +288,7 @@ function createAddHook(hooks) {
   * Adds the hook to the appropriate hooks container.
   *
   * @param {string}   hookName  Name of hook to add
-  * @param {string}   namespace The unique namespace identifying the callback in the form `my-plugin-slug/functionDescription`.
+  * @param {string}   namespace The unique namespace identifying the callback in the form `vendorName/pluginName/functionName`.
   * @param {Function} callback  Function to call when the hook is run
   * @param {?number}  priority  Priority of this hook (default=10)
   */
@@ -386,7 +386,7 @@ function createRemoveHook(hooks, removeAll) {
   * given hookName and namespace.
   *
   * @param {string}    hookName  The name of the hook to modify.
-  * @param {string}    namespace The unique namespace identifying the callback in the form `my-plugin-slug/functionDescription`.
+  * @param {string}    namespace The unique namespace identifying the callback in the form `vendorName/pluginName/functionName`.
   *
   * @return {number}             The number of callbacks removed.
   */
