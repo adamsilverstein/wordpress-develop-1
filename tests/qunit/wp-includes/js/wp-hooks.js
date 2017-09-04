@@ -35,30 +35,30 @@
 
 	QUnit.test( 'add and remove a filter', function() {
 		expect( 1 );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback', filter_a );
-		wp.hooks.removeFilter( 'test_filter', 'my_plugin/my_callback'  );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback', filter_a );
+		wp.hooks.removeFilter( 'test_filter', 'myPlugin/myNamespace/myCallback'  );
 		equal( wp.hooks.applyFilters( 'test_filter', 'test' ), 'test' );
 	} );
 	QUnit.test( 'add a filter and run it', function() {
 		expect( 1 );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_a', filter_a );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_a', filter_a );
 		equal( wp.hooks.applyFilters( 'test_filter', 'test' ), 'testa' );
 		wp.hooks.removeAllFilters( 'test_filter' );
 	} );
 
 	QUnit.test( 'add 2 filters in a row and run them', function() {
 		expect( 1 );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_a', filter_a );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_b', filter_b );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_a', filter_a );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_b', filter_b );
 		equal( wp.hooks.applyFilters( 'test_filter', 'test' ), 'testab' );
 		wp.hooks.removeAllFilters( 'test_filter' );
 	} );
 
 	QUnit.test( 'add 3 filters with different priorities and run them', function() {
 		expect( 1 );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_a', filter_a );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_b', filter_b, 2 );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_c', filter_c, 8 );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_a', filter_a );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_b', filter_b, 2 );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_c', filter_c, 8 );
 		equal( wp.hooks.applyFilters( 'test_filter', 'test' ), 'testbca' );
 		wp.hooks.removeAllFilters( 'test_filter' );
 	} );
@@ -66,8 +66,8 @@
 	QUnit.test( 'add and remove an action', function() {
 		expect( 1 );
 		window.actionValue = '';
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback', action_a );
-		wp.hooks.removeAction( 'test_action', 'my_plugin/my_callback' );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback', action_a );
+		wp.hooks.removeAction( 'test_action', 'myPlugin/myNamespace/myCallback' );
 		wp.hooks.doAction( 'test_action' );
 		equal( window.actionValue, '' );
 	} );
@@ -75,7 +75,7 @@
 	QUnit.test( 'add an action and run it', function() {
 		expect( 1 );
 		window.actionValue = '';
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback', action_a );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback', action_a );
 		wp.hooks.doAction( 'test_action' );
 		equal( window.actionValue, 'a' );
 		wp.hooks.removeAllActions( 'test_action' );
@@ -84,8 +84,8 @@
 	QUnit.test( 'add 2 actions in a row and then run them', function() {
 		expect( 1 );
 		window.actionValue = '';
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback', action_a );
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback', action_b );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback', action_a );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback', action_b );
 		wp.hooks.doAction( 'test_action' );
 		equal( window.actionValue, 'ab' );
 		wp.hooks.removeAllActions( 'test_action' );
@@ -94,9 +94,9 @@
 	QUnit.test( 'add 3 actions with different priorities and run them', function() {
 		expect( 1 );
 		window.actionValue = '';
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback', action_a );
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback', action_b, 2 );
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback', action_c, 8 );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback', action_a );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback', action_b, 2 );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback', action_c, 8 );
 		wp.hooks.doAction( 'test_action' );
 		equal( window.actionValue, 'bca' );
 		wp.hooks.removeAllActions( 'test_action' );
@@ -108,7 +108,7 @@
 
 		expect( 4 );
 
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback', function( a, b ) {
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback', function( a, b ) {
 			equal( arg1, a );
 			equal( arg2, b );
 		} );
@@ -127,7 +127,7 @@
 			ok( true );
 		};
 
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback', func );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback', func );
 		wp.hooks.doAction( 'test_action' );
 		wp.hooks.doAction( 'test_action' );
 		wp.hooks.removeAllActions( 'test_action' );
@@ -135,11 +135,11 @@
 
 	QUnit.test( 'remove specific action callback', function() {
 		window.actionValue = '';
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback_action_a', action_a );
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback_action_b', action_b, 2 );
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback_action_c', action_c, 8 );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback_action_a', action_a );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback_action_b', action_b, 2 );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback_action_c', action_c, 8 );
 
-		wp.hooks.removeAction( 'test_action', 'my_plugin/my_callback_action_b' );
+		wp.hooks.removeAction( 'test_action', 'myPlugin/myNamespace/myCallback_action_b' );
 		wp.hooks.doAction( 'test_action' );
 		equal( window.actionValue, 'ca' );
 		wp.hooks.removeAllActions( 'test_action' );
@@ -147,9 +147,9 @@
 
 	QUnit.test( 'remove all action callbacks', function() {
 		window.actionValue = '';
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback_action_a', action_a );
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback_action_b', action_b, 2 );
-		wp.hooks.addAction( 'test_action', 'my_plugin/my_callback_action_c', action_c, 8 );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback_action_a', action_a );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback_action_b', action_b, 2 );
+		wp.hooks.addAction( 'test_action', 'myPlugin/myNamespace/myCallback_action_c', action_c, 8 );
 
 		wp.hooks.removeAllActions( 'test_action' );
 		wp.hooks.doAction( 'test_action' );
@@ -157,19 +157,19 @@
 	} );
 
 	QUnit.test( 'remove specific filter callback', function() {
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_a', filter_a );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_b', filter_b, 2 );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_c', filter_c, 8 );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_a', filter_a );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_b', filter_b, 2 );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_c', filter_c, 8 );
 
-		wp.hooks.removeFilter( 'test_filter', 'my_plugin/my_callback_filter_b' );
+		wp.hooks.removeFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_b' );
 		equal( wp.hooks.applyFilters( 'test_filter', 'test' ), 'testca' );
 		wp.hooks.removeAllFilters( 'test_filter' );
 	} );
 
 	QUnit.test( 'remove all filter callbacks', function() {
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_a', filter_a );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_b', filter_b, 2 );
-		wp.hooks.addFilter( 'test_filter', 'my_plugin/my_callback_filter_c', filter_c, 8 );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_a', filter_a );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_b', filter_b, 2 );
+		wp.hooks.addFilter( 'test_filter', 'myPlugin/myNamespace/myCallback_filter_c', filter_c, 8 );
 
 		wp.hooks.removeAllFilters( 'test_filter' );
 		equal( wp.hooks.applyFilters( 'test_filter', 'test' ), 'test' );
@@ -180,7 +180,7 @@
 
 		// Reset state for testing.
 		wp.hooks.removeAllActions( 'test_action' );
-		wp.hooks.addAction( 'another_action', 'my_plugin/my_callback', function(){} );
+		wp.hooks.addAction( 'another_action', 'myPlugin/myNamespace/myCallback', function(){} );
 		wp.hooks.doAction( 'another_action' );
 
 		// Verify no action is running yet.
@@ -188,7 +188,7 @@
 		equal( wp.hooks.didAction( 'newtest_action' ), 0, 'The newtest_action has not run.' );
 		ok( ! wp.hooks.hasAction( 'newtest_action' ), 'The newtest_action is not registered.' );
 
-		wp.hooks.addAction( 'newtest_action', 'my_plugin/my_callback', action_a );
+		wp.hooks.addAction( 'newtest_action', 'myPlugin/myNamespace/myCallback', action_a );
 
 		// Verify action added, not running yet.
 		ok( ! wp.hooks.doingAction( 'newtest_action' ), 'The newtest_action is not running.' );
@@ -220,7 +220,7 @@
 
 	QUnit.test( 'Verify doingFilter, didFilter and hasFilter.', function() {
 		expect( 5 );
-		wp.hooks.addFilter( 'runtest_filter', 'my_plugin/my_callback', filter_check );
+		wp.hooks.addFilter( 'runtest_filter', 'myPlugin/myNamespace/myCallback', filter_check );
 		equal( wp.hooks.applyFilters( 'runtest_filter', 'test' ), 'test' );
 
 		// Verify filter added and running.
