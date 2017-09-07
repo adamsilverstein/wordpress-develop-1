@@ -303,6 +303,9 @@ class Tests_WP_Customize_Manager extends WP_UnitTestCase {
 		$wp_customize = new WP_Customize_Manager();
 		$this->assertNull( $wp_customize->find_changeset_post_id( wp_generate_uuid4() ) );
 		$this->assertEquals( $post_id, $wp_customize->find_changeset_post_id( $uuid ) );
+
+		// Verify that the found post ID was cached under the given UUID, not the manager's UUID.
+		$this->assertNotEquals( $post_id, $wp_customize->find_changeset_post_id( $wp_customize->changeset_uuid() ) );
 	}
 
 	/**
@@ -1544,9 +1547,7 @@ class Tests_WP_Customize_Manager extends WP_UnitTestCase {
 	 * @group ajax
 	 */
 	function test_doing_ajax() {
-		if ( ! defined( 'DOING_AJAX' ) ) {
-			define( 'DOING_AJAX', true );
-		}
+		add_filter( 'wp_doing_ajax', '__return_true' );
 
 		$manager = $this->manager;
 		$this->assertTrue( $manager->doing_ajax() );
@@ -1560,9 +1561,7 @@ class Tests_WP_Customize_Manager extends WP_UnitTestCase {
 	 * Test ! WP_Customize_Manager::doing_ajax().
 	 */
 	function test_not_doing_ajax() {
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			$this->markTestSkipped( 'Cannot test when DOING_AJAX' );
-		}
+		add_filter( 'wp_doing_ajax', '__return_false' );
 
 		$manager = $this->manager;
 		$this->assertFalse( $manager->doing_ajax() );
