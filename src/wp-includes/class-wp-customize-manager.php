@@ -348,7 +348,7 @@ final class WP_Customize_Manager {
 		add_action( 'customize_controls_init',            array( $this, 'prepare_controls' ) );
 		add_action( 'customize_controls_enqueue_scripts', array( $this, 'enqueue_control_scripts' ) );
 
-		// Render Panel, Section, and Control templates.
+		// Render Common, Panel, Section, and Control templates.
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_panel_templates' ), 1 );
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_section_templates' ), 1 );
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_control_templates' ), 1 );
@@ -2272,6 +2272,10 @@ final class WP_Customize_Manager {
 			}
 		}
 
+		if ( ! empty( $is_future_dated ) && 'publish' === $args['status'] ) {
+			$args['status'] = 'future';
+		}
+
 		// The request was made via wp.customize.previewer.save().
 		$update_transactionally = (bool) $args['status'];
 		$allow_revision = (bool) $args['status'];
@@ -2351,7 +2355,8 @@ final class WP_Customize_Manager {
 		if ( $update_transactionally && $invalid_setting_count > 0 ) {
 			$response = array(
 				'setting_validities' => $setting_validities,
-				'message' => sprintf( _n( 'There is %s invalid setting.', 'There are %s invalid settings.', $invalid_setting_count ), number_format_i18n( $invalid_setting_count ) ),
+				/* translators: placeholder is number of invalid settings */
+				'message' => sprintf( _n( 'Unable to save due to %s invalid setting.', 'Unable to save due to %s invalid settings.', $invalid_setting_count ), number_format_i18n( $invalid_setting_count ) ),
 			);
 			return new WP_Error( 'transaction_fail', '', $response );
 		}
@@ -2743,7 +2748,7 @@ final class WP_Customize_Manager {
 			$stashed_theme_mod_settings = array();
 		}
 
-		// Delete any stashed theme mods for the active theme since since they would have been loaded and saved upon activation.
+		// Delete any stashed theme mods for the active theme since they would have been loaded and saved upon activation.
 		unset( $stashed_theme_mod_settings[ $this->get_stylesheet() ] );
 
 		// Merge inactive theme mods with the stashed theme mod settings.
@@ -3179,6 +3184,19 @@ final class WP_Customize_Manager {
 			) );
 			$control->print_template();
 		}
+
+		?>
+		<script type="text/html" id="tmpl-customize-notification">
+			<li class="notice notice-{{ data.type || 'info' }} {{ data.alt ? 'notice-alt' : '' }} {{ data.dismissible ? 'is-dismissible' : '' }}" data-code="{{ data.code }}" data-type="{{ data.type }}">
+				{{{ data.message || data.code }}}
+				<# if ( data.dismissible ) { #>
+					<button type="button" class="notice-dismiss"><span class="screen-reader-text"><?php _e( 'Dismiss' ); ?></span></button>
+				<# } #>
+			</li>
+		</script>
+
+		<?php
+		/* The following template is obsolete in core but retained for plugins. */
 		?>
 		<script type="text/html" id="tmpl-customize-control-notifications">
 			<ul>
@@ -4107,14 +4125,14 @@ final class WP_Customize_Manager {
 
 		/*
 		 * Static Front Page
-		 * See also https://core.trac.wordpress.org/ticket/19627 which introduces the the static-front-page theme_support.
+		 * See also https://core.trac.wordpress.org/ticket/19627 which introduces the static-front-page theme_support.
 		 * The following replicates behavior from options-reading.php.
 		 */
 
 		$this->add_section( 'static_front_page', array(
-			'title' => __( 'Static Front Page' ),
+			'title' => __( 'Homepage Settings' ),
 			'priority' => 120,
-			'description' => __( 'Your theme supports a static front page.' ),
+			'description' => __( 'You can choose what&#8217;s displayed on the homepage of your site. It can be posts in reverse chronological order (classic blog), or a fixed/static page. To set a static homepage, you first need to create two Pages. One will become the homepage, and the other will be where your posts are displayed.' ),
 			'active_callback' => array( $this, 'has_published_pages' ),
 		) );
 
@@ -4125,7 +4143,7 @@ final class WP_Customize_Manager {
 		) );
 
 		$this->add_control( 'show_on_front', array(
-			'label' => __( 'Front page displays' ),
+			'label' => __( 'Your homepage displays' ),
 			'section' => 'static_front_page',
 			'type' => 'radio',
 			'choices' => array(
@@ -4140,7 +4158,7 @@ final class WP_Customize_Manager {
 		) );
 
 		$this->add_control( 'page_on_front', array(
-			'label' => __( 'Front page' ),
+			'label' => __( 'Homepage' ),
 			'section' => 'static_front_page',
 			'type' => 'dropdown-pages',
 			'allow_addition' => true,
