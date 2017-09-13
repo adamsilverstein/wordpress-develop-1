@@ -1,8 +1,8 @@
-var path         = require('path'),
+var path         = require( 'path' ),
 	SOURCE_DIR   = 'src/',
 	mediaConfig  = {},
-	mediaBuilds  = ['audiovideo', 'grid', 'models', 'views'],
-	webpack      = require('webpack');
+	mediaBuilds  = [ 'audiovideo', 'grid', 'models', 'views' ],
+	webpack      = require( 'webpack' );
 
 
 mediaBuilds.forEach( function ( build ) {
@@ -15,7 +15,7 @@ module.exports = {
 	watch: true,
 	entry: mediaConfig,
 	output: {
-		path:     path.join( __dirname, 'src/wp-includes/js' ),
+		path: path.join( __dirname, 'src/wp-includes/js' ),
 		filename: 'media-[name].js'
 	}
 };

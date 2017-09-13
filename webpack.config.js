@@ -1,8 +1,8 @@
-var path         = require('path'),
+var path         = require( 'path' ),
 	SOURCE_DIR   = 'src/',
 	mediaConfig  = {},
-	mediaBuilds  = ['audiovideo', 'grid', 'models', 'views'],
-	webpack      = require('webpack');
+	mediaBuilds  = [ 'audiovideo', 'grid', 'models', 'views' ],
+	webpack      = require( 'webpack' );
 
 
 mediaBuilds.forEach( function ( build ) {
