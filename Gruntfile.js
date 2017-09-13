@@ -541,11 +541,8 @@ module.exports = function(grunt) {
 			}
 		},
 		webpack: {
-			options: {
-				stats: ! process.env.NODE_ENV || 'development' === process.env.NODE_ENV
-			},
 			prod: webpackConfig,
-			dev: Object.assign( { watch: true }, webpackDevConfig )
+			dev: webpackDevConfig
 		},
 		concat: {
 			tinymce: {

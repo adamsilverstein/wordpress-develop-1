@@ -12,6 +12,7 @@ mediaBuilds.forEach( function ( build ) {
 
 module.exports = {
 	cache: true,
+	watch: true,
 	entry: mediaConfig,
 	output: {
 		path:     path.join( __dirname, 'src/wp-includes/js' ),
