@@ -18,4 +18,4 @@ module.exports = {
 		path:     path.join( __dirname, 'src/wp-includes/js' ),
 		filename: 'media-[name].js'
 	}
-}
+};

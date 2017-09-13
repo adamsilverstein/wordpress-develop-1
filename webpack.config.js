@@ -14,10 +14,10 @@ module.exports = {
 	cache: true,
 	entry: mediaConfig,
 	output: {
-		path:     path.join( __dirname, 'src/wp-includes/js' ),
+		path: path.join( __dirname, 'src/wp-includes/js' ),
 		filename: 'media-[name].js'
 	},
 	plugins: [
 		new webpack.optimize.ModuleConcatenationPlugin()
 	]
-}
+};
