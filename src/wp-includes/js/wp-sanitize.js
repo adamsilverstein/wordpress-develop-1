@@ -33,7 +33,7 @@
 		 * @return Sanitized text. False on failure.
 		 */
 		sanitizeText: function( text ) {
-			var _text = wp.utils.stripTags( text ),
+			var _text = wp.sanitize.stripTags( text ),
 				textarea = document.createElement( 'textarea' );
 
 			try {
