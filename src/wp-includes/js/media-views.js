@@ -4523,9 +4523,7 @@ Cropper = View.extend(/** @lends wp.media.view.Cropper.prototype */{
 		};
 	},
 	onImageLoad: function() {
-		var imgOptions = this.controller.get('imgSelectOptions'),
-			imgSelect;
-
+		var imgOptions = this.controller.get('imgSelectOptions');
 		if (typeof imgOptions === 'function') {
 			imgOptions = imgOptions(this.options.attachment, this.controller);
 		}
@@ -4548,7 +4546,7 @@ Cropper = View.extend(/** @lends wp.media.view.Cropper.prototype */{
 			}
 		} );
 		this.trigger('image-loaded');
-		imgSelect = this.controller.imgSelect = this.$image.imgAreaSelect(imgOptions);
+		this.controller.imgSelect = this.$image.imgAreaSelect(imgOptions);
 	},
 	onError: function() {
 		var filename = this.options.attachment.get('filename');
