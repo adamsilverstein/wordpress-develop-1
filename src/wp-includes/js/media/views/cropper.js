@@ -50,7 +50,23 @@ Cropper = View.extend(/** @lends wp.media.view.Cropper.prototype */{
 			imgOptions = imgOptions(this.options.attachment, this.controller);
 		}
 
-		imgOptions = _.extend(imgOptions, {parent: this.$el});
+		imgOptions = _.extend(imgOptions, {
+			parent: this.$el,
+			onInit: function( img ) {
+				this.parent.children().on( 'mousedown touchstart', function( e ){
+
+					if ( e.shiftKey ) {
+						imgSelect.setOptions( {
+							aspectRatio: '1:1'
+						} );
+					} else {
+						imgSelect.setOptions( {
+							aspectRatio: false
+						} );
+					}
+				} );
+			}
+		} );
 		this.trigger('image-loaded');
 		this.controller.imgSelect = this.$image.imgAreaSelect(imgOptions);
 	},
