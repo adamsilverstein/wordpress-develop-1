@@ -54,7 +54,7 @@ Cropper = View.extend(/** @lends wp.media.view.Cropper.prototype */{
 
 		imgOptions = _.extend(imgOptions, {
 			parent: this.$el,
-			onInit: function( img ) {
+			onInit: function() {
 				this.parent.children().on( 'mousedown touchstart', function( e ){
 
 					if ( e.shiftKey ) {
