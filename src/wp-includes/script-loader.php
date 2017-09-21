@@ -563,11 +563,18 @@ function wp_default_scripts( &$scripts ) {
 		'expandSidebar'      => _x( 'Show Controls', 'label for hide controls button without length constraints' ),
 		'untitledBlogName'   => __( '(Untitled)' ),
 		'serverSaveError'    => __( 'Failed connecting to the server. Please try saving again.' ),
+		'videoHeaderNotice'   => __( 'This theme doesn\'t support video headers on this page. Navigate to the front page or another page that supports video headers.' ),
 		// Used for overriding the file types allowed in plupload.
 		'allowedFiles'       => __( 'Allowed Files' ),
 		'customCssError'     => wp_array_slice_assoc(
 			/* translators: placeholder is error count */
 			_n_noop( 'There is %d error which must be fixed before you can save.', 'There are %d errors which must be fixed before you can save.' ),
+			array( 'singular', 'plural' )
+		),
+		'pageOnFrontError' => __( 'Homepage and posts page must be different.' ),
+		'saveBlockedError' => wp_array_slice_assoc(
+			/* translators: placeholder is error count */
+			_n_noop( 'Unable to save due to %s invalid setting.', 'Unable to save due to %s invalid settings.' ),
 			array( 'singular', 'plural' )
 		),
 	) );
@@ -1050,6 +1057,10 @@ function wp_just_in_time_script_localization() {
 	wp_localize_script( 'autosave', 'autosaveL10n', array(
 		'autosaveInterval' => AUTOSAVE_INTERVAL,
 		'blog_id' => get_current_blog_id(),
+	) );
+
+	wp_localize_script( 'mce-view', 'mceViewL10n', array(
+		'shortcodes' => ! empty( $GLOBALS['shortcode_tags'] ) ? array_keys( $GLOBALS['shortcode_tags'] ) : array()
 	) );
 }
 
