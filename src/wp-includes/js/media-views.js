@@ -4532,7 +4532,6 @@ Cropper = View.extend(/** @lends wp.media.view.Cropper.prototype */{
 			parent: this.$el,
 			onInit: function( img ) {
 				this.parent.children().on( 'mousedown touchstart', function( e ){
-
 					if ( e.shiftKey ) {
 						imgSelect.setOptions( {
 							aspectRatio: '1:1'
