@@ -139,7 +139,7 @@ if ($this->debug) dmp(__FUNCTION__, $this->current_filter());
 }
 
 // convert valid xml to an array tree structure
-// kinda lame but it works with a default php 4 install
+// kinda lame but it works with a default php 4 installation
 class testXMLParser {
 	var $xml;
 	var $data = array();
@@ -157,7 +157,7 @@ class testXMLParser {
 	}
 
 	function parse($in) {
-		$parse = xml_parse($this->xml, $in, sizeof($in));
+		$parse = xml_parse($this->xml, $in, true);
 		if (!$parse) {
 			trigger_error(sprintf("XML error: %s at line %d",
 			xml_error_string(xml_get_error_code($this->xml)),

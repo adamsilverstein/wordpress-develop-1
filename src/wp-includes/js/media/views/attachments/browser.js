@@ -1,5 +1,13 @@
+var View = wp.media.View,
+	mediaTrash = wp.media.view.settings.mediaTrash,
+	l10n = wp.media.view.l10n,
+	$ = jQuery,
+	AttachmentsBrowser;
+
 /**
  * wp.media.view.AttachmentsBrowser
+ *
+ * @memberOf wp.media.view
  *
  * @class
  * @augments wp.media.View
@@ -18,13 +26,7 @@
  * @param {boolean|string} [options.sidebar=true]  Whether to create a sidebar for the browser.
  *                                                 Accepts true, false, and 'errors'.
  */
-var View = wp.media.View,
-	mediaTrash = wp.media.view.settings.mediaTrash,
-	l10n = wp.media.view.l10n,
-	$ = jQuery,
-	AttachmentsBrowser;
-
-AttachmentsBrowser = View.extend({
+AttachmentsBrowser = View.extend(/** @lends wp.media.view.AttachmentsBrowser.prototype */{
 	tagName:   'div',
 	className: 'attachments-browser',
 
@@ -40,17 +42,33 @@ AttachmentsBrowser = View.extend({
 
 		this.controller.on( 'toggle:upload:attachment', this.toggleUploader, this );
 		this.controller.on( 'edit:selection', this.editSelection );
-		this.createToolbar();
+
 		// In the Media Library, the sidebar is used to display errors before the attachments grid.
 		if ( this.options.sidebar && 'errors' === this.options.sidebar ) {
 			this.createSidebar();
 		}
+
+		/*
+		 * For accessibility reasons, place the Inline Uploader before other sections.
+		 * This way, in the Media Library, it's right after the Add New button, see ticket #37188.
+		 */
 		this.createUploader();
+
+		/*
+		 * Create a multi-purpose toolbar. Used as main toolbar in the Media Library
+		 * and also for other things, for example the "Drag and drop to reorder" and
+		 * "Suggested dimensions" info in the media modal.
+		 */
+		this.createToolbar();
+
+		// Create the list of attachments.
 		this.createAttachments();
+
 		// For accessibility reasons, place the normal sidebar after the attachments, see ticket #36909.
 		if ( this.options.sidebar && 'errors' !== this.options.sidebar ) {
 			this.createSidebar();
 		}
+
 		this.updateContent();
 
 		if ( ! this.options.sidebar || 'errors' === this.options.sidebar ) {
@@ -303,7 +321,7 @@ AttachmentsBrowser = View.extend({
 
 		if ( this.options.suggestedWidth && this.options.suggestedHeight ) {
 			this.toolbar.set( 'suggestedDimensions', new View({
-				el: $( '<div class="instructions">' + l10n.suggestedDimensions + ' ' + this.options.suggestedWidth + ' &times; ' + this.options.suggestedHeight + '</div>' )[0],
+				el: $( '<div class="instructions">' + l10n.suggestedDimensions.replace( '%1$s', this.options.suggestedWidth ).replace( '%2$s', this.options.suggestedHeight ) + '</div>' )[0],
 				priority: -40
 			}) );
 		}
@@ -343,7 +361,7 @@ AttachmentsBrowser = View.extend({
 			canClose:   this.controller.isModeActive( 'grid' )
 		});
 
-		this.uploader.hide();
+		this.uploader.$el.addClass( 'hidden' );
 		this.views.add( this.uploader );
 	},
 

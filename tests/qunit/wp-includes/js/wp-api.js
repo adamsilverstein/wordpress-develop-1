@@ -115,7 +115,9 @@
 		'Page',
 		'Post',
 		'Tag',
-		'User'
+		'User',
+		'UsersMe',
+		'Settings'
 	];
 
 	_.each( modelsWithIdsClassNames, function( className ) {
@@ -130,12 +132,12 @@
 				assert.ok( theModel, 'We can instantiate wp.api.models.' + className );
 				theModel.fetch().done( function(  ) {
 					var theModel2 = new wp.api.models[ className ]();
-					theModel2.set( 'id', theModel.attributes[0].id );
+					theModel2.set( 'id', theModel.attributes.id );
 					theModel2.fetch().done( function() {
 
 						// We were able to retrieve the model.
 						assert.equal(
-							theModel.attributes[0].id,
+							theModel.attributes.id,
 							theModel2.get( 'id' ) ,
 							'We should be able to get a ' + className
 						);
@@ -192,10 +194,90 @@
 		} );
 	} );
 
-// Test the jswidget custom namespace and endpoints.
-wp.api.init( {
-	'versionString': 'js-widgets/v1/'
-} ).done( function() {
+	// Find models by route.
+	var modelsToFetchByRoute = [
+		'Category',
+		'Comment',
+		'Media',
+		'Page',
+		'PageRevision',
+		'Post',
+		'PostRevision',
+		'Status',
+		'Tag',
+		'Taxonomy',
+		'Type',
+		'User'
+	];
+
+	_.each( modelsToFetchByRoute, function( model ) {
+		QUnit.test( 'Test fetching ' + model + ' by route.', function( assert ) {
+
+			var done = assert.async();
+
+			assert.expect( 1 );
+
+			wp.api.loadPromise.done( function() {
+
+				var theModel = wp.api.models[ model ];
+				var route = theModel.prototype.route.index;
+
+				assert.equal(
+					wp.api.getModelByRoute( route ),
+					theModel,
+					'wp.api.models.' + model + ' found at route ' + route
+				);
+
+				// Trigger Qunit async completion.
+				done();
+			} );
+		} );
+	} );
+
+	// Find collections by route.
+	var collectionsToFetchByRoute = [
+		'Categories',
+		'Comments',
+		'Media',
+		'PageRevisions',
+		'Pages',
+		'PostRevisions',
+		'Posts',
+		'Statuses',
+		'Tags',
+		'Taxonomies',
+		'Types',
+		'Users'
+	];
+
+	_.each( collectionsToFetchByRoute, function( collection ) {
+		QUnit.test( 'Test fetching ' + collection + ' by route.', function( assert ) {
+
+			var done = assert.async();
+
+			assert.expect( 1 );
+
+			wp.api.loadPromise.done( function() {
+
+				var theCollection = wp.api.collections[ collection ];
+				var route = theCollection.prototype.route.index;
+
+				assert.equal(
+					wp.api.getCollectionByRoute( route ),
+					theCollection,
+					'wp.api.collections.' + collection + ' found at ' + route
+				);
+
+				// Trigger Qunit async completion.
+				done();
+			} );
+		} );
+	} );
+
+	// Test the jswidget custom namespace and endpoints.
+	wp.api.init( {
+		'versionString': 'js-widgets/v1/'
+	} ).done( function() {
 		var customClasses = [
 			'WidgetsArchives',
 			'WidgetsCalendar',
@@ -231,5 +313,34 @@ wp.api.init( {
 		} );
 
 	} );
+
+	// Check connecting to a second URL.
+	wp.api.loadPromise.done( function() {
+		QUnit.test( 'Checking connecting to a remote url.' , function( assert ) {
+			var done = assert.async();
+
+			wp.api.init({
+				'apiRoot': 'http://remotehost/wp-json/'
+			} ).done( function(){
+				var lastEndpoint = wp.api.endpoints.last(),
+					models = lastEndpoint.get( 'models' ),
+					post = new models.Post();
+
+				assert.equal( 'http://remotehost/wp-json/wp/v2/posts', post.url(), 'The remote API objects should have their own URLs' );
+
+				wp.api.init({
+					'apiRoot': 'http://localhost/wp-json/'
+				} ).done( function(){
+					var lastEndpoint = wp.api.endpoints.first(),
+						models = lastEndpoint.get( 'models' ),
+						post = new models.Post();
+
+					assert.equal( 'http://localhost/wp-json/wp/v2/posts', post.url(), 'The local API objects should have their own URLs' );
+
+					done();
+				} );
+			} );
+		} );
+	});
 
 } )( window.QUnit );

@@ -10,6 +10,8 @@ if ( is_multisite() ) :
  */
 class Tests_Multisite_Site extends WP_UnitTestCase {
 	protected $suppress = false;
+	protected static $network_ids;
+	protected static $site_ids;
 
 	function setUp() {
 		global $wpdb;
@@ -21,6 +23,40 @@ class Tests_Multisite_Site extends WP_UnitTestCase {
 		global $wpdb;
 		$wpdb->suppress_errors( $this->suppress );
 		parent::tearDown();
+	}
+
+	public static function wpSetUpBeforeClass( $factory ) {
+		self::$network_ids = array(
+			'make.wordpress.org/' => array( 'domain' => 'make.wordpress.org', 'path' => '/' ),
+		);
+
+		foreach ( self::$network_ids as &$id ) {
+			$id = $factory->network->create( $id );
+		}
+		unset( $id );
+
+		self::$site_ids = array(
+			'make.wordpress.org/'     => array( 'domain' => 'make.wordpress.org', 'path' => '/',         'site_id' => self::$network_ids['make.wordpress.org/'] ),
+			'make.wordpress.org/foo/' => array( 'domain' => 'make.wordpress.org', 'path' => '/foo/',     'site_id' => self::$network_ids['make.wordpress.org/'] ),
+		);
+
+		foreach ( self::$site_ids as &$id ) {
+			$id = $factory->blog->create( $id );
+		}
+		unset( $id );
+	}
+
+	public static function wpTearDownAfterClass() {
+		global $wpdb;
+
+		foreach( self::$site_ids as $id ) {
+			wpmu_delete_blog( $id, true );
+		}
+
+		foreach( self::$network_ids as $id ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE site_id = %d", $id ) );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->site} WHERE id= %d", $id ) );
+		}
 	}
 
 	function test_switch_restore_blog() {
@@ -120,6 +156,32 @@ class Tests_Multisite_Site extends WP_UnitTestCase {
 		// update the blog count cache to use get_blog_count()
 		wp_update_network_counts();
 		$this->assertEquals( 2, (int) get_blog_count() );
+	}
+
+	public function test_site_caches_should_invalidate_when_invalidation_is_not_suspended() {
+		$site_id = self::factory()->blog->create();
+
+		$details = get_site( $site_id );
+
+		$suspend = wp_suspend_cache_invalidation( false );
+		update_blog_details( $site_id, array( 'path' => '/a-non-random-test-path/' ) );
+		$new_details = get_site( $site_id );
+		wp_suspend_cache_invalidation( $suspend );
+
+		$this->assertNotEquals( $details->path, $new_details->path );
+	}
+
+	public function test_site_caches_should_not_invalidate_when_invalidation_is_suspended() {
+		$site_id = self::factory()->blog->create();
+
+		$details = get_site( $site_id );
+
+		$suspend = wp_suspend_cache_invalidation();
+		update_blog_details( $site_id, array( 'path' => '/a-non-random-test-path/' ) );
+		$new_details = get_site( $site_id );
+		wp_suspend_cache_invalidation( $suspend );
+
+		$this->assertEquals( $details->path, $new_details->path );
 	}
 
 	/**
@@ -955,6 +1017,22 @@ class Tests_Multisite_Site extends WP_UnitTestCase {
 	}
 
 	/**
+	 * @ticket 40503
+	 */
+	function test_different_network_language() {
+		$network = get_network( self::$network_ids['make.wordpress.org/'] );
+
+		add_filter( 'sanitize_option_WPLANG', array( $this, 'filter_allow_unavailable_languages' ), 10, 3 );
+
+		update_network_option( self::$network_ids['make.wordpress.org/'], 'WPLANG', 'wibble' );
+		$blog_id = wpmu_create_blog( $network->domain, '/de-de/', 'New Blog', get_current_user_id(), array(), $network->id );
+
+		remove_filter( 'sanitize_option_WPLANG', array( $this, 'filter_allow_unavailable_languages' ), 10 );
+
+		$this->assertSame( get_network_option( self::$network_ids['make.wordpress.org/'], 'WPLANG' ), get_blog_option( $blog_id, 'WPLANG' ) );
+	}
+
+	/**
 	 * Allows to set the WPLANG option to any language.
 	 *
 	 * @param string $value          The sanitized option value.
@@ -964,6 +1042,20 @@ class Tests_Multisite_Site extends WP_UnitTestCase {
 	 */
 	function filter_allow_unavailable_languages( $value, $option, $original_value ) {
 		return $original_value;
+	}
+
+	/**
+	 * @ticket 29684
+	 */
+	public function test_is_main_site_different_network() {
+		$this->assertTrue( is_main_site( self::$site_ids['make.wordpress.org/'], self::$network_ids['make.wordpress.org/'] ) );
+	}
+
+	/**
+	 * @ticket 29684
+	 */
+	public function test_is_main_site_different_network_random_site() {
+		$this->assertFalse( is_main_site( self::$site_ids['make.wordpress.org/foo/'], self::$network_ids['make.wordpress.org/'] ) );
 	}
 }
 

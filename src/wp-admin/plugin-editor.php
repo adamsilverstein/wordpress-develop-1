@@ -37,11 +37,11 @@ if ( empty( $plugins ) ) {
 $file = '';
 $plugin = '';
 if ( isset( $_REQUEST['file'] ) ) {
-	$file = sanitize_text_field( $_REQUEST['file'] );
+	$file = wp_unslash( $_REQUEST['file'] );
 }
 
 if ( isset( $_REQUEST['plugin'] ) ) {
-	$plugin = sanitize_text_field( $_REQUEST['plugin'] );
+	$plugin = wp_unslash( $_REQUEST['plugin'] );
 }
 
 if ( empty( $plugin ) ) {
@@ -107,15 +107,48 @@ if ( isset( $_REQUEST['action'] ) && 'update' === $_REQUEST['action'] ) {
 		}
 
 		if ( ( ! empty( $_GET['networkwide'] ) && ! is_plugin_active_for_network( $file ) ) || ! is_plugin_active( $file ) ) {
-			activate_plugin( $plugin, "plugin-editor.php?file=$file&phperror=1", ! empty( $_GET['networkwide'] ) );
+			activate_plugin( $plugin, "plugin-editor.php?file=" . urlencode( $file ) . "&phperror=1", ! empty( $_GET['networkwide'] ) );
 		} // we'll override this later if the plugin can be included without fatal error
 
-		wp_redirect( self_admin_url("plugin-editor.php?file=$file&plugin=$plugin&a=te&scrollto=$scrollto") );
+		wp_redirect( self_admin_url( 'plugin-editor.php?file=' . urlencode( $file ) . '&plugin=' . urlencode( $plugin ) . "&a=te&scrollto=$scrollto" ) );
 		exit;
 	}
 
 	// List of allowable extensions
-	$editable_extensions = array('php', 'txt', 'text', 'js', 'css', 'html', 'htm', 'xml', 'inc', 'include');
+	$editable_extensions = array(
+		'bash',
+		'conf',
+		'css',
+		'diff',
+		'htm',
+		'html',
+		'http',
+		'inc',
+		'include',
+		'js',
+		'json',
+		'jsx',
+		'less',
+		'md',
+		'patch',
+		'php',
+		'php3',
+		'php4',
+		'php5',
+		'php7',
+		'phps',
+		'phtml',
+		'sass',
+		'scss',
+		'sh',
+		'sql',
+		'svg',
+		'text',
+		'txt',
+		'xml',
+		'yaml',
+		'yml',
+	);
 
 	/**
 	 * Filters file type extensions editable in the plugin editor.
@@ -156,6 +189,12 @@ if ( isset( $_REQUEST['action'] ) && 'update' === $_REQUEST['action'] ) {
 		'<p>' . __('<a href="https://codex.wordpress.org/Writing_a_Plugin">Documentation on Writing Plugins</a>') . '</p>' .
 		'<p>' . __('<a href="https://wordpress.org/support/">Support Forums</a>') . '</p>'
 	);
+
+	$settings = wp_enqueue_code_editor( array( 'file' => $real_file ) );
+	if ( ! empty( $settings ) ) {
+		wp_enqueue_script( 'wp-theme-plugin-editor' );
+		wp_add_inline_script( 'wp-theme-plugin-editor', sprintf( 'jQuery( function() { wp.themePluginEditor.init( %s ); } )', wp_json_encode( $settings ) ) );
+	}
 
 	require_once(ABSPATH . 'wp-admin/admin-header.php');
 
@@ -203,18 +242,18 @@ if ( isset( $_REQUEST['action'] ) && 'update' === $_REQUEST['action'] ) {
 	if ( is_plugin_active( $plugin ) ) {
 		if ( is_writeable( $real_file ) ) {
 			/* translators: %s: plugin file name */
-			echo sprintf( __( 'Editing %s (active)' ), '<strong>' . $file . '</strong>' );
+			echo sprintf( __( 'Editing %s (active)' ), '<strong>' . esc_html( $file ) . '</strong>' );
 		} else {
 			/* translators: %s: plugin file name */
-			echo sprintf( __( 'Browsing %s (active)' ), '<strong>' . $file . '</strong>' );
+			echo sprintf( __( 'Browsing %s (active)' ), '<strong>' . esc_html( $file ) . '</strong>' );
 		}
 	} else {
 		if ( is_writeable( $real_file ) ) {
 			/* translators: %s: plugin file name */
-			echo sprintf( __( 'Editing %s (inactive)' ), '<strong>' . $file . '</strong>' );
+			echo sprintf( __( 'Editing %s (inactive)' ), '<strong>' . esc_html( $file ) . '</strong>' );
 		} else {
 			/* translators: %s: plugin file name */
-			echo sprintf( __( 'Browsing %s (inactive)' ), '<strong>' . $file . '</strong>' );
+			echo sprintf( __( 'Browsing %s (inactive)' ), '<strong>' . esc_html( $file ) . '</strong>' );
 		}
 	}
 	?></big>
@@ -259,7 +298,7 @@ foreach ( $plugin_files as $plugin_file ) :
 		continue;
 	}
 ?>
-		<li<?php echo $file == $plugin_file ? ' class="highlight"' : ''; ?>><a href="plugin-editor.php?file=<?php echo urlencode( $plugin_file ) ?>&amp;plugin=<?php echo urlencode( $plugin ) ?>"><?php echo $plugin_file ?></a></li>
+		<li<?php echo $file == $plugin_file ? ' class="highlight"' : ''; ?>><a href="plugin-editor.php?file=<?php echo urlencode( $plugin_file ) ?>&amp;plugin=<?php echo urlencode( $plugin ) ?>"><?php echo esc_html( $plugin_file ); ?></a></li>
 <?php endforeach; ?>
 	</ul>
 </div>

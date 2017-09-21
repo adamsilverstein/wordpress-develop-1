@@ -105,7 +105,10 @@ themes.view.Appearance = wp.Backbone.View.extend({
 		view.render();
 		this.searchContainer
 			.append( $.parseHTML( '<label class="screen-reader-text" for="wp-filter-search-input">' + l10n.search + '</label>' ) )
-			.append( view.el );
+			.append( view.el )
+			.on( 'submit', function( event ) {
+				event.preventDefault();
+			});
 	},
 
 	// Checks when the user gets close to the bottom
@@ -492,7 +495,7 @@ themes.view.Theme = wp.Backbone.View.extend({
 		themes.focusedTheme = this.$el;
 
 		// Construct a new Preview view.
-		themes.currentPreview = preview = new themes.view.Preview({
+		themes.preview = preview = new themes.view.Preview({
 			model: this.model
 		});
 
@@ -573,10 +576,6 @@ themes.view.Theme = wp.Backbone.View.extend({
 			self.current = self.model;
 		});
 
-		// Listen for closepreview events, closing the preview.
-		this.listenTo( preview, 'closepreview', function() {
-			preview.close();
-		});
 	},
 
 	// Handles .disabled classes for previous/next buttons in theme installer preview
@@ -916,7 +915,13 @@ themes.view.Preview = themes.view.Details.extend({
 			}
 		}).removeClass( 'iframe-ready' );
 
-		themes.router.navigate( themes.router.baseUrl( '' ) );
+		// Restore the previous browse tab if available.
+		if ( themes.router.selectedTab ) {
+			themes.router.navigate( themes.router.baseUrl( '?browse=' + themes.router.selectedTab ) );
+			themes.router.selectedTab = false;
+		} else {
+			themes.router.navigate( themes.router.baseUrl( '' ) );
+		}
 		this.trigger( 'preview:close' );
 		this.undelegateEvents();
 		this.unbind();
@@ -1651,6 +1656,9 @@ themes.view.Installer = themes.view.Appearance.extend({
 	sort: function( sort ) {
 		this.clearSearch();
 
+		// Track sorting so we can restore the correct tab when closing preview.
+		themes.router.selectedTab = sort;
+
 		$( '.filter-links li > a, .theme-filter' ).removeClass( this.activeClass );
 		$( '[data-sort="' + sort + '"]' ).addClass( this.activeClass );
 
@@ -1914,6 +1922,12 @@ themes.RunInstaller = {
 		// Queries the API for the passed theme slug
 		themes.router.on( 'route:preview', function( slug ) {
 
+			// Remove existing handlers.
+			if ( themes.preview ) {
+				themes.preview.undelegateEvents();
+				themes.preview.unbind();
+			}
+
 			// If the theme preview is active, set the current theme.
 			if ( self.view.view.theme && self.view.view.theme.preview ) {
 				self.view.view.theme.model = self.view.collection.findWhere( { 'slug': slug } );
@@ -1939,12 +1953,13 @@ themes.RunInstaller = {
 		themes.router.on( 'route:sort', function( sort ) {
 			if ( ! sort ) {
 				sort = 'featured';
+				themes.router.navigate( themes.router.baseUrl( '?browse=featured' ), { replace: true } );
 			}
 			self.view.sort( sort );
 
 			// Close the preview if open.
-			if ( themes.currentPreview ) {
-				themes.currentPreview.trigger( 'closepreview' );
+			if ( themes.preview ) {
+				themes.preview.close();
 			}
 		});
 

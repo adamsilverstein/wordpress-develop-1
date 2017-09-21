@@ -20,7 +20,6 @@ class WP_Widget_Archives extends WP_Widget {
 	 * Sets up a new Archives widget instance.
 	 *
 	 * @since 2.8.0
-	 * @access public
 	 */
 	public function __construct() {
 		$widget_ops = array(
@@ -35,7 +34,6 @@ class WP_Widget_Archives extends WP_Widget {
 	 * Outputs the content for the current Archives widget instance.
 	 *
 	 * @since 2.8.0
-	 * @access public
 	 *
 	 * @param array $args     Display arguments including 'before_title', 'after_title',
 	 *                        'before_widget', and 'after_widget'.
@@ -125,7 +123,6 @@ class WP_Widget_Archives extends WP_Widget {
 	 * Handles updating settings for the current Archives widget instance.
 	 *
 	 * @since 2.8.0
-	 * @access public
 	 *
 	 * @param array $new_instance New settings for this instance as input by the user via
 	 *                            WP_Widget_Archives::form().
@@ -146,7 +143,6 @@ class WP_Widget_Archives extends WP_Widget {
 	 * Outputs the settings form for the Archives widget.
 	 *
 	 * @since 2.8.0
-	 * @access public
 	 *
 	 * @param array $instance Current settings.
 	 */
@@ -154,7 +150,7 @@ class WP_Widget_Archives extends WP_Widget {
 		$instance = wp_parse_args( (array) $instance, array( 'title' => '', 'count' => 0, 'dropdown' => '') );
 		$title = sanitize_text_field( $instance['title'] );
 		?>
-		<p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?></label> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" placeholder="<?php esc_attr_e( 'Archives' ); ?>" type="text" value="<?php echo esc_attr($title); ?>" /></p>
+		<p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?></label> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo esc_attr($title); ?>" /></p>
 		<p>
 			<input class="checkbox" type="checkbox"<?php checked( $instance['dropdown'] ); ?> id="<?php echo $this->get_field_id('dropdown'); ?>" name="<?php echo $this->get_field_name('dropdown'); ?>" /> <label for="<?php echo $this->get_field_id('dropdown'); ?>"><?php _e('Display as dropdown'); ?></label>
 			<br/>

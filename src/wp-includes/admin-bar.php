@@ -214,7 +214,7 @@ function wp_admin_bar_my_account_item( $wp_admin_bar ) {
 
 	$avatar = get_avatar( $user_id, 26 );
 	/* translators: %s: current user's display name */
-	$howdy  = sprintf( __( 'Howdy, %s' ), $current_user->display_name );
+	$howdy  = sprintf( __( 'Howdy, %s' ), '<span class="display-name">' . $current_user->display_name . '</span>' );
 	$class  = empty( $avatar ) ? '' : 'with-avatar';
 
 	$wp_admin_bar->add_menu( array(
@@ -598,7 +598,7 @@ function wp_admin_bar_shortlink_menu( $wp_admin_bar ) {
  * @param WP_Admin_Bar $wp_admin_bar
  */
 function wp_admin_bar_edit_menu( $wp_admin_bar ) {
-	global $tag, $wp_the_query;
+	global $tag, $wp_the_query, $user_id;
 
 	if ( is_admin() ) {
 		$current_screen = get_current_screen();
@@ -648,6 +648,17 @@ function wp_admin_bar_edit_menu( $wp_admin_bar ) {
 				'title' => $tax->labels->view_item,
 				'href' => get_term_link( $tag )
 			) );
+		} elseif ( 'user-edit' == $current_screen->base
+			&& isset( $user_id )
+			&& ( $user_object = get_userdata( $user_id ) )
+			&& $user_object->exists()
+			&& $view_link = get_author_posts_url( $user_object->ID ) )
+		{
+			$wp_admin_bar->add_menu( array(
+				'id'    => 'view',
+				'title' => __( 'View User' ),
+				'href'  => $view_link,
+			) );
 		}
 	} else {
 		$current_object = $wp_the_query->get_queried_object();
@@ -675,6 +686,15 @@ function wp_admin_bar_edit_menu( $wp_admin_bar ) {
 				'id' => 'edit',
 				'title' => $tax->labels->edit_item,
 				'href' => $edit_term_link
+			) );
+		} elseif ( is_a( $current_object, 'WP_User' )
+			&& current_user_can( 'edit_user', $current_object->ID )
+			&& $edit_user_link = get_edit_user_link( $current_object->ID ) )
+		{
+			$wp_admin_bar->add_menu( array(
+				'id'    => 'edit',
+				'title' => __( 'Edit User' ),
+				'href'  => $edit_user_link,
 			) );
 		}
 	}
@@ -718,8 +738,9 @@ function wp_admin_bar_new_content_menu( $wp_admin_bar ) {
 	if ( isset( $actions['post-new.php?post_type=content'] ) )
 		$actions['post-new.php?post_type=content'][1] = 'add-new-content';
 
-	if ( current_user_can( 'create_users' ) || current_user_can( 'promote_users' ) )
+	if ( current_user_can( 'create_users' ) || ( is_multisite() && current_user_can( 'promote_users' ) ) ) {
 		$actions[ 'user-new.php' ] = array( _x( 'User', 'add new from admin bar' ), 'new-user' );
+	}
 
 	if ( ! $actions )
 		return;

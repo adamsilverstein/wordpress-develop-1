@@ -26,7 +26,7 @@ send_origin_headers();
 
 // Require an action parameter
 if ( empty( $_REQUEST['action'] ) )
-	die( '0' );
+	wp_die( '0', 400 );
 
 /** Load WordPress Administration APIs */
 require_once( ABSPATH . 'wp-admin/includes/admin.php' );
@@ -64,7 +64,7 @@ $core_actions_post = array(
 	'parse-media-shortcode', 'destroy-sessions', 'install-plugin', 'update-plugin', 'press-this-save-post',
 	'press-this-add-category', 'crop-image', 'generate-password', 'save-wporg-username', 'delete-plugin',
 	'search-plugins', 'search-install-plugins', 'activate-plugin', 'update-theme', 'delete-theme',
-	'install-theme', 'get-post-thumbnail-html',
+	'install-theme', 'get-post-thumbnail-html', 'get-community-events',
 );
 
 // Deprecated
@@ -101,4 +101,4 @@ if ( is_user_logged_in() ) {
 	do_action( 'wp_ajax_nopriv_' . $_REQUEST['action'] );
 }
 // Default status
-die( '0' );
+wp_die( '0', 400 );

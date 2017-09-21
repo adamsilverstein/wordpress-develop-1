@@ -35,7 +35,7 @@ $wp_file_descriptions = array(
 	'singular.php'          => __( 'Singular Template' ),
 	'single.php'            => __( 'Single Post' ),
 	'page.php'              => __( 'Single Page' ),
-	'front-page.php'        => __( 'Static Front Page' ),
+	'front-page.php'        => __( 'Homepage' ),
 	// Attachments
 	'attachment.php'        => __( 'Attachment Template' ),
 	'image.php'             => __( 'Image Attachment Template' ),
@@ -69,7 +69,8 @@ $wp_file_descriptions = array(
  *
  * @since 1.5.0
  *
- * @global array $wp_file_descriptions
+ * @global array $wp_file_descriptions Theme file descriptions.
+ * @global array $allowed_files        List of allowed files. 
  * @param string $file Filesystem path or filename
  * @return string Description of file from $wp_file_descriptions or basename of $file if description doesn't exist.
  *                Appends 'Page Template' to basename of $file if the file is a page template
@@ -370,21 +371,39 @@ function _wp_handle_upload( &$file, $overrides, $time, $action ) {
 
 	// Move the file to the uploads dir.
 	$new_file = $uploads['path'] . "/$filename";
-	if ( 'wp_handle_upload' === $action ) {
-		$move_new_file = @ move_uploaded_file( $file['tmp_name'], $new_file );
-	} else {
-		// use copy and unlink because rename breaks streams.
-		$move_new_file = @ copy( $file['tmp_name'], $new_file );
-		unlink( $file['tmp_name'] );
-	}
 
-	if ( false === $move_new_file ) {
-		if ( 0 === strpos( $uploads['basedir'], ABSPATH ) ) {
-			$error_path = str_replace( ABSPATH, '', $uploads['basedir'] ) . $uploads['subdir'];
+ 	/**
+	 * Filters whether to short-circuit moving the uploaded file after passing all checks.
+	 *
+	 * If a non-null value is passed to the filter, moving the file and any related error
+	 * reporting will be completely skipped.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param string $move_new_file If null (default) move the file after the upload.
+	 * @param string $file          An array of data for a single file.
+	 * @param string $new_file      Filename of the newly-uploaded file.
+	 * @param string $type          File type.
+	 */
+	$move_new_file = apply_filters( 'pre_move_uploaded_file', null, $file, $new_file, $type );
+
+	if ( null === $move_new_file ) {
+		if ( 'wp_handle_upload' === $action ) {
+			$move_new_file = @ move_uploaded_file( $file['tmp_name'], $new_file );
 		} else {
-			$error_path = basename( $uploads['basedir'] ) . $uploads['subdir'];
+			// use copy and unlink because rename breaks streams.
+			$move_new_file = @ copy( $file['tmp_name'], $new_file );
+			unlink( $file['tmp_name'] );
 		}
-		return $upload_error_handler( $file, sprintf( __('The uploaded file could not be moved to %s.' ), $error_path ) );
+
+		if ( false === $move_new_file ) {
+			if ( 0 === strpos( $uploads['basedir'], ABSPATH ) ) {
+				$error_path = str_replace( ABSPATH, '', $uploads['basedir'] ) . $uploads['subdir'];
+			} else {
+				$error_path = basename( $uploads['basedir'] ) . $uploads['subdir'];
+			}
+			return $upload_error_handler( $file, sprintf( __('The uploaded file could not be moved to %s.' ), $error_path ) );
+		}
 	}
 
 	// Set correct file permissions.
@@ -647,6 +666,10 @@ function _unzip_file_ziparchive($file, $to, $needed_dirs = array() ) {
 		if ( '__MACOSX/' === substr($info['name'], 0, 9) ) // Skip the OS X-created __MACOSX directory
 			continue;
 
+		if ( 0 !== validate_file( $info['name'] ) ) {
+			return new WP_Error( 'invalid_file_ziparchive', __( 'Could not extract file from archive.' ), $info['name'] );
+		}
+
 		$uncompressed_size += $info['size'];
 
 		if ( '/' === substr( $info['name'], -1 ) ) {
@@ -663,7 +686,7 @@ function _unzip_file_ziparchive($file, $to, $needed_dirs = array() ) {
 	 * A disk that has zero free bytes has bigger problems.
 	 * Require we have enough space to unzip the file and copy its contents, with a 10% buffer.
 	 */
-	if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+	if ( wp_doing_cron() ) {
 		$available_space = @disk_free_space( WP_CONTENT_DIR );
 		if ( $available_space && ( $uncompressed_size * 2.1 ) > $available_space )
 			return new WP_Error( 'disk_full_unzip_file', __( 'Could not copy files. You may have run out of disk space.' ), compact( 'uncompressed_size', 'available_space' ) );
@@ -769,7 +792,7 @@ function _unzip_file_pclzip($file, $to, $needed_dirs = array()) {
 	 * A disk that has zero free bytes has bigger problems.
 	 * Require we have enough space to unzip the file and copy its contents, with a 10% buffer.
 	 */
-	if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+	if ( wp_doing_cron() ) {
 		$available_space = @disk_free_space( WP_CONTENT_DIR );
 		if ( $available_space && ( $uncompressed_size * 2.1 ) > $available_space )
 			return new WP_Error( 'disk_full_unzip_file', __( 'Could not copy files. You may have run out of disk space.' ), compact( 'uncompressed_size', 'available_space' ) );
@@ -806,6 +829,10 @@ function _unzip_file_pclzip($file, $to, $needed_dirs = array()) {
 
 		if ( '__MACOSX/' === substr($file['filename'], 0, 9) ) // Don't extract the OS X-created __MACOSX directory files
 			continue;
+
+		if ( 0 !== validate_file( $file['filename'] ) ) {
+			return new WP_Error( 'invalid_file_pclzip', __( 'Could not extract file from archive.' ), $file['filename'] );
+		}
 
 		if ( ! $wp_filesystem->put_contents( $to . $file['filename'], $file['content'], FS_CHMOD_FILE) )
 			return new WP_Error( 'copy_failed_pclzip', __( 'Could not copy file.' ), $file['filename'] );
@@ -1091,14 +1118,28 @@ function request_filesystem_credentials( $form_post, $type = '', $error = false,
 
 	$credentials = get_option('ftp_credentials', array( 'hostname' => '', 'username' => ''));
 
+	$submitted_form = wp_unslash( $_POST );
+
+	// Verify nonce, or unset submitted form field values on failure
+	if ( ! isset( $_POST['_fs_nonce'] ) || ! wp_verify_nonce( $_POST['_fs_nonce'], 'filesystem-credentials' ) ) {
+		unset(
+			$submitted_form['hostname'],
+			$submitted_form['username'],
+			$submitted_form['password'],
+			$submitted_form['public_key'],
+			$submitted_form['private_key'],
+			$submitted_form['connection_type']
+		);
+	}
+
 	// If defined, set it to that, Else, If POST'd, set it to that, If not, Set it to whatever it previously was(saved details in option)
-	$credentials['hostname'] = defined('FTP_HOST') ? FTP_HOST : (!empty($_POST['hostname']) ? wp_unslash( $_POST['hostname'] ) : $credentials['hostname']);
-	$credentials['username'] = defined('FTP_USER') ? FTP_USER : (!empty($_POST['username']) ? wp_unslash( $_POST['username'] ) : $credentials['username']);
-	$credentials['password'] = defined('FTP_PASS') ? FTP_PASS : (!empty($_POST['password']) ? wp_unslash( $_POST['password'] ) : '');
+	$credentials['hostname'] = defined('FTP_HOST') ? FTP_HOST : (!empty($submitted_form['hostname']) ? $submitted_form['hostname'] : $credentials['hostname']);
+	$credentials['username'] = defined('FTP_USER') ? FTP_USER : (!empty($submitted_form['username']) ? $submitted_form['username'] : $credentials['username']);
+	$credentials['password'] = defined('FTP_PASS') ? FTP_PASS : (!empty($submitted_form['password']) ? $submitted_form['password'] : '');
 
 	// Check to see if we are setting the public/private keys for ssh
-	$credentials['public_key'] = defined('FTP_PUBKEY') ? FTP_PUBKEY : (!empty($_POST['public_key']) ? wp_unslash( $_POST['public_key'] ) : '');
-	$credentials['private_key'] = defined('FTP_PRIKEY') ? FTP_PRIKEY : (!empty($_POST['private_key']) ? wp_unslash( $_POST['private_key'] ) : '');
+	$credentials['public_key'] = defined('FTP_PUBKEY') ? FTP_PUBKEY : (!empty($submitted_form['public_key']) ? $submitted_form['public_key'] : '');
+	$credentials['private_key'] = defined('FTP_PRIKEY') ? FTP_PRIKEY : (!empty($submitted_form['private_key']) ? $submitted_form['private_key'] : '');
 
 	// Sanitize the hostname, Some people might pass in odd-data:
 	$credentials['hostname'] = preg_replace('|\w+://|', '', $credentials['hostname']); //Strip any schemes off
@@ -1115,8 +1156,8 @@ function request_filesystem_credentials( $form_post, $type = '', $error = false,
 		$credentials['connection_type'] = 'ssh';
 	} elseif ( ( defined( 'FTP_SSL' ) && FTP_SSL ) && 'ftpext' == $type ) { //Only the FTP Extension understands SSL
 		$credentials['connection_type'] = 'ftps';
-	} elseif ( ! empty( $_POST['connection_type'] ) ) {
-		$credentials['connection_type'] = wp_unslash( $_POST['connection_type'] );
+	} elseif ( ! empty( $submitted_form['connection_type'] ) ) {
+		$credentials['connection_type'] = $submitted_form['connection_type'];
 	} elseif ( ! isset( $credentials['connection_type'] ) ) { //All else fails (And it's not defaulted to something else saved), Default to FTP
 		$credentials['connection_type'] = 'ftp';
 	}
@@ -1255,11 +1296,12 @@ if ( isset( $types['ssh'] ) ) {
 }
 
 foreach ( (array) $extra_fields as $field ) {
-	if ( isset( $_POST[ $field ] ) )
-		echo '<input type="hidden" name="' . esc_attr( $field ) . '" value="' . esc_attr( wp_unslash( $_POST[ $field ] ) ) . '" />';
+	if ( isset( $submitted_form[ $field ] ) )
+		echo '<input type="hidden" name="' . esc_attr( $field ) . '" value="' . esc_attr( $submitted_form[ $field ] ) . '" />';
 }
 ?>
 	<p class="request-filesystem-credentials-action-buttons">
+		<?php wp_nonce_field( 'filesystem-credentials', '_fs_nonce', false, true ); ?>
 		<button class="button cancel-button" data-js-action="close" type="button"><?php _e( 'Cancel' ); ?></button>
 		<?php submit_button( __( 'Proceed' ), '', 'upgrade', false ); ?>
 	</p>

@@ -28,6 +28,11 @@ if ( ! is_network_admin() ) {
 }
 
 $installed_themes = search_theme_directories();
+
+if ( false === $installed_themes ) {
+	$installed_themes = array();
+}
+
 foreach ( $installed_themes as $k => $v ) {
 	if ( false !== strpos( $k, '/' ) ) {
 		unset( $installed_themes[ $k ] );
@@ -71,7 +76,7 @@ if ( $tab ) {
 	 * Fires before each of the tabs are rendered on the Install Themes page.
 	 *
 	 * The dynamic portion of the hook name, `$tab`, refers to the current
-	 * theme install tab. Possible values are 'dashboard', 'search', 'upload',
+	 * theme installation tab. Possible values are 'dashboard', 'search', 'upload',
 	 * 'featured', 'new', or 'updated'.
 	 *
 	 * @since 2.8.0
@@ -164,7 +169,7 @@ include(ABSPATH . 'wp-admin/admin-header.php');
 
 		<button type="button" class="button drawer-toggle" aria-expanded="false"><?php _e( 'Feature Filter' ); ?></button>
 
-		<div class="search-form"></div>
+		<form class="search-form"></form>
 
 		<div class="favorites-form">
 			<?php
@@ -231,7 +236,7 @@ if ( $tab ) {
 	 * Fires at the top of each of the tabs on the Install Themes page.
 	 *
 	 * The dynamic portion of the hook name, `$tab`, refers to the current
-	 * theme install tab. Possible values are 'dashboard', 'search', 'upload',
+	 * theme installation tab. Possible values are 'dashboard', 'search', 'upload',
 	 * 'featured', 'new', or 'updated'.
 	 *
 	 * @since 2.8.0

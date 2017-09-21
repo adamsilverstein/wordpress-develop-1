@@ -39,7 +39,6 @@ class WP_Plugin_Install_List_Table extends WP_List_Table {
 	 * within get_plugins().
 	 *
 	 * @since 4.0.0
-	 * @access protected
 	 *
 	 * @return array
 	 */
@@ -228,7 +227,6 @@ class WP_Plugin_Install_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * @access public
 	 */
 	public function no_items() {
 		if ( isset( $this->error ) ) {
@@ -470,7 +468,7 @@ class WP_Plugin_Install_List_Table extends WP_List_Table {
 					case 'newer_installed':
 						if ( is_plugin_active( $status['file'] ) ) {
 							$action_links[] = '<button type="button" class="button button-disabled" disabled="disabled">' . _x( 'Active', 'plugin' ) . '</button>';
-						} elseif ( current_user_can( 'activate_plugins' ) ) {
+						} elseif ( current_user_can( 'activate_plugin', $status['file'] ) ) {
 							$button_text  = __( 'Activate' );
 							/* translators: %s: Plugin name */
 							$button_label = _x( 'Activate %s', 'plugin' );
@@ -561,13 +559,13 @@ class WP_Plugin_Install_List_Table extends WP_List_Table {
 				<div class="column-downloaded">
 					<?php
 					if ( $plugin['active_installs'] >= 1000000 ) {
-						$active_installs_text = _x( '1+ Million', 'Active plugin installs' );
+						$active_installs_text = _x( '1+ Million', 'Active plugin installations' );
 					} elseif ( 0 == $plugin['active_installs'] ) {
-						$active_installs_text = _x( 'Less Than 10', 'Active plugin installs' );
+						$active_installs_text = _x( 'Less Than 10', 'Active plugin installations' );
 					} else {
 						$active_installs_text = number_format_i18n( $plugin['active_installs'] ) . '+';
 					}
-					printf( __( '%s Active Installs' ), $active_installs_text );
+					printf( __( '%s Active Installations' ), $active_installs_text );
 					?>
 				</div>
 				<div class="column-compatibility">

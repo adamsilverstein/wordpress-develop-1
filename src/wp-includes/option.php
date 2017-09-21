@@ -44,12 +44,19 @@ function get_option( $option, $default = false ) {
 	 *
 	 * @since 1.5.0
 	 * @since 4.4.0 The `$option` parameter was added.
+	 * @since 4.9.0 The `$default` parameter was added.
 	 *
-	 * @param bool|mixed $pre_option Value to return instead of the option value.
-	 *                               Default false to skip it.
+	 *
+	 * @param bool|mixed $pre_option The value to return instead of the option value. This differs from
+	 *                               `$default`, which is used as the fallback value in the event the option
+	 *                               doesn't exist elsewhere in get_option(). Default false (to skip past the
+	 *                               short-circuit).
 	 * @param string     $option     Option name.
+	 * @param mixed      $default    The fallback value to return if the option does not exist.
+	 *                               Default is false.
 	 */
-	$pre = apply_filters( "pre_option_{$option}", false, $option );
+	$pre = apply_filters( "pre_option_{$option}", false, $option, $default );
+
 	if ( false !== $pre )
 		return $pre;
 
@@ -207,25 +214,25 @@ function wp_load_alloptions() {
  *
  * @global wpdb $wpdb WordPress database abstraction object.
  *
- * @param int $site_id Optional site ID for which to query the options. Defaults to the current site.
+ * @param int $network_id Optional site ID for which to query the options. Defaults to the current site.
  */
-function wp_load_core_site_options( $site_id = null ) {
+function wp_load_core_site_options( $network_id = null ) {
 	global $wpdb;
 
 	if ( ! is_multisite() || wp_using_ext_object_cache() || wp_installing() )
 		return;
 
-	if ( empty($site_id) )
-		$site_id = $wpdb->siteid;
+	if ( empty($network_id) )
+		$network_id = get_current_network_id();
 
 	$core_options = array('site_name', 'siteurl', 'active_sitewide_plugins', '_site_transient_timeout_theme_roots', '_site_transient_theme_roots', 'site_admins', 'can_compress_scripts', 'global_terms_enabled', 'ms_files_rewriting' );
 
 	$core_options_in = "'" . implode("', '", $core_options) . "'";
-	$options = $wpdb->get_results( $wpdb->prepare("SELECT meta_key, meta_value FROM $wpdb->sitemeta WHERE meta_key IN ($core_options_in) AND site_id = %d", $site_id) );
+	$options = $wpdb->get_results( $wpdb->prepare( "SELECT meta_key, meta_value FROM $wpdb->sitemeta WHERE meta_key IN ($core_options_in) AND site_id = %d", $network_id ) );
 
 	foreach ( $options as $option ) {
 		$key = $option->meta_key;
-		$cache_key = "{$site_id}:$key";
+		$cache_key = "{$network_id}:$key";
 		$option->meta_value = maybe_unserialize( $option->meta_value );
 
 		wp_cache_set( $cache_key, $option->meta_value, 'site-options' );
@@ -1116,12 +1123,18 @@ function get_network_option( $network_id, $option, $default = false ) {
 	 * @since 3.0.0
 	 * @since 4.4.0 The `$option` parameter was added.
 	 * @since 4.7.0 The `$network_id` parameter was added.
+	 * @since 4.9.0 The `$default` parameter was added.
 	 *
-	 * @param mixed  $pre_option The default value to return if the option does not exist.
+	 * @param mixed  $pre_option The value to return instead of the option value. This differs from
+	 *                           `$default`, which is used as the fallback value in the event the
+	 *                           option doesn't exist elsewhere in get_network_option(). Default
+	 *                           is false (to skip past the short-circuit).
 	 * @param string $option     Option name.
 	 * @param int    $network_id ID of the network.
+	 * @param mixed  $default    The fallback value to return if the option does not exist.
+	 *                           Default is false.
 	 */
-	$pre = apply_filters( "pre_site_option_{$option}", false, $option, $network_id );
+	$pre = apply_filters( "pre_site_option_{$option}", false, $option, $network_id, $default );
 
 	if ( false !== $pre ) {
 		return $pre;
@@ -1641,7 +1654,7 @@ function get_site_transient( $transient ) {
  * @see set_transient()
  *
  * @param string $transient  Transient name. Expected to not be SQL-escaped. Must be
- *                           40 characters or fewer in length.
+ *                           167 characters or fewer in length.
  * @param mixed  $value      Transient value. Expected to not be SQL-escaped.
  * @param int    $expiration Optional. Time until expiration in seconds. Default 0 (no expiration).
  * @return bool False if value was not set and true if value was set.
@@ -1871,6 +1884,7 @@ function register_initial_settings() {
  *     Data used to describe the setting when registered.
  *
  *     @type string   $type              The type of data associated with this setting.
+ *                                       Valid values are 'string', 'boolean', 'integer', and 'number'.
  *     @type string   $description       A description of the data attached to this setting.
  *     @type callable $sanitize_callback A callback function that sanitizes the option's value.
  *     @type bool     $show_in_rest      Whether data associated with this setting should be included in the REST API.

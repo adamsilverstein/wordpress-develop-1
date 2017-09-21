@@ -1650,8 +1650,16 @@ function the_author_ID() {
  * @param int $encode_html Optional. How to encode the content.
  */
 function the_content_rss($more_link_text='(more...)', $stripteaser=0, $more_file='', $cut = 0, $encode_html = 0) {
-	_deprecated_function( __FUNCTION__, '2.9.0', 'the_content_feed' );
+	_deprecated_function( __FUNCTION__, '2.9.0', 'the_content_feed()' );
 	$content = get_the_content($more_link_text, $stripteaser);
+
+	/**
+	 * Filters the post content in the context of an RSS feed.
+	 *
+	 * @since 0.71
+	 *
+	 * @param string $content Content of the current post.
+	 */
 	$content = apply_filters('the_content_rss', $content);
 	if ( $cut && !$encode_html )
 		$encode_html = 2;
@@ -2798,7 +2806,7 @@ function wp_admin_bar_dashboard_view_site_menu( $wp_admin_bar ) {
 /**
  * Checks if the current user belong to a given site.
  *
- * @since MU
+ * @since MU (3.0.0)
  * @deprecated 3.3.0 Use is_user_member_of_blog()
  * @see is_user_member_of_blog()
  *
@@ -3364,7 +3372,7 @@ function _search_terms_tidy( $t ) {
  * Determine if TinyMCE is available.
  *
  * Checks to see if the user has deleted the tinymce files to slim down
- * their WordPress install.
+ * their WordPress installation.
  *
  * @since 2.1.0
  * @deprecated 3.9.0
@@ -3533,7 +3541,8 @@ function preview_theme_ob_filter_callback( $matches ) {
  * be applied to an empty string.
  *
  * @since 2.0.0
- * @deprecated 4.3.0
+ * @deprecated 4.3.0 Use format_for_editor()
+ * @see format_for_editor()
  *
  * @param string $text The text to be formatted.
  * @return string The formatted text after filter is applied.
@@ -3814,7 +3823,7 @@ function wp_kses_js_entities( $string ) {
  * @return int
  */
 function _usort_terms_by_ID( $a, $b ) {
-	_deprecated_function( __FUNCTION__, '4.7.0', 'wp_list_sort' );
+	_deprecated_function( __FUNCTION__, '4.7.0', 'wp_list_sort()' );
 
 	if ( $a->term_id > $b->term_id )
 		return 1;
@@ -3839,7 +3848,7 @@ function _usort_terms_by_ID( $a, $b ) {
  * @return int
  */
 function _usort_terms_by_name( $a, $b ) {
-	_deprecated_function( __FUNCTION__, '4.7.0', 'wp_list_sort' );
+	_deprecated_function( __FUNCTION__, '4.7.0', 'wp_list_sort()' );
 
 	return strcmp( $a->name, $b->name );
 }
@@ -3860,7 +3869,7 @@ function _usort_terms_by_name( $a, $b ) {
 function _sort_nav_menu_items( $a, $b ) {
 	global $_menu_item_sort_prop;
 
-	_deprecated_function( __FUNCTION__, '4.7.0', 'wp_list_sort' );
+	_deprecated_function( __FUNCTION__, '4.7.0', 'wp_list_sort()' );
 
 	if ( empty( $_menu_item_sort_prop ) )
 		return 0;

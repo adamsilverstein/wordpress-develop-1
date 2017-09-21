@@ -613,7 +613,8 @@ $_old_files = array(
 'wp-includes/js/plupload/changelog.txt',
 'wp-includes/js/plupload/plupload.silverlight.js',
 'wp-includes/js/plupload/plupload.flash.js',
-'wp-includes/js/plupload/plupload.js',
+// Added back in 4.9 [41328], see #41755
+// 'wp-includes/js/plupload/plupload.js',
 'wp-includes/js/tinymce/plugins/spellchecker',
 'wp-includes/js/tinymce/plugins/inlinepopups',
 'wp-includes/js/tinymce/plugins/media/js',
@@ -705,6 +706,18 @@ $_old_files = array(
 'wp-includes/theme-compat/comments-popup.php',
 // 4.6
 'wp-admin/includes/class-wp-automatic-upgrader.php', // Wrong file name, see #37628.
+// 4.8
+'wp-includes/js/tinymce/plugins/wpembed',
+'wp-includes/js/tinymce/plugins/media/moxieplayer.swf',
+'wp-includes/js/tinymce/skins/lightgray/fonts/readme.md',
+'wp-includes/js/tinymce/skins/lightgray/fonts/tinymce-small.json',
+'wp-includes/js/tinymce/skins/lightgray/fonts/tinymce.json',
+'wp-includes/js/tinymce/skins/lightgray/skin.ie7.min.css',
+// 4.9
+'wp-includes/js/plupload/plupload.flash.swf',
+'wp-includes/js/plupload/plupload.silverlight.xap',
+'wp-includes/js/swfupload/plugins',
+'wp-includes/js/swfupload/swfupload.swf',
 );
 
 /**
@@ -1190,7 +1203,7 @@ function _copy_dir($from, $to, $skip_list = array() ) {
 /**
  * Redirect to the About WordPress page after a successful upgrade.
  *
- * This function is only needed when the existing install is older than 3.4.0.
+ * This function is only needed when the existing installation is older than 3.4.0.
  *
  * @since 3.3.0
  *

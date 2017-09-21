@@ -102,7 +102,7 @@ if ( $wp_customize->is_ios() ) {
 if ( is_rtl() ) {
 	$body_class .= ' rtl';
 }
-$body_class .= ' locale-' . sanitize_html_class( strtolower( str_replace( '_', '-', get_locale() ) ) );
+$body_class .= ' locale-' . sanitize_html_class( strtolower( str_replace( '_', '-', get_user_locale() ) ) );
 
 $admin_title = sprintf( $wp_customize->get_document_title_template(), __( 'Loading&hellip;' ) );
 
@@ -151,50 +151,55 @@ do_action( 'customize_controls_print_scripts' );
 		</div>
 
 		<div id="widgets-right" class="wp-clearfix"><!-- For Widget Customizer, many widgets try to look for instances under div#widgets-right, so we have to add that ID to a container div in the Customizer for compat -->
-		<div class="wp-full-overlay-sidebar-content" tabindex="-1">
-			<div id="customize-info" class="accordion-section customize-info">
-				<div class="accordion-section-title">
-					<span class="preview-notice"><?php
-						echo sprintf( __( 'You are customizing %s' ), '<strong class="panel-title site-title">' . get_bloginfo( 'name' ) . '</strong>' );
-					?></span>
-					<button type="button" class="customize-help-toggle dashicons dashicons-editor-help" aria-expanded="false"><span class="screen-reader-text"><?php _e( 'Help' ); ?></span></button>
+			<div id="customize-notifications-area" class="customize-control-notifications-container">
+				<ul></ul>
+			</div>
+			<div class="wp-full-overlay-sidebar-content" tabindex="-1">
+				<div id="customize-info" class="accordion-section customize-info">
+					<div class="accordion-section-title">
+						<span class="preview-notice"><?php
+							echo sprintf( __( 'You are customizing %s' ), '<strong class="panel-title site-title">' . get_bloginfo( 'name', 'display' ) . '</strong>' );
+						?></span>
+						<button type="button" class="customize-help-toggle dashicons dashicons-editor-help" aria-expanded="false"><span class="screen-reader-text"><?php _e( 'Help' ); ?></span></button>
+					</div>
+					<div class="customize-panel-description"><?php
+						_e( 'The Customizer allows you to preview changes to your site before publishing them. You can navigate to different pages on your site within the preview. Edit shortcuts are shown for some editable elements.' );
+					?></div>
 				</div>
-				<div class="customize-panel-description"><?php
-					_e( 'The Customizer allows you to preview changes to your site before publishing them. You can navigate to different pages on your site within the preview. Edit shortcuts are shown for some editable elements.' );
-				?></div>
-			</div>
 
-			<div id="customize-theme-controls">
-				<ul class="customize-pane-parent"><?php // Panels and sections are managed here via JavaScript ?></ul>
+				<div id="customize-theme-controls">
+					<ul class="customize-pane-parent"><?php // Panels and sections are managed here via JavaScript ?></ul>
+				</div>
 			</div>
-		</div>
 		</div>
 
 		<div id="customize-footer-actions" class="wp-full-overlay-footer">
-			<?php $previewable_devices = $wp_customize->get_previewable_devices(); ?>
-			<?php if ( ! empty( $previewable_devices ) ) : ?>
-			<div class="devices">
-				<?php foreach ( (array) $previewable_devices as $device => $settings ) : ?>
-					<?php
-					if ( empty( $settings['label'] ) ) {
-						continue;
-					}
-					$active = ! empty( $settings['default'] );
-					$class = 'preview-' . $device;
-					if ( $active ) {
-						$class .= ' active';
-					}
-					?>
-					<button type="button" class="<?php echo esc_attr( $class ); ?>" aria-pressed="<?php echo esc_attr( $active ) ?>" data-device="<?php echo esc_attr( $device ); ?>">
-						<span class="screen-reader-text"><?php echo esc_html( $settings['label'] ); ?></span>
-					</button>
-				<?php endforeach; ?>
-			</div>
-			<?php endif; ?>
 			<button type="button" class="collapse-sidebar button" aria-expanded="true" aria-label="<?php echo esc_attr( _x( 'Hide Controls', 'label for hide controls button without length constraints' ) ); ?>">
 				<span class="collapse-sidebar-arrow"></span>
 				<span class="collapse-sidebar-label"><?php _ex( 'Hide Controls', 'short (~12 characters) label for hide controls button' ); ?></span>
 			</button>
+			<?php $previewable_devices = $wp_customize->get_previewable_devices(); ?>
+			<?php if ( ! empty( $previewable_devices ) ) : ?>
+			<div class="devices-wrapper">
+				<div class="devices">
+					<?php foreach ( (array) $previewable_devices as $device => $settings ) : ?>
+						<?php
+						if ( empty( $settings['label'] ) ) {
+							continue;
+						}
+						$active = ! empty( $settings['default'] );
+						$class = 'preview-' . $device;
+						if ( $active ) {
+							$class .= ' active';
+						}
+						?>
+						<button type="button" class="<?php echo esc_attr( $class ); ?>" aria-pressed="<?php echo esc_attr( $active ) ?>" data-device="<?php echo esc_attr( $device ); ?>">
+							<span class="screen-reader-text"><?php echo esc_html( $settings['label'] ); ?></span>
+						</button>
+					<?php endforeach; ?>
+				</div>
+			</div>
+			<?php endif; ?>
 		</div>
 	</form>
 	<div id="customize-preview" class="wp-full-overlay-main"></div>
