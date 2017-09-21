@@ -793,7 +793,7 @@
 					model.unset( 'slug' );
 				}
 
-				if ( ! _.isUndefined( model.nonce() ) && ! _.isNull( model.nonce() ) ) {
+				if ( _.isFunction( model.nonce ) && ! _.isUndefined( model.nonce() ) && ! _.isNull( model.nonce() ) ) {
 					beforeSend = options.beforeSend;
 
 					// @todo enable option for jsonp endpoints
@@ -812,8 +812,7 @@
 					options.complete = function( xhr ) {
 						var returnedNonce = xhr.getResponseHeader( 'X-WP-Nonce' );
 
-						if ( returnedNonce && model.nonce() !== returnedNonce ) {
-							console.log( 'setting nonce', returnedNonce );
+						if ( returnedNonce && _.isFunction( model.nonce ) && model.nonce() !== returnedNonce ) {
 							model.endpointModel.set( 'nonce', returnedNonce );
 						}
 					};
