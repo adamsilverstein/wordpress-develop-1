@@ -22,7 +22,6 @@ class WP_oEmbed {
 	 * A list of oEmbed providers.
 	 *
 	 * @since 2.9.0
-	 * @access public
 	 * @var array
 	 */
 	public $providers = array();
@@ -31,7 +30,6 @@ class WP_oEmbed {
 	 * A list of an early oEmbed providers.
 	 *
 	 * @since 4.0.0
-	 * @access public
 	 * @static
 	 * @var array
 	 */
@@ -41,7 +39,6 @@ class WP_oEmbed {
 	 * A list of private/protected methods, used for backward compatibility.
 	 *
 	 * @since 4.2.0
-	 * @access private
 	 * @var array
 	 */
 	private $compat_methods = array( '_fetch_with_format', '_parse_json', '_parse_xml', '_parse_xml_body' );
@@ -50,7 +47,6 @@ class WP_oEmbed {
 	 * Constructor.
 	 *
 	 * @since 2.9.0
-	 * @access public
 	 */
 	public function __construct() {
 		$host = urlencode( home_url() );
@@ -78,7 +74,6 @@ class WP_oEmbed {
 			'#https?://(www\.)?twitter\.com/\w{1,15}/lists/.*#i'       => array( 'https://publish.twitter.com/oembed',                        true  ),
 			'#https?://(www\.)?twitter\.com/\w{1,15}/timelines/.*#i'   => array( 'https://publish.twitter.com/oembed',                        true  ),
 			'#https?://(www\.)?twitter\.com/i/moments/.*#i'            => array( 'https://publish.twitter.com/oembed',                        true  ),
-			'#https?://vine\.co/v/.*#i'                                => array( 'https://vine.co/oembed.{format}',                           true  ),
 			'#https?://(www\.)?soundcloud\.com/.*#i'                   => array( 'https://soundcloud.com/oembed',                             true  ),
 			'#https?://(.+?\.)?slideshare\.net/.*#i'                   => array( 'https://www.slideshare.net/api/oembed/2',                   true  ),
 			'#https?://(www\.)?instagr(\.am|am\.com)/p/.*#i'           => array( 'https://api.instagram.com/oembed',                          true  ),
@@ -167,7 +162,6 @@ class WP_oEmbed {
 		 * | Polldaddy    | poll.fm               |      Yes       | 4.0.0     |
 		 * | TED          | ted.com               |      Yes       | 4.0.0     |
 		 * | YouTube      | youtube.com/playlist  |      Yes       | 4.0.0     |
-		 * | Vine         | vine.co               |      Yes       | 4.1.0     |
 		 * | Tumblr       | tumblr.com            |      Yes       | 4.2.0     |
 		 * | Kickstarter  | kickstarter.com       |      Yes       | 4.2.0     |
 		 * | Kickstarter  | kck.st                |      Yes       | 4.2.0     |
@@ -194,6 +188,7 @@ class WP_oEmbed {
 		 * | Blip         | blip.tv              |      No        | 2.9.0     | 4.4.0     |
 		 * | Rdio         | rdio.com             |      Yes       | 3.6.0     | 4.4.1     |
 		 * | Rdio         | rd.io                |      Yes       | 3.6.0     | 4.4.1     |
+		 * | Vine         | vine.co              |      Yes       | 4.1.0     | 4.9.0     |
 		 *
 		 * @see wp_oembed_add_provider()
 		 *
@@ -211,7 +206,6 @@ class WP_oEmbed {
 	 * Exposes private/protected methods for backward compatibility.
 	 *
 	 * @since 4.0.0
-	 * @access public
 	 *
 	 * @param callable $name      Method to call.
 	 * @param array    $arguments Arguments to pass when calling.
@@ -228,7 +222,6 @@ class WP_oEmbed {
 	 * Takes a URL and returns the corresponding oEmbed provider's URL, if there is one.
 	 *
 	 * @since 4.0.0
-	 * @access public
 	 *
 	 * @see WP_oEmbed::discover()
 	 *
@@ -275,7 +268,6 @@ class WP_oEmbed {
 	 *
 	 * @static
 	 * @since 4.0.0
-	 * @access public
 	 *
 	 * @see wp_oembed_add_provider()
 	 *
@@ -302,7 +294,6 @@ class WP_oEmbed {
 	 * The just-in-time removal is for the benefit of the {@see 'oembed_providers'} filter.
 	 *
 	 * @since 4.0.0
-	 * @access public
 	 * @static
 	 *
 	 * @see wp_oembed_remove_provider()
@@ -324,7 +315,6 @@ class WP_oEmbed {
 	 * @see WP_oEmbed::fetch()
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 *
 	 * @param string       $url  The URL to the content that should be attempted to be embedded.
 	 * @param array|string $args Optional. Arguments, usually passed from a shortcode. Default empty.
@@ -355,7 +345,6 @@ class WP_oEmbed {
 	 * @see WP_oEmbed::data2html()
 	 *
 	 * @since 2.9.0
-	 * @access public
 	 *
 	 * @param string       $url  The URL to the content that should be attempted to be embedded.
 	 * @param array|string $args Optional. Arguments, usually passed from a shortcode. Default empty.
@@ -405,7 +394,6 @@ class WP_oEmbed {
 	 * Attempts to discover link tags at the given URL for an oEmbed provider.
 	 *
 	 * @since 2.9.0
-	 * @access public
 	 *
 	 * @param string $url The URL that should be inspected for discovery `<link>` tags.
 	 * @return false|string False on failure, otherwise the oEmbed provider URL.
@@ -489,7 +477,6 @@ class WP_oEmbed {
 	 * Connects to a oEmbed provider and returns the result.
 	 *
 	 * @since 2.9.0
-	 * @access public
 	 *
 	 * @param string       $provider The URL to the oEmbed provider.
 	 * @param string       $url      The URL to the content that is desired to be embedded.
@@ -502,11 +489,13 @@ class WP_oEmbed {
 		$provider = add_query_arg( 'maxwidth', (int) $args['width'], $provider );
 		$provider = add_query_arg( 'maxheight', (int) $args['height'], $provider );
 		$provider = add_query_arg( 'url', urlencode($url), $provider );
+		$provider = add_query_arg( 'dnt', 1, $provider );
 
 		/**
 		 * Filters the oEmbed URL to be fetched.
 		 *
 		 * @since 2.9.0
+		 * @since 4.9.0 The `dnt` (Do Not Track) query parameter was added to all oEmbed provider URLs.
 		 *
 		 * @param string $provider URL of the oEmbed provider.
 		 * @param string $url      URL of the content to be embedded.
@@ -527,7 +516,6 @@ class WP_oEmbed {
 	 * Fetches result from an oEmbed provider for a specific format and complete provider URL
 	 *
 	 * @since 3.0.0
-	 * @access private
 	 *
 	 * @param string $provider_url_with_args URL to the provider with full arguments list (url, maxheight, etc.)
 	 * @param string $format Format to use
@@ -552,7 +540,6 @@ class WP_oEmbed {
 	 * Parses a json response body.
 	 *
 	 * @since 3.0.0
-	 * @access private
 	 *
 	 * @param string $response_body
 	 * @return object|false
@@ -566,7 +553,6 @@ class WP_oEmbed {
 	 * Parses an XML response body.
 	 *
 	 * @since 3.0.0
-	 * @access private
 	 *
 	 * @param string $response_body
 	 * @return object|false
@@ -590,7 +576,6 @@ class WP_oEmbed {
 	 * Serves as a helper function for parsing an XML response body.
 	 *
 	 * @since 3.6.0
-	 * @access private
 	 *
 	 * @param string $response_body
 	 * @return stdClass|false
@@ -628,7 +613,6 @@ class WP_oEmbed {
 	 * Converts a data object from WP_oEmbed::fetch() and returns the HTML.
 	 *
 	 * @since 2.9.0
-	 * @access public
 	 *
 	 * @param object $data A data object result from an oEmbed provider.
 	 * @param string $url The URL to the content that is desired to be embedded.
@@ -685,7 +669,6 @@ class WP_oEmbed {
 	 *
 	 * @since 2.9.0 as strip_scribd_newlines()
 	 * @since 3.0.0
-	 * @access public
 	 *
 	 * @param string $html Existing HTML.
 	 * @param object $data Data object from WP_oEmbed::data2html()

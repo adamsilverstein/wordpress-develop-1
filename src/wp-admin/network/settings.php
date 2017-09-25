@@ -10,7 +10,7 @@
 /** Load WordPress Administration Bootstrap */
 require_once( dirname( __FILE__ ) . '/admin.php' );
 
-/** WordPress Translation Install API */
+/** WordPress Translation Installation API */
 require_once( ABSPATH . 'wp-admin/includes/translation-install.php' );
 
 if ( ! current_user_can( 'manage_network_options' ) )
@@ -62,8 +62,8 @@ if ( $_POST ) {
 		'first_comment_email',
 	);
 
-	// Handle translation install.
-	if ( ! empty( $_POST['WPLANG'] ) && wp_can_install_language_pack() ) {  // @todo: Skip if already installed
+	// Handle translation installation.
+	if ( ! empty( $_POST['WPLANG'] ) && current_user_can( 'install_languages' ) ) {
 		$language = wp_download_language_pack( $_POST['WPLANG'] );
 		if ( $language ) {
 			$_POST['WPLANG'] = $language;
@@ -80,7 +80,7 @@ if ( $_POST ) {
 	/**
 	 * Fires after the network options are updated.
 	 *
-	 * @since MU
+	 * @since MU (3.0.0)
 	 */
 	do_action( 'update_wpmu_options' );
 
@@ -130,10 +130,10 @@ if ( isset( $_GET['updated'] ) ) {
 				<td>
 					<fieldset>
 					<legend class="screen-reader-text"><?php _e( 'New registrations settings' ) ?></legend>
-					<label><input name="registration" type="radio" id="registration1" value="none"<?php checked( $reg, 'none') ?> /> <?php _e( 'Registration is disabled.' ); ?></label><br />
-					<label><input name="registration" type="radio" id="registration2" value="user"<?php checked( $reg, 'user') ?> /> <?php _e( 'User accounts may be registered.' ); ?></label><br />
-					<label><input name="registration" type="radio" id="registration3" value="blog"<?php checked( $reg, 'blog') ?> /> <?php _e( 'Logged in users may register new sites.' ); ?></label><br />
-					<label><input name="registration" type="radio" id="registration4" value="all"<?php checked( $reg, 'all') ?> /> <?php _e( 'Both sites and user accounts can be registered.' ); ?></label>
+					<label><input name="registration" type="radio" id="registration1" value="none"<?php checked( $reg, 'none') ?> /> <?php _e( 'Registration is disabled' ); ?></label><br />
+					<label><input name="registration" type="radio" id="registration2" value="user"<?php checked( $reg, 'user') ?> /> <?php _e( 'User accounts may be registered' ); ?></label><br />
+					<label><input name="registration" type="radio" id="registration3" value="blog"<?php checked( $reg, 'blog') ?> /> <?php _e( 'Logged in users may register new sites' ); ?></label><br />
+					<label><input name="registration" type="radio" id="registration4" value="all"<?php checked( $reg, 'all') ?> /> <?php _e( 'Both sites and user accounts can be registered' ); ?></label>
 					<?php if ( is_subdomain_install() ) {
 						echo '<p class="description">';
 						/* translators: 1: NOBLOGREDIRECT 2: wp-config.php */
@@ -154,14 +154,14 @@ if ( isset( $_GET['updated'] ) ) {
 					update_site_option( 'registrationnotification', 'yes' );
 				?>
 				<td>
-					<label><input name="registrationnotification" type="checkbox" id="registrationnotification" value="yes"<?php checked( get_site_option( 'registrationnotification' ), 'yes' ) ?> /> <?php _e( 'Send the network admin an email notification every time someone registers a site or user account.' ) ?></label>
+					<label><input name="registrationnotification" type="checkbox" id="registrationnotification" value="yes"<?php checked( get_site_option( 'registrationnotification' ), 'yes' ) ?> /> <?php _e( 'Send the network admin an email notification every time someone registers a site or user account' ) ?></label>
 				</td>
 			</tr>
 
 			<tr id="addnewusers">
 				<th scope="row"><?php _e( 'Add New Users' ) ?></th>
 				<td>
-					<label><input name="add_new_users" type="checkbox" id="add_new_users" value="1"<?php checked( get_site_option( 'add_new_users' ) ) ?> /> <?php _e( 'Allow site administrators to add new users to their site via the "Users &rarr; Add New" page.' ); ?></label>
+					<label><input name="add_new_users" type="checkbox" id="add_new_users" value="1"<?php checked( get_site_option( 'add_new_users' ) ) ?> /> <?php _e( 'Allow site administrators to add new users to their site via the "Users &rarr; Add New" page' ); ?></label>
 				</td>
 			</tr>
 
@@ -342,7 +342,7 @@ if ( isset( $_GET['updated'] ) ) {
 							'selected'     => $lang,
 							'languages'    => $languages,
 							'translations' => $translations,
-							'show_available_translations' => wp_can_install_language_pack(),
+							'show_available_translations' => current_user_can( 'install_languages' ),
 						) );
 						?>
 					</td>
@@ -370,7 +370,7 @@ if ( isset( $_GET['updated'] ) ) {
 			 * default option, 'plugins' is enabled, site administrators are granted access to the Plugins
 			 * screen in their individual sites' dashboards.
 			 *
-			 * @since MU
+			 * @since MU (3.0.0)
 			 *
 			 * @param array $admin_menus The menu items available.
 			 */
@@ -393,7 +393,7 @@ if ( isset( $_GET['updated'] ) ) {
 		/**
 		 * Fires at the end of the Network Settings form, before the submit button.
 		 *
-		 * @since MU
+		 * @since MU (3.0.0)
 		 */
 		do_action( 'wpmu_options' ); ?>
 		<?php submit_button(); ?>

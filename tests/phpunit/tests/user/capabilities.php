@@ -233,6 +233,9 @@ class Tests_User_Capabilities extends WP_UnitTestCase {
 			'upload_themes'          => array( 'administrator' ),
 			'customize'              => array( 'administrator' ),
 			'add_users'              => array( 'administrator' ),
+			'install_languages'      => array( 'administrator' ),
+			'update_languages'       => array( 'administrator' ),
+			'deactivate_plugins'     => array( 'administrator' ),
 
 			'edit_categories'        => array( 'administrator', 'editor' ),
 			'delete_categories'      => array( 'administrator', 'editor' ),
@@ -261,6 +264,9 @@ class Tests_User_Capabilities extends WP_UnitTestCase {
 			'upload_themes'          => array(),
 			'edit_css'               => array(),
 			'upgrade_network'        => array(),
+			'install_languages'      => array(),
+			'update_languages'       => array(),
+			'deactivate_plugins'     => array(),
 
 			'customize'              => array( 'administrator' ),
 			'delete_site'            => array( 'administrator' ),
@@ -421,6 +427,8 @@ class Tests_User_Capabilities extends WP_UnitTestCase {
 			$expected['create_users'],
 			$expected['manage_links'],
 			// Singular object meta capabilities (where an object ID is passed) are not tested:
+			$expected['activate_plugin'],
+			$expected['deactivate_plugin'],
 			$expected['remove_user'],
 			$expected['promote_user'],
 			$expected['edit_user'],
@@ -492,6 +500,57 @@ class Tests_User_Capabilities extends WP_UnitTestCase {
 
 		$this->assertTrue( $user->has_cap( 'exist' ), "User with the {$role} role should have the exist capability" );
 		$this->assertTrue( user_can( $user, 'exist' ), "User with the {$role} role should have the exist capability" );
+	}
+
+	/**
+	 * @ticket 41059
+	 */
+	public function test_do_not_allow_is_denied_for_all_roles() {
+		foreach ( self::$users as $role => $user ) {
+
+			# Test adding the cap directly to the user
+			$user->add_cap( 'do_not_allow' );
+			$has_cap = $user->has_cap( 'do_not_allow' );
+			$user->remove_cap( 'do_not_allow' );
+			$this->assertFalse( $has_cap, "User with the {$role} role should not have the do_not_allow capability" );
+
+			# Test adding the cap to the user's role
+			$role_obj = get_role( $role );
+			$role_obj->add_cap( 'do_not_allow' );
+			$has_cap = $user->has_cap( 'do_not_allow' );
+			$role_obj->remove_cap( 'do_not_allow' );
+			$this->assertFalse( $has_cap, "User with the {$role} role should not have the do_not_allow capability" );
+
+			# Test adding the cap via a filter
+			add_filter( 'user_has_cap', array( $this, 'grant_do_not_allow' ), 10, 4 );
+			$has_cap = $user->has_cap( 'do_not_allow' );
+			remove_filter( 'user_has_cap', array( $this, 'grant_do_not_allow' ), 10, 4 );
+			$this->assertFalse( $has_cap, "User with the {$role} role should not have the do_not_allow capability" );
+
+		}
+	}
+
+	/**
+	 * @group ms-required
+	 * @ticket 41059
+	 */
+	public function test_do_not_allow_is_denied_for_super_admins() {
+		# Test adding the cap directly to the user
+		self::$super_admin->add_cap( 'do_not_allow' );
+		$has_cap = self::$super_admin->has_cap( 'do_not_allow' );
+		self::$super_admin->remove_cap( 'do_not_allow' );
+		$this->assertFalse( $has_cap, 'Super admins should not have the do_not_allow capability' );
+
+		# Test adding the cap via a filter
+		add_filter( 'user_has_cap', array( $this, 'grant_do_not_allow' ), 10, 4 );
+		$has_cap = self::$super_admin->has_cap( 'do_not_allow' );
+		remove_filter( 'user_has_cap', array( $this, 'grant_do_not_allow' ), 10, 4 );
+		$this->assertFalse( $has_cap, 'Super admins should not have the do_not_allow capability' );
+	}
+
+	public function grant_do_not_allow( $allcaps, $caps, $args, $user ) {
+		$allcaps['do_not_allow'] = true;
+		return $allcaps;
 	}
 
 	// special case for the link manager
@@ -1299,6 +1358,27 @@ class Tests_User_Capabilities extends WP_UnitTestCase {
 			$this->assertEquals( array(
 				$primitive_cap,
 			), $caps, "Meta cap: {$meta_cap}" );
+		}
+	}
+
+	/**
+	 * @ticket 40891
+	 */
+	public function test_taxonomy_meta_capabilities_with_non_existent_terms() {
+		$caps = array(
+			'add_term_meta',
+			'delete_term_meta',
+			'edit_term_meta',
+		);
+
+		$taxonomy = 'wptests_tax';
+		register_taxonomy( $taxonomy, 'post' );
+
+		$editor = self::$users['editor'];
+
+		foreach ( $caps as $cap ) {
+			// `null` represents a non-existent term ID.
+			$this->assertFalse( user_can( $editor->ID, $cap, null ) );
 		}
 	}
 

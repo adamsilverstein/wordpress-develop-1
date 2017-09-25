@@ -32,7 +32,7 @@ function get_locale() {
 
 	if ( isset( $locale ) ) {
 		/**
-		 * Filters WordPress install's locale ID.
+		 * Filters the locale ID of the WordPress installation.
 		 *
 		 * @since 1.5.0
 		 *
@@ -221,7 +221,8 @@ function esc_attr__( $text, $domain = 'default' ) {
 /**
  * Retrieve the translation of $text and escapes it for safe use in HTML output.
  *
- * If there is no translation, or the text domain isn't loaded, the original text is returned.
+ * If there is no translation, or the text domain isn't loaded, the original text
+ * is escaped and returned..
  *
  * @since 2.8.0
  *
@@ -978,9 +979,9 @@ function is_textdomain_loaded( $domain ) {
  * are dummy gettext calls to get them into the POT file and this function
  * properly translates them back.
  *
- * The before_last_bar() call is needed, because older installs keep the roles
+ * The before_last_bar() call is needed, because older installations keep the roles
  * using the old context format: 'Role name|User role' and just skipping the
- * content after the last bar is easier than fixing them in the DB. New installs
+ * content after the last bar is easier than fixing them in the DB. New installations
  * won't suffer from that problem.
  *
  * @since 2.8.0

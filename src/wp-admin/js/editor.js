@@ -522,7 +522,7 @@ window.wp = window.wp || {};
 	 * Settings for both TinyMCE and Quicktags can be passed on initialization, and are "filtered"
 	 * with custom jQuery events on the document element, wp-before-tinymce-init and wp-before-quicktags-init.
 	 *
-	 * @since 4.8
+	 * @since 4.8.0
 	 *
 	 * @param {string} id The HTML id of the textarea that is used for the editor.
 	 *                    Has to be jQuery compliant. No brackets, special chars, etc.
@@ -562,18 +562,42 @@ window.wp = window.wp || {};
 		// Add wrap and the Visual|Text tabs.
 		if ( settings.tinymce && settings.quicktags ) {
 			var $textarea = $( '#' + id );
+
 			var $wrap = $( '<div>' ).attr( {
 					'class': 'wp-core-ui wp-editor-wrap tmce-active',
 					id: 'wp-' + id + '-wrap'
 				} );
+
 			var $editorContainer = $( '<div class="wp-editor-container">' );
+
 			var $button = $( '<button>' ).attr( {
 					type: 'button',
 					'data-wp-editor-id': id
 				} );
 
+			var $editorTools = $( '<div class="wp-editor-tools">' );
+
+			if ( settings.mediaButtons ) {
+				var buttonText = 'Add Media';
+
+				if ( window._wpMediaViewsL10n && window._wpMediaViewsL10n.addMedia ) {
+					buttonText = window._wpMediaViewsL10n.addMedia;
+				}
+
+				var $addMediaButton = $( '<button type="button" class="button insert-media add_media">' );
+
+				$addMediaButton.append( '<span class="wp-media-buttons-icon"></span>' );
+				$addMediaButton.append( document.createTextNode( ' ' + buttonText ) );
+				$addMediaButton.data( 'editor', id );
+
+				$editorTools.append(
+					$( '<div class="wp-media-buttons">' )
+						.append( $addMediaButton )
+				);
+			}
+
 			$wrap.append(
-				$( '<div class="wp-editor-tools">' )
+				$editorTools
 					.append( $( '<div class="wp-editor-tabs">' )
 						.append( $button.clone().attr({
 							id: id + '-tmce',
@@ -628,7 +652,7 @@ window.wp = window.wp || {};
 	 *
 	 * Intended for use with editors that were initialized with wp.editor.initialize().
 	 *
-	 * @since 4.8
+	 * @since 4.8.0
 	 *
 	 * @param {string} id The HTML id of the editor textarea.
 	 */
@@ -667,7 +691,7 @@ window.wp = window.wp || {};
 	 *
 	 * Intended for use with editors that were initialized with wp.editor.initialize().
 	 *
-	 * @since 4.8
+	 * @since 4.8.0
 	 *
 	 * @param {string} id The HTML id of the editor textarea.
 	 * @return The editor content.

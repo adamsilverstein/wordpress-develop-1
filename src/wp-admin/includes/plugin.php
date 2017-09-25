@@ -419,7 +419,7 @@ function _get_dropins() {
 		'advanced-cache.php' => array( __( 'Advanced caching plugin.'       ), 'WP_CACHE' ), // WP_CACHE
 		'db.php'             => array( __( 'Custom database class.'         ), true ), // auto on load
 		'db-error.php'       => array( __( 'Custom database error message.' ), true ), // auto on error
-		'install.php'        => array( __( 'Custom install script.'         ), true ), // auto on install
+		'install.php'        => array( __( 'Custom installation script.'    ), true ), // auto on installation
 		'maintenance.php'    => array( __( 'Custom maintenance message.'    ), true ), // auto on maintenance
 		'object-cache.php'   => array( __( 'External object cache.'         ), true ), // auto on load
 	);
@@ -555,10 +555,8 @@ function activate_plugin( $plugin, $redirect = '', $network_wide = false, $silen
 		if ( !empty($redirect) )
 			wp_redirect(add_query_arg('_error_nonce', wp_create_nonce('plugin-activation-error_' . $plugin), $redirect)); // we'll override this later if the plugin can be included without fatal error
 		ob_start();
-		wp_register_plugin_realpath( WP_PLUGIN_DIR . '/' . $plugin );
-		$_wp_plugin_file = $plugin;
-		include_once( WP_PLUGIN_DIR . '/' . $plugin );
-		$plugin = $_wp_plugin_file; // Avoid stomping of the $plugin variable in a plugin.
+
+		plugin_sandbox_scrape( $plugin );
 
 		if ( ! $silent ) {
 			/**
@@ -1060,7 +1058,9 @@ function uninstall_plugin($plugin) {
  * @param string   $page_title The text to be displayed in the title tags of the page when the menu is selected.
  * @param string   $menu_title The text to be used for the menu.
  * @param string   $capability The capability required for this menu to be displayed to the user.
- * @param string   $menu_slug  The slug name to refer to this menu by (should be unique for this menu).
+ * @param string   $menu_slug  The slug name to refer to this menu by. Should be unique for this menu page and only
+ *                             include lowercase alphanumeric, dashes, and underscores characters to be compatible
+ *                             with sanitize_key().
  * @param callable $function   The function to be called to output the content for this page.
  * @param string   $icon_url   The URL to the icon to be used for this menu.
  *                             * Pass a base64-encoded SVG using a data URI, which will be colored to match
@@ -1126,11 +1126,15 @@ function add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $func
  * @global array $_registered_pages
  * @global array $_parent_pages
  *
- * @param string   $parent_slug The slug name for the parent menu (or the file name of a standard WordPress admin page).
- * @param string   $page_title  The text to be displayed in the title tags of the page when the menu is selected.
+ * @param string   $parent_slug The slug name for the parent menu (or the file name of a standard
+ *                              WordPress admin page).
+ * @param string   $page_title  The text to be displayed in the title tags of the page when the menu
+ *                              is selected.
  * @param string   $menu_title  The text to be used for the menu.
  * @param string   $capability  The capability required for this menu to be displayed to the user.
- * @param string   $menu_slug   The slug name to refer to this menu by (should be unique for this menu).
+ * @param string   $menu_slug   The slug name to refer to this menu by. Should be unique for this menu
+ *                              and only include lowercase alphanumeric, dashes, and underscores characters
+ *                              to be compatible with sanitize_key().
  * @param callable $function    The function to be called to output the content for this page.
  * @return false|string The resulting page's hook_suffix, or false if the user does not have the capability required.
  */
@@ -1875,9 +1879,42 @@ function wp_clean_plugins_cache( $clear_update_cache = true ) {
 }
 
 /**
- * @param string $plugin
+ * Simulate loading the WordPress admin with a given plugin active to attempt to generate errors.
+ *
+ * Actions are re-triggered in the WP bootstrap process for the WP Admin, and the WP_ADMIN constant is defined.
+ *
+ * @since 3.0.0
+ * @since 4.4.0 Function was moved into the `wp-admin/includes/plugin.php` file.
+ * @since 4.9.0 Add defining of WP_ADMIN and triggering admin WP bootstrap actions.
+ *
+ * @global array $wp_actions
+ * @param string $plugin Plugin file to load.
  */
 function plugin_sandbox_scrape( $plugin ) {
+	global $wp_actions;
 	wp_register_plugin_realpath( WP_PLUGIN_DIR . '/' . $plugin );
-	include( WP_PLUGIN_DIR . '/' . $plugin );
+
+	if ( ! defined( 'WP_ADMIN' ) ) {
+		define( 'WP_ADMIN', true );
+	}
+
+	$tested_actions = array(
+		'plugins_loaded' => array(),
+		'setup_theme' => array(),
+		'after_setup_theme' => array(),
+		'init' => array(),
+		'wp_loaded' => array(),
+		'admin_init' => array(),
+	);
+	$old_wp_actions = $wp_actions;
+	array_map( 'remove_all_actions', array_keys( $tested_actions ) );
+
+	include_once( WP_PLUGIN_DIR . '/' . $plugin );
+
+	// Trigger key actions that are done on the plugin editor to cause the relevant plugin hooks to fire and potentially cause errors.
+	foreach ( $tested_actions as $action => $args ) {
+		do_action_ref_array( $action, $args );
+	}
+
+	$wp_actions = $old_wp_actions; // Restore actions.
 }

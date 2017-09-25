@@ -35,7 +35,7 @@ $wp_file_descriptions = array(
 	'singular.php'          => __( 'Singular Template' ),
 	'single.php'            => __( 'Single Post' ),
 	'page.php'              => __( 'Single Page' ),
-	'front-page.php'        => __( 'Static Front Page' ),
+	'front-page.php'        => __( 'Homepage' ),
 	// Attachments
 	'attachment.php'        => __( 'Attachment Template' ),
 	'image.php'             => __( 'Image Attachment Template' ),
@@ -69,7 +69,8 @@ $wp_file_descriptions = array(
  *
  * @since 1.5.0
  *
- * @global array $wp_file_descriptions
+ * @global array $wp_file_descriptions Theme file descriptions.
+ * @global array $allowed_files        List of allowed files. 
  * @param string $file Filesystem path or filename
  * @return string Description of file from $wp_file_descriptions or basename of $file if description doesn't exist.
  *                Appends 'Page Template' to basename of $file if the file is a page template
@@ -370,21 +371,39 @@ function _wp_handle_upload( &$file, $overrides, $time, $action ) {
 
 	// Move the file to the uploads dir.
 	$new_file = $uploads['path'] . "/$filename";
-	if ( 'wp_handle_upload' === $action ) {
-		$move_new_file = @ move_uploaded_file( $file['tmp_name'], $new_file );
-	} else {
-		// use copy and unlink because rename breaks streams.
-		$move_new_file = @ copy( $file['tmp_name'], $new_file );
-		unlink( $file['tmp_name'] );
-	}
 
-	if ( false === $move_new_file ) {
-		if ( 0 === strpos( $uploads['basedir'], ABSPATH ) ) {
-			$error_path = str_replace( ABSPATH, '', $uploads['basedir'] ) . $uploads['subdir'];
+ 	/**
+	 * Filters whether to short-circuit moving the uploaded file after passing all checks.
+	 *
+	 * If a non-null value is passed to the filter, moving the file and any related error
+	 * reporting will be completely skipped.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param string $move_new_file If null (default) move the file after the upload.
+	 * @param string $file          An array of data for a single file.
+	 * @param string $new_file      Filename of the newly-uploaded file.
+	 * @param string $type          File type.
+	 */
+	$move_new_file = apply_filters( 'pre_move_uploaded_file', null, $file, $new_file, $type );
+
+	if ( null === $move_new_file ) {
+		if ( 'wp_handle_upload' === $action ) {
+			$move_new_file = @ move_uploaded_file( $file['tmp_name'], $new_file );
 		} else {
-			$error_path = basename( $uploads['basedir'] ) . $uploads['subdir'];
+			// use copy and unlink because rename breaks streams.
+			$move_new_file = @ copy( $file['tmp_name'], $new_file );
+			unlink( $file['tmp_name'] );
 		}
-		return $upload_error_handler( $file, sprintf( __('The uploaded file could not be moved to %s.' ), $error_path ) );
+
+		if ( false === $move_new_file ) {
+			if ( 0 === strpos( $uploads['basedir'], ABSPATH ) ) {
+				$error_path = str_replace( ABSPATH, '', $uploads['basedir'] ) . $uploads['subdir'];
+			} else {
+				$error_path = basename( $uploads['basedir'] ) . $uploads['subdir'];
+			}
+			return $upload_error_handler( $file, sprintf( __('The uploaded file could not be moved to %s.' ), $error_path ) );
+		}
 	}
 
 	// Set correct file permissions.
@@ -647,6 +666,10 @@ function _unzip_file_ziparchive($file, $to, $needed_dirs = array() ) {
 		if ( '__MACOSX/' === substr($info['name'], 0, 9) ) // Skip the OS X-created __MACOSX directory
 			continue;
 
+		if ( 0 !== validate_file( $info['name'] ) ) {
+			return new WP_Error( 'invalid_file_ziparchive', __( 'Could not extract file from archive.' ), $info['name'] );
+		}
+
 		$uncompressed_size += $info['size'];
 
 		if ( '/' === substr( $info['name'], -1 ) ) {
@@ -806,6 +829,10 @@ function _unzip_file_pclzip($file, $to, $needed_dirs = array()) {
 
 		if ( '__MACOSX/' === substr($file['filename'], 0, 9) ) // Don't extract the OS X-created __MACOSX directory files
 			continue;
+
+		if ( 0 !== validate_file( $file['filename'] ) ) {
+			return new WP_Error( 'invalid_file_pclzip', __( 'Could not extract file from archive.' ), $file['filename'] );
+		}
 
 		if ( ! $wp_filesystem->put_contents( $to . $file['filename'], $file['content'], FS_CHMOD_FILE) )
 			return new WP_Error( 'copy_failed_pclzip', __( 'Could not copy file.' ), $file['filename'] );

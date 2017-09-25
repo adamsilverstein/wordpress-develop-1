@@ -550,6 +550,10 @@
 			}
 			control.widgetContentEmbedded = true;
 
+			// Update the notification container element now that the widget content has been embedded.
+			control.notifications.container = control.getNotificationsContainerElement();
+			control.notifications.render();
+
 			widgetContent = $( control.params.widget_content );
 			control.container.find( '.widget-content:first' ).append( widgetContent );
 
@@ -593,7 +597,7 @@
 			var self = this, $widgetInside, $widgetForm, $customizeSidebar,
 				$themeControlsContainer, positionWidget;
 
-			if ( ! this.params.is_wide ) {
+			if ( ! this.params.is_wide || $( window ).width() <= 640 /* max-width breakpoint in customize-controls.css */ ) {
 				return;
 			}
 
@@ -602,7 +606,7 @@
 			$customizeSidebar = $( '.wp-full-overlay-sidebar-content:first' );
 			this.container.addClass( 'wide-widget-control' );
 
-			this.container.find( '.widget-content:first' ).css( {
+			this.container.find( '.form:first' ).css( {
 				'max-width': this.params.width,
 				'min-height': this.params.height
 			} );
@@ -1400,6 +1404,7 @@
 				complete = function() {
 					self.container.removeClass( 'expanding' );
 					self.container.addClass( 'expanded' );
+					$widget.addClass( 'open' );
 					$toggleBtn.attr( 'aria-expanded', 'true' );
 					self.container.trigger( 'expanded' );
 				};
@@ -1433,6 +1438,7 @@
 				complete = function() {
 					self.container.removeClass( 'collapsing' );
 					self.container.removeClass( 'expanded' );
+					$widget.removeClass( 'open' );
 					$toggleBtn.attr( 'aria-expanded', 'false' );
 					self.container.trigger( 'collapsed' );
 				};

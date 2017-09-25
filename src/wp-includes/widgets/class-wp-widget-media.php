@@ -34,10 +34,17 @@ abstract class WP_Widget_Media extends WP_Widget {
 	);
 
 	/**
+	 * Whether or not the widget has been registered yet.
+	 *
+	 * @since 4.8.1
+	 * @var bool
+	 */
+	protected $registered = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 *
 	 * @param string $id_base         Base ID for the widget, lowercase and unique.
 	 * @param string $name            Name for the widget displayed on the configuration page.
@@ -85,9 +92,16 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Add hooks while registering all widget instances of this widget class.
 	 *
 	 * @since 4.8.0
-	 * @access public
+	 *
+	 * @param integer $number Optional. The unique order number of this widget instance
+	 *                        compared to other instances of the same class. Default -1.
 	 */
-	public function _register() {
+	public function _register_one( $number = -1 ) {
+		parent::_register_one( $number );
+		if ( $this->registered ) {
+			return;
+		}
+		$this->registered = true;
 
 		// Note that the widgets component in the customizer will also do the 'admin_print_scripts-widgets.php' action in WP_Customize_Widgets::print_scripts().
 		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
@@ -100,15 +114,12 @@ abstract class WP_Widget_Media extends WP_Widget {
 		add_action( 'admin_footer-widgets.php', array( $this, 'render_control_template_scripts' ) );
 
 		add_filter( 'display_media_states', array( $this, 'display_media_state' ), 10, 2 );
-
-		parent::_register();
 	}
 
 	/**
 	 * Get schema for properties of a widget instance (item).
 	 *
 	 * @since  4.8.0
-	 * @access public
 	 *
 	 * @see WP_REST_Controller::get_item_schema()
 	 * @see WP_REST_Controller::get_additional_fields()
@@ -144,7 +155,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Determine if the supplied attachment is for a valid attachment post with the specified MIME type.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 *
 	 * @param int|WP_Post $attachment Attachment post ID or object.
 	 * @param string      $mime_type  MIME type.
@@ -168,7 +178,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Sanitize a token list string, such as used in HTML rel and class attributes.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 *
 	 * @link http://w3c.github.io/html/infrastructure.html#space-separated-tokens
 	 * @link https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
@@ -188,7 +197,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Displays the widget on the front-end.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 *
 	 * @see WP_Widget::widget()
 	 *
@@ -232,7 +240,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Sanitizes the widget form values as they are saved.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 *
 	 * @see WP_Widget::update()
 	 * @see WP_REST_Request::has_valid_params()
@@ -250,6 +257,12 @@ abstract class WP_Widget_Media extends WP_Widget {
 				continue;
 			}
 			$value = $new_instance[ $field ];
+
+			// Workaround for rest_validate_value_from_schema() due to the fact that rest_is_boolean( '' ) === false, while rest_is_boolean( '1' ) is true.
+			if ( 'boolean' === $field_schema['type'] && '' === $value ) {
+				$value = false;
+			}
+
 			if ( true !== rest_validate_value_from_schema( $value, $field_schema, $field ) ) {
 				continue;
 			}
@@ -278,7 +291,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Render the media on the frontend.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 *
 	 * @param array $instance Widget instance props.
 	 * @return string
@@ -291,7 +303,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Note that the widget UI itself is rendered with JavaScript via `MediaWidgetControl#render()`.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 *
 	 * @see \WP_Widget_Media::render_control_template_scripts() Where the JS template is located.
 	 * @param array $instance Current settings.
@@ -311,7 +322,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				class="media-widget-instance-property"
 				name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>"
 				id="<?php echo esc_attr( $this->get_field_id( $name ) ); // Needed specifically by wpWidgets.appendTitle(). ?>"
-				value="<?php echo esc_attr( strval( $value ) ); ?>"
+				value="<?php echo esc_attr( is_array( $value ) ? join( ',', $value ) : strval( $value ) ); ?>"
 			/>
 		<?php
 		endforeach;
@@ -321,7 +332,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Filters the default media display states for items in the Media list table.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 *
 	 * @param array   $states An array of media states.
 	 * @param WP_Post $post   The current attachment object.
@@ -358,7 +368,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * case a widget does get added.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 */
 	public function enqueue_preview_scripts() {}
 
@@ -366,7 +375,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Loads the required scripts and styles for the widget control.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 */
 	public function enqueue_admin_scripts() {
 		wp_enqueue_media();
@@ -377,7 +385,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Render form template scripts.
 	 *
 	 * @since 4.8.0
-	 * @access public
 	 */
 	public function render_control_template_scripts() {
 		?>
@@ -387,7 +394,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				<label for="{{ elementIdPrefix }}title"><?php esc_html_e( 'Title:' ); ?></label>
 				<input id="{{ elementIdPrefix }}title" type="text" class="widefat title">
 			</p>
-			<div class="media-widget-preview">
+			<div class="media-widget-preview <?php echo esc_attr( $this->id_base ); ?>">
 				<div class="attachment-media-view">
 					<div class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></div>
 				</div>
@@ -403,6 +410,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 					<?php echo esc_html( $this->l10n['add_media'] ); ?>
 				</button>
 			</p>
+			<div class="media-widget-fields">
+			</div>
 		</script>
 		<?php
 	}
@@ -411,7 +420,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Whether the widget has content to show.
 	 *
 	 * @since 4.8.0
-	 * @access protected
 	 *
 	 * @param array $instance Widget instance props.
 	 * @return bool Whether widget has content.

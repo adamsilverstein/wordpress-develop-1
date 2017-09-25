@@ -1240,7 +1240,7 @@ function unregister_post_type( $post_type ) {
  * @see map_meta_cap()
  *
  * @param object $args Post type registration arguments.
- * @return object object with all the capabilities as member variables.
+ * @return object Object with all the capabilities as member variables.
  */
 function get_post_type_capabilities( $args ) {
 	if ( ! is_array( $args->capability_type ) )
@@ -2838,21 +2838,21 @@ function wp_get_post_tags( $post_id = 0, $args = array() ) {
 }
 
 /**
- * Retrieve the terms for a post.
- *
- * There is only one default for this function, called 'fields' and by default
- * is set to 'all'. There are other defaults that can be overridden in
- * wp_get_object_terms().
+ * Retrieves the terms for a post.
  *
  * @since 2.8.0
  *
- * @param int    $post_id  Optional. The Post ID. Does not default to the ID of the
- *                         global $post. Default 0.
- * @param string $taxonomy Optional. The taxonomy for which to retrieve terms. Default 'post_tag'.
- * @param array  $args     Optional. Term query parameters. Default empty array.
- *                         See WP_Term_Query::__construct() for supported arguments.
- * @return array|WP_Error  Array of WP_Term objects on success or empty array if no terms were found.
- *                         WP_Error object if `$taxonomy` doesn't exist.
+ * @param int          $post_id  Optional. The Post ID. Does not default to the ID of the
+ *                               global $post. Default 0.
+ * @param string|array $taxonomy Optional. The taxonomy slug or array of slugs for which
+ *                               to retrieve terms. Default 'post_tag'.
+ * @param array        $args     {
+ *     Optional. Term query parameters. See WP_Term_Query::__construct() for supported arguments.
+ *
+ *     @type string $fields Term fields to retrieve. Default 'all'.
+ * }
+ * @return array|WP_Error Array of WP_Term objects on success or empty array if no terms were found.
+ *                        WP_Error object if `$taxonomy` doesn't exist.
  */
 function wp_get_post_terms( $post_id = 0, $taxonomy = 'post_tag', $args = array() ) {
 	$post_id = (int) $post_id;
@@ -2964,6 +2964,7 @@ function wp_get_recent_posts( $args = array(), $output = ARRAY_A ) {
  *     @type string $guid                  Global Unique ID for referencing the post. Default empty.
  *     @type array  $post_category         Array of category names, slugs, or IDs.
  *                                         Defaults to value of the 'default_category' option.
+ *     @type array  $tags_input            Array of tag names, slugs, or IDs. Default empty. 
  *     @type array  $tax_input             Array of taxonomy terms keyed by their taxonomy name. Default empty.
  *     @type array  $meta_input            Array of post meta values keyed by their post meta key. Default empty.
  * }
@@ -4962,14 +4963,15 @@ function wp_delete_attachment( $post_id, $force_delete = false ) {
  *
  * @since 2.1.0
  *
- * @param int  $post_id    Attachment ID. Default 0.
- * @param bool $unfiltered Optional. If true, filters are not run. Default false.
+ * @param int  $attachment_id Attachment post ID. Defaults to global $post.
+ * @param bool $unfiltered    Optional. If true, filters are not run. Default false.
  * @return mixed Attachment meta field. False on failure.
  */
-function wp_get_attachment_metadata( $post_id = 0, $unfiltered = false ) {
-	$post_id = (int) $post_id;
-	if ( !$post = get_post( $post_id ) )
+function wp_get_attachment_metadata( $attachment_id = 0, $unfiltered = false ) {
+	$attachment_id = (int) $attachment_id;
+	if ( ! $post = get_post( $attachment_id ) ) {
 		return false;
+	}
 
 	$data = get_post_meta( $post->ID, '_wp_attachment_metadata', true );
 
@@ -4981,9 +4983,9 @@ function wp_get_attachment_metadata( $post_id = 0, $unfiltered = false ) {
 	 *
 	 * @since 2.1.0
 	 *
-	 * @param array|bool $data    Array of meta data for the given attachment, or false
-	 *                            if the object does not exist.
-	 * @param int        $post_id Attachment ID.
+	 * @param array|bool $data          Array of meta data for the given attachment, or false
+	 *                                  if the object does not exist.
+	 * @param int        $attachment_id Attachment post ID.
 	 */
 	return apply_filters( 'wp_get_attachment_metadata', $data, $post->ID );
 }
@@ -4993,22 +4995,23 @@ function wp_get_attachment_metadata( $post_id = 0, $unfiltered = false ) {
  *
  * @since 2.1.0
  *
- * @param int   $post_id Attachment ID.
- * @param array $data    Attachment data.
+ * @param int   $attachment_id Attachment post ID.
+ * @param array $data          Attachment meta data.
  * @return int|bool False if $post is invalid.
  */
-function wp_update_attachment_metadata( $post_id, $data ) {
-	$post_id = (int) $post_id;
-	if ( !$post = get_post( $post_id ) )
+function wp_update_attachment_metadata( $attachment_id, $data ) {
+	$attachment_id = (int) $attachment_id;
+	if ( ! $post = get_post( $attachment_id ) ) {
 		return false;
+	}
 
 	/**
 	 * Filters the updated attachment meta data.
 	 *
 	 * @since 2.1.0
 	 *
-	 * @param array $data    Array of updated attachment meta data.
-	 * @param int   $post_id Attachment ID.
+	 * @param array $data          Array of updated attachment meta data.
+	 * @param int   $attachment_id Attachment post ID.
 	 */
 	if ( $data = apply_filters( 'wp_update_attachment_metadata', $data, $post->ID ) )
 		return update_post_meta( $post->ID, '_wp_attachment_metadata', $data );
@@ -5023,13 +5026,14 @@ function wp_update_attachment_metadata( $post_id, $data ) {
  *
  * @global string $pagenow
  *
- * @param int $post_id Optional. Attachment ID. Default 0.
+ * @param int $attachment_id Optional. Attachment post ID. Defaults to global $post.
  * @return string|false Attachment URL, otherwise false.
  */
-function wp_get_attachment_url( $post_id = 0 ) {
-	$post_id = (int) $post_id;
-	if ( !$post = get_post( $post_id ) )
+function wp_get_attachment_url( $attachment_id = 0 ) {
+	$attachment_id = (int) $attachment_id;
+	if ( ! $post = get_post( $attachment_id ) ) {
 		return false;
+	}
 
 	if ( 'attachment' != $post->post_type )
 		return false;
@@ -5071,8 +5075,8 @@ function wp_get_attachment_url( $post_id = 0 ) {
 	 *
 	 * @since 2.1.0
 	 *
-	 * @param string $url     URL for the given attachment.
-	 * @param int    $post_id Attachment ID.
+	 * @param string $url           URL for the given attachment.
+	 * @param int    $attachment_id Attachment post ID.
 	 */
 	$url = apply_filters( 'wp_get_attachment_url', $url, $post->ID );
 

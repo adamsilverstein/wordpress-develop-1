@@ -54,7 +54,7 @@
 				context.fillText( stringFromCharCode( 55356, 56826, 8203, 55356, 56819 ), 0, 0 );
 				flag2 = canvas.toDataURL();
 
-				if ( flag !== flag2 ) {
+				if ( flag === flag2 ) {
 					return false;
 				}
 
@@ -79,7 +79,7 @@
 				return flag !== flag2;
 			case 'emoji4':
 				/*
-				 * Emoji 5 has faries of all genders.
+				 * Emoji 5 has fairies of all genders.
 				 *
 				 * To test for support, try to render a new emoji (fairy, male), then compares
 				 * it to how it would look if the browser doesn't render it correctly

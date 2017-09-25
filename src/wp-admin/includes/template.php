@@ -214,7 +214,7 @@ function wp_popular_terms_checklist( $taxonomy, $default = 0, $number = 10, $ech
 				<input id="in-<?php echo $id; ?>" type="checkbox" <?php echo $checked; ?> value="<?php echo (int) $term->term_id; ?>" <?php disabled( ! current_user_can( $tax->cap->assign_terms ) ); ?> />
 				<?php
 				/** This filter is documented in wp-includes/category-template.php */
-				echo esc_html( apply_filters( 'the_category', $term->name ) );
+				echo esc_html( apply_filters( 'the_category', $term->name, '', '' ) );
 				?>
 			</label>
 		</li>
@@ -255,7 +255,7 @@ function wp_link_category_checklist( $link_id = 0 ) {
 		$cat_id = $category->term_id;
 
 		/** This filter is documented in wp-includes/category-template.php */
-		$name = esc_html( apply_filters( 'the_category', $category->name ) );
+		$name = esc_html( apply_filters( 'the_category', $category->name, '', '' ) );
 		$checked = in_array( $cat_id, $checked_categories ) ? ' checked="checked"' : '';
 		echo '<li id="link-category-', $cat_id, '"><label for="in-link-category-', $cat_id, '" class="selectit"><input value="', $cat_id, '" type="checkbox" name="link_category[]" id="in-link-category-', $cat_id, '"', $checked, '/> ', $name, "</label></li>";
 	}
@@ -772,7 +772,7 @@ function page_template_dropdown( $default = '', $post_type = 'page' ) {
 	ksort( $templates );
 	foreach ( array_keys( $templates ) as $template ) {
 		$selected = selected( $default, $templates[ $template ], false );
-		echo "\n\t<option value='" . $templates[ $template ] . "' $selected>$template</option>";
+		echo "\n\t<option value='" . esc_attr( $templates[ $template ] ) . "' $selected>" . esc_html( $template ) . "</option>";
 	}
 }
 
@@ -892,7 +892,10 @@ function wp_import_upload_form( $action ) {
  * @param string|array|WP_Screen $screen        Optional. The screen or screens on which to show the box
  *                                              (such as a post type, 'link', or 'comment'). Accepts a single
  *                                              screen ID, WP_Screen object, or array of screen IDs. Default
- *                                              is the current screen.
+ *                                              is the current screen.  If you have used add_menu_page() or 
+ *                                              add_submenu_page() to create a new screen (and hence screen_id),
+ *                                              make sure your menu slug conforms to the limits of sanitize_key()
+ *                                              otherwise the 'screen' menu may not correctly render on your page.
  * @param string                 $context       Optional. The context within the screen where the boxes
  *                                              should display. Available contexts vary from screen to
  *                                              screen. Post edit screen contexts include 'normal', 'side',
@@ -987,7 +990,11 @@ function add_meta_box( $id, $title, $callback, $screen = null, $context = 'advan
  * @global array $wp_meta_boxes
  *
  * @staticvar bool $already_sorted
- * @param string|WP_Screen $screen  Screen identifier
+ *
+ * @param string|WP_Screen $screen  Screen identifier. If you have used add_menu_page() or
+ *                                  add_submenu_page() to create a new screen (and hence screen_id)
+ *                                  make sure your menu slug conforms to the limits of sanitize_key()
+ *                                  otherwise the 'screen' menu may not correctly render on your page.
  * @param string           $context box context
  * @param mixed            $object  gets passed to the box callback function as first parameter
  * @return int number of meta_boxes
@@ -2087,14 +2094,15 @@ function _local_storage_notice() {
  * @param array $args {
  *     Optional. Array of star ratings arguments.
  *
- *     @type int    $rating The rating to display, expressed in either a 0.5 rating increment,
- *                          or percentage. Default 0.
- *     @type string $type   Format that the $rating is in. Valid values are 'rating' (default),
- *                          or, 'percent'. Default 'rating'.
- *     @type int    $number The number of ratings that makes up this rating. Default 0.
- *     @type bool   $echo   Whether to echo the generated markup. False to return the markup instead
- *                          of echoing it. Default true.
+ *     @type int|float $rating The rating to display, expressed in either a 0.5 rating increment,
+ *                             or percentage. Default 0.
+ *     @type string    $type   Format that the $rating is in. Valid values are 'rating' (default),
+ *                             or, 'percent'. Default 'rating'.
+ *     @type int       $number The number of ratings that makes up this rating. Default 0.
+ *     @type bool      $echo   Whether to echo the generated markup. False to return the markup instead
+ *                             of echoing it. Default true.
  * }
+ * @return string Star rating HTML.
  */
 function wp_star_rating( $args = array() ) {
 	$defaults = array(
@@ -2105,11 +2113,11 @@ function wp_star_rating( $args = array() ) {
 	);
 	$r = wp_parse_args( $args, $defaults );
 
-	// Non-english decimal places when the $rating is coming from a string
-	$rating = str_replace( ',', '.', $r['rating'] );
+	// Non-English decimal places when the $rating is coming from a string
+	$rating = (float) str_replace( ',', '.', $r['rating'] );
 
 	// Convert Percentage to star rating, 0..5 in .5 increments
-	if ( 'percent' == $r['type'] ) {
+	if ( 'percent' === $r['type'] ) {
 		$rating = round( $rating / 10, 0 ) / 2;
 	}
 
