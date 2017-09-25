@@ -694,7 +694,7 @@ function wp_default_scripts( &$scripts ) {
 			'saveAlert' => __( 'The changes you made will be lost if you navigate away from this page.' ),
 		) ) ) );
 
-		$scripts->add( 'media-widgets', "/wp-admin/js/widgets/media-widgets$suffix.js", array( 'jquery', 'media-models', 'media-views', 'wp-api-request' ) );
+		$scripts->add( 'media-widgets', "/wp-admin/js/widgets/media-widgets$suffix.js", array( 'jquery', 'media-models', 'media-views', 'wp-api-request', 'wp-hooks' ) );
 		$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
 
 		$scripts->add( 'media-audio-widget', "/wp-admin/js/widgets/media-audio-widget$suffix.js", array( 'media-widgets', 'media-audiovideo' ) );
