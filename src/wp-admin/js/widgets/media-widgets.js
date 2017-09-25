@@ -273,6 +273,8 @@ wp.mediaWidgets = ( function( $ ) {
 				mime = specificMimes;
 			}
 
+			wp.hooks.addFilter( 'l10n.insertIntoPost', 'wp/mediaWidgets/l10n.insertIntoPost', _.bind( function() { return this.options.text; }, this ) ),
+
 			this.states.add([
 
 				// Main states.
@@ -303,39 +305,6 @@ wp.mediaWidgets = ( function( $ ) {
 					invalidEmbedTypeError: this.options.invalidEmbedTypeError
 				})
 			]);
-		},
-
-		/**
-		 * Main insert toolbar.
-		 *
-		 * Forked override of {wp.media.view.MediaFrame.Post#mainInsertToolbar()} to override text.
-		 *
-		 * @param {wp.Backbone.View} view - Toolbar view.
-		 * @this {wp.media.controller.Library}
-		 * @returns {void}
-		 */
-		mainInsertToolbar: function mainInsertToolbar( view ) {
-			var controller = this; // eslint-disable-line consistent-this
-			view.set( 'insert', {
-				style:    'primary',
-				priority: 80,
-				text:     controller.options.text, // The whole reason for the fork.
-				requires: { selection: true },
-
-				/**
-				 * Handle click.
-				 *
-				 * @fires wp.media.controller.State#insert()
-				 * @returns {void}
-				 */
-				click: function onClick() {
-					var state = controller.state(),
-						selection = state.get( 'selection' );
-
-					controller.close();
-					state.trigger( 'insert', selection ).reset();
-				}
-			});
 		},
 
 		/**
