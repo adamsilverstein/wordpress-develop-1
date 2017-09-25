@@ -285,7 +285,7 @@ function wp_default_scripts( &$scripts ) {
 
 	$scripts->add( 'swfobject', "/wp-includes/js/swfobject.js", array(), '2.2-20120417');
 
-	// error message for both plupload and swfupload
+	// Error messages for Plupload.
 	$uploader_l10n = array(
 		'queue_limit_exceeded' => __('You have attempted to queue too many files.'),
 		'file_exceeds_size_limit' => __('%s exceeds the maximum upload size for this site.'),
@@ -312,7 +312,8 @@ function wp_default_scripts( &$scripts ) {
 		'error_uploading' => __('&#8220;%s&#8221; has failed to upload.')
 	);
 
-	$scripts->add( 'plupload', '/wp-includes/js/plupload/plupload.full.min.js', array(), '2.1.8' );
+	$scripts->add( 'moxiejs', "/wp-includes/js/plupload/moxie$suffix.js", array(), '1.3.5' );
+	$scripts->add( 'plupload', "/wp-includes/js/plupload/plupload$suffix.js", array( 'moxiejs' ), '2.1.9' );
 	// Back compat handles:
 	foreach ( array( 'all', 'html5', 'flash', 'silverlight', 'html4' ) as $handle ) {
 		$scripts->add( "plupload-$handle", false, array( 'plupload' ), '2.1.1' );
@@ -672,17 +673,6 @@ function wp_default_scripts( &$scripts ) {
 			'permalinkSaved' => __( 'Permalink saved' ),
 		) );
 
-		$scripts->add( 'press-this', "/wp-admin/js/press-this$suffix.js", array( 'jquery', 'tags-box', 'wp-sanitize' ), false, 1 );
-		did_action( 'init' ) && $scripts->localize( 'press-this', 'pressThisL10n', array(
-			'newPost' => __( 'Title' ),
-			'serverError' => __( 'Connection lost or the server is busy. Please try again later.' ),
-			'saveAlert' => __( 'The changes you made will be lost if you navigate away from this page.' ),
-			/* translators: %d: nth embed found in a post */
-			'suggestedEmbedAlt' => __( 'Suggested embed #%d' ),
-			/* translators: %d: nth image found in a post */
-			'suggestedImgAlt' => __( 'Suggested image #%d' ),
-		) );
-
 		$scripts->add( 'editor-expand', "/wp-admin/js/editor-expand$suffix.js", array( 'jquery', 'underscore' ), false, 1 );
 
 		$scripts->add( 'link', "/wp-admin/js/link$suffix.js", array( 'wp-lists', 'postbox' ), false, 1 );
@@ -709,6 +699,7 @@ function wp_default_scripts( &$scripts ) {
 
 		$scripts->add( 'media-audio-widget', "/wp-admin/js/widgets/media-audio-widget$suffix.js", array( 'media-widgets', 'media-audiovideo' ) );
 		$scripts->add( 'media-image-widget', "/wp-admin/js/widgets/media-image-widget$suffix.js", array( 'media-widgets' ) );
+		$scripts->add( 'media-gallery-widget', "/wp-admin/js/widgets/media-gallery-widget$suffix.js", array( 'media-widgets' ) );
 		$scripts->add( 'media-video-widget', "/wp-admin/js/widgets/media-video-widget$suffix.js", array( 'media-widgets', 'media-audiovideo', 'wp-api-request' ) );
 		$scripts->add( 'text-widgets', "/wp-admin/js/widgets/text-widgets$suffix.js", array( 'jquery', 'backbone', 'editor', 'wp-util', 'wp-a11y' ) );
 		$scripts->add( 'custom-html-widgets', "/wp-admin/js/widgets/custom-html-widgets$suffix.js", array( 'code-editor', 'jquery', 'backbone', 'wp-util', 'jquery-ui-core', 'wp-a11y' ) );
@@ -815,7 +806,7 @@ function wp_default_scripts( &$scripts ) {
 				'activateImporter'           => __( 'Run Importer' ),
 				/* translators: %s: Importer name */
 				'activateImporterLabel'      => __( 'Run %s' ),
-				'unknownError'               => __( 'An unknown error occurred' ),
+				'unknownError'               => __( 'An unidentified error has occurred.' ),
 				'connectionError'            => __( 'Connection lost or the server is busy. Please try again later.' ),
 				'nonceError'                 => __( 'An error has occurred. Please reload the page and try again.' ),
 				'pluginsFound'               => __( 'Number of plugins found: %d' ),
@@ -962,7 +953,6 @@ function wp_default_styles( &$styles ) {
 	$styles->add( 'customize-controls',  "/wp-admin/css/customize-controls$suffix.css", array( 'wp-admin', 'colors', 'ie', 'imgareaselect' ) );
 	$styles->add( 'customize-widgets',   "/wp-admin/css/customize-widgets$suffix.css", array( 'wp-admin', 'colors' ) );
 	$styles->add( 'customize-nav-menus', "/wp-admin/css/customize-nav-menus$suffix.css", array( 'wp-admin', 'colors' ) );
-	$styles->add( 'press-this',          "/wp-admin/css/press-this$suffix.css", array( 'buttons' ) );
 
 	$styles->add( 'ie', "/wp-admin/css/ie$suffix.css" );
 	$styles->add_data( 'ie', 'conditional', 'lte IE 7' );
@@ -1001,7 +991,7 @@ function wp_default_styles( &$styles ) {
 		// wp-admin
 		'common', 'forms', 'admin-menu', 'dashboard', 'list-tables', 'edit', 'revisions', 'media', 'themes', 'about', 'nav-menus',
 		'widgets', 'site-icon', 'l10n', 'install', 'wp-color-picker', 'customize-controls', 'customize-widgets', 'customize-nav-menus', 'customize-preview',
-		'ie', 'login', 'press-this',
+		'ie', 'login',
 		// wp-includes
 		'buttons', 'admin-bar', 'wp-auth-check', 'editor-buttons', 'media-views', 'wp-pointer',
 		'wp-jquery-ui-dialog',

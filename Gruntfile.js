@@ -486,15 +486,13 @@ module.exports = function(grunt) {
 				src: [
 					'wp-admin/js/**/*.js',
 					'wp-includes/js/*.js',
+					'wp-includes/js/plupload/*.js',
 					'wp-includes/js/mediaelement/wp-mediaelement.js',
 					'wp-includes/js/mediaelement/wp-playlist.js',
-					'wp-includes/js/plupload/handlers.js',
-					'wp-includes/js/plupload/wp-plupload.js',
 					'wp-includes/js/tinymce/plugins/wordpress/plugin.js',
 					'wp-includes/js/tinymce/plugins/wp*/plugin.js',
 
 					// Exceptions
-					'!wp-admin/js/bookmarklet.*', // Minified and updated in /src with the precommit task. See uglify:bookmarklet.
 					'!wp-admin/js/custom-header.js', // Why? We should minify this.
 					'!wp-admin/js/farbtastic.js',
 					'!wp-admin/js/iris.min.js',
@@ -540,15 +538,6 @@ module.exports = function(grunt) {
 				dest: BUILD_DIR,
 				ext: '.min.js',
 				src: ['wp-includes/js/jquery/ui/*.js']
-			},
-			bookmarklet: {
-				options: {
-					compress: {
-						negate_iife: false
-					}
-				},
-				src: SOURCE_DIR + 'wp-admin/js/bookmarklet.js',
-				dest: SOURCE_DIR + 'wp-admin/js/bookmarklet.min.js'
 			},
 			masonry: {
 				options: {
@@ -824,7 +813,6 @@ module.exports = function(grunt) {
 	grunt.registerTask( 'precommit:js', [
 		'browserify',
 		'jshint:corejs',
-		'uglify:bookmarklet',
 		'uglify:masonry',
 		'qunit:compiled'
 	] );
