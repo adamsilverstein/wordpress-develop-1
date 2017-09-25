@@ -5741,7 +5741,7 @@ Post = Select.extend(/** @lends wp.media.view.MediaFrame.Post.prototype */{
 		view.set( 'insert', {
 			style:    'primary',
 			priority: 80,
-			text:     l10n.insertIntoPost,
+			text:     wp.hooks.applyFilters( 'l10n.insertIntoPost', l10n.insertIntoPost ),
 			requires: { selection: true },
 
 			/**
