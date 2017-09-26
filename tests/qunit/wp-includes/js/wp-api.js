@@ -1,4 +1,4 @@
-/* global wp */
+/* global wp, JSON */
 ( function( QUnit ) {
 	module( 'wpapi' );
 
@@ -351,7 +351,7 @@
 			theModels.fetch().done( function() {
 
 				// Get the main endpoint.
-				var endpoint = theModels.at(0)
+				var endpoint = theModels.at(0);
 
 				// Verify the meta object returned correctly from `getMetas()`.
 				assert.equal( JSON.stringify( endpoint.getMetas() ), '{"meta_key":"meta_value"}', 'Full meta key/values object should be readable.' );
