@@ -1,4 +1,4 @@
-/* global _wpCustomizeHeader, _wpCustomizeBackground, _wpMediaViewsL10n, MediaElementPlayer, console */
+/* global _wpCustomizeHeader, _wpCustomizeBackground, _wpMediaViewsL10n, MediaElementPlayer, console, confirm */
 (function( exports, $ ){
 	var Container, focus, normalizedTransitionendEventName, api = wp.customize;
 
@@ -146,64 +146,46 @@
 		render: function() {
 			var collection = this,
 				notifications,
-				renderedNotificationContainers,
-				prevRenderedCodes,
-				nextRenderedCodes,
-				addedCodes,
-				removedCodes,
+				previousNotificationsByCode = {},
 				listElement;
 
 			// Short-circuit if there are no container to render into.
 			if ( ! collection.container || ! collection.container.length ) {
 				return;
 			}
+
+			notifications = collection.get( { sort: true } );
+			collection.container.toggle( 0 !== notifications.length );
+
+			// Short-circuit if there are no changes to the notifications.
+			if ( collection.container.is( collection.previousContainer ) && _.isEqual( notifications, collection.previousNotifications ) ) {
+				return;
+			}
+
+			// Make sure list is part of the container.
 			listElement = collection.container.children( 'ul' ).first();
 			if ( ! listElement.length ) {
 				listElement = $( '<ul></ul>' );
 				collection.container.append( listElement );
 			}
 
-			notifications = collection.get( { sort: true } );
+			// Remove all notifications prior to re-rendering.
+			listElement.find( '> [data-code]' ).remove();
 
-			renderedNotificationContainers = {};
-			listElement.find( '> [data-code]' ).each( function() {
-				renderedNotificationContainers[ $( this ).data( 'code' ) ] = $( this );
-			});
-
-			collection.container.toggle( 0 !== notifications.length );
-
-			nextRenderedCodes = _.pluck( notifications, 'code' );
-			prevRenderedCodes = _.keys( renderedNotificationContainers );
-
-			// Short-circuit if there are no notifications added.
-			if ( _.isEqual( nextRenderedCodes, prevRenderedCodes ) ) {
-				return;
-			}
-
-			addedCodes = _.difference( nextRenderedCodes, prevRenderedCodes );
-			removedCodes = _.difference( prevRenderedCodes, nextRenderedCodes );
-
-			// Remove notifications that have been removed.
-			_.each( renderedNotificationContainers, function( renderedContainer, code ) {
-				if ( -1 !== _.indexOf( removedCodes, code ) ) {
-					renderedContainer.remove(); // @todo Consider slideUp as enhancement.
-				}
+			_.each( collection.previousNotifications, function( notification ) {
+				previousNotificationsByCode[ notification.code ] = notification;
 			});
 
 			// Add all notifications in the sorted order.
 			_.each( notifications, function( notification ) {
-				var notificationContainer = renderedNotificationContainers[ notification.code ];
-				if ( notificationContainer ) {
-					listElement.append( notificationContainer );
-				} else {
-					notificationContainer = $( notification.render() );
-					listElement.append( notificationContainer ); // @todo Consider slideDown() as enhancement.
-					if ( wp.a11y ) {
-						wp.a11y.speak( notification.message, 'assertive' );
-					}
+				if ( wp.a11y && ( ! previousNotificationsByCode[ notification.code ] || ! _.isEqual( notification.message, previousNotificationsByCode[ notification.code ].message ) ) ) {
+					wp.a11y.speak( notification.message, 'assertive' );
 				}
+				listElement.append( $( notification.render() ) ); // @todo Consider slideDown() as enhancement.
 			});
 
+			collection.previousNotifications = notifications;
+			collection.previousContainer = collection.container;
 			collection.trigger( 'rendered' );
 		}
 	});
@@ -373,13 +355,23 @@
 	 * @since 4.7.0
 	 * @access public
 	 *
-	 * @param {object} [changes] Mapping of setting IDs to setting params each normally including a value property, or mapping to null.
-	 *                           If not provided, then the changes will still be obtained from unsaved dirty settings.
+	 * @param {object}  [changes] - Mapping of setting IDs to setting params each normally including a value property, or mapping to null.
+	 *                             If not provided, then the changes will still be obtained from unsaved dirty settings.
+	 * @param {object}  [args] - Additional options for the save request.
+	 * @param {boolean} [args.autosave=false] - Whether changes will be stored in autosave revision if the changeset has been promoted from an auto-draft.
+	 * @param {string}  [args.title] - Title to update in the changeset. Optional.
+	 * @param {string}  [args.date] - Date to update in the changeset. Optional.
 	 * @returns {jQuery.Promise} Promise resolving with the response data.
 	 */
-	api.requestChangesetUpdate = function requestChangesetUpdate( changes ) {
-		var deferred, request, submittedChanges = {}, data;
+	api.requestChangesetUpdate = function requestChangesetUpdate( changes, args ) {
+		var deferred, request, submittedChanges = {}, data, submittedArgs;
 		deferred = new $.Deferred();
+
+		submittedArgs = _.extend( {
+			title: null,
+			date: null,
+			autosave: false
+		}, args );
 
 		if ( changes ) {
 			_.extend( submittedChanges, changes );
@@ -397,9 +389,22 @@
 		} );
 
 		// Short-circuit when there are no pending changes.
-		if ( _.isEmpty( submittedChanges ) ) {
+		if ( _.isEmpty( submittedChanges ) && null === submittedArgs.title && null === submittedArgs.date ) {
 			deferred.resolve( {} );
 			return deferred.promise();
+		}
+
+		// Allow plugins to attach additional params to the settings.
+		api.trigger( 'changeset-save', submittedChanges, submittedArgs );
+
+		// A status would cause a revision to be made, and for this wp.customize.previewer.save() should be used. Status is also disallowed for revisions regardless.
+		if ( submittedArgs.status ) {
+			return deferred.reject( { code: 'illegal_status_in_changeset_update' } ).promise();
+		}
+
+		// Dates not beung allowed for revisions are is a technical limitation of post revisions.
+		if ( submittedArgs.date && submittedArgs.autosave ) {
+			return deferred.reject( { code: 'illegal_autosave_with_date_gmt' } ).promise();
 		}
 
 		// Make sure that publishing a changeset waits for all changeset update requests to complete.
@@ -407,9 +412,6 @@
 		deferred.always( function() {
 			api.state( 'processing' ).set( api.state( 'processing' ).get() - 1 );
 		} );
-
-		// Allow plugins to attach additional params to the settings.
-		api.trigger( 'changeset-save', submittedChanges );
 
 		// Ensure that if any plugins add data to save requests by extending query() that they get included here.
 		data = api.previewer.query( { excludeCustomizedSaved: true } );
@@ -419,6 +421,15 @@
 			customize_theme: api.settings.theme.stylesheet,
 			customize_changeset_data: JSON.stringify( submittedChanges )
 		} );
+		if ( null !== submittedArgs.title ) {
+			data.customize_changeset_title = submittedArgs.title;
+		}
+		if ( null !== submittedArgs.date ) {
+			data.customize_changeset_date = submittedArgs.date;
+		}
+		if ( false !== submittedArgs.autosave ) {
+			data.customize_changeset_autosave = 'true';
+		}
 
 		request = wp.ajax.post( 'customize_save', data );
 
@@ -645,6 +656,7 @@
 			);
 
 			$.extend( container, options );
+			container.notifications = new api.Notifications();
 			container.templateSelector = 'customize-' + container.containerType + '-' + container.params.type;
 			container.container = $( container.params.content );
 			if ( 0 === container.container.length ) {
@@ -676,6 +688,7 @@
 			});
 
 			container.deferred.embedded.done( function () {
+				container.setupNotifications();
 				container.attachEvents();
 			});
 
@@ -684,6 +697,39 @@
 			container.priority.set( container.params.priority );
 			container.active.set( container.params.active );
 			container.expanded.set( false );
+		},
+
+		/**
+		 * Get the element that will contain the notifications.
+		 *
+		 * @since 4.9.0
+		 * @returns {jQuery} Notification container element.
+		 * @this {wp.customize.Control}
+		 */
+		getNotificationsContainerElement: function() {
+			var container = this;
+			return container.contentContainer.find( '.customize-control-notifications-container:first' );
+		},
+
+		/**
+		 * Set up notifications.
+		 *
+		 * @since 4.9.0
+		 * @returns {void}
+		 */
+		setupNotifications: function() {
+			var container = this, renderNotifications;
+			container.notifications.container = container.getNotificationsContainerElement();
+
+			// Render notifications when they change and when the construct is expanded.
+			renderNotifications = function() {
+				if ( container.expanded.get() ) {
+					container.notifications.render();
+				}
+			};
+			container.expanded.bind( renderNotifications );
+			renderNotifications();
+			container.notifications.bind( 'change', _.debounce( renderNotifications ) );
 		},
 
 		/**
@@ -1159,7 +1205,7 @@
 				content = meta.find( '.customize-section-description:first' );
 				content.toggleClass( 'open' );
 				content.slideToggle();
-				content.attr( 'aria-expanded', function ( i, attr ) {
+				$( this ).attr( 'aria-expanded', function( i, attr ) {
 					return 'true' === attr ? 'false' : 'true';
 				});
 			});
@@ -1688,9 +1734,15 @@
 
 				api.state( 'processing' ).unbind( onceProcessingComplete );
 
-				request = api.requestChangesetUpdate();
+				request = api.requestChangesetUpdate( {}, { autosave: true } );
 				request.done( function() {
 					$( window ).off( 'beforeunload.customize-confirm' );
+
+					// Include autosaved param to load autosave revision without prompting user to restore it.
+					if ( ! api.state( 'saved' ).get() ) {
+						urlParser.search += '&customize_autosaved=on';
+					}
+
 					top.location.href = urlParser.href;
 					deferred.resolve();
 				} );
@@ -1871,12 +1923,7 @@
 
 			meta = panel.container.find( '.panel-meta:first' );
 
-			meta.find( '> .accordion-section-title .customize-help-toggle' ).on( 'click keydown', function( event ) {
-				if ( api.utils.isKeydownButNotEnterEvent( event ) ) {
-					return;
-				}
-				event.preventDefault(); // Keep this AFTER the key filter above
-
+			meta.find( '> .accordion-section-title .customize-help-toggle' ).on( 'click', function() {
 				if ( meta.hasClass( 'cannot-expand' ) ) {
 					return;
 				}
@@ -2181,17 +2228,7 @@
 
 			// After the control is embedded on the page, invoke the "ready" method.
 			control.deferred.embedded.done( function () {
-				var renderNotifications = function() {
-					control.notifications.render();
-				};
-				control.notifications.container = control.getNotificationsContainerElement();
-				control.notifications.bind( 'rendered', function() {
-					var notifications = control.notifications.get();
-					control.container.toggleClass( 'has-notifications', 0 !== notifications.length );
-					control.container.toggleClass( 'has-error', 0 !== _.where( notifications, { type: 'error' } ).length );
-				} );
-				renderNotifications();
-				control.notifications.bind( 'change', _.debounce( renderNotifications ) );
+				control.setupNotifications();
 				control.ready();
 			});
 		},
@@ -2286,6 +2323,47 @@
 				}
 			}
 			return notificationsContainer;
+		},
+
+		/**
+		 * Set up notifications.
+		 *
+		 * @since 4.9.0
+		 * @returns {void}
+		 */
+		setupNotifications: function() {
+			var control = this, renderNotificationsIfVisible, onSectionAssigned;
+
+			control.notifications.container = control.getNotificationsContainerElement();
+
+			renderNotificationsIfVisible = function() {
+				var sectionId = control.section();
+				if ( ! sectionId || ( api.section.has( sectionId ) && api.section( sectionId ).expanded() ) ) {
+					control.notifications.render();
+				}
+			};
+
+			control.notifications.bind( 'rendered', function() {
+				var notifications = control.notifications.get();
+				control.container.toggleClass( 'has-notifications', 0 !== notifications.length );
+				control.container.toggleClass( 'has-error', 0 !== _.where( notifications, { type: 'error' } ).length );
+			} );
+
+			onSectionAssigned = function( newSectionId, oldSectionId ) {
+				if ( oldSectionId && api.section.has( oldSectionId ) ) {
+					api.section( oldSectionId ).expanded.unbind( renderNotificationsIfVisible );
+				}
+				if ( newSectionId ) {
+					api.section( newSectionId, function( section ) {
+						section.expanded.bind( renderNotificationsIfVisible );
+						renderNotificationsIfVisible();
+					});
+				}
+			};
+
+			control.section.bind( onSectionAssigned );
+			onSectionAssigned( control.section.get() );
+			control.notifications.bind( 'change', _.debounce( renderNotificationsIfVisible ) );
 		},
 
 		/**
@@ -3629,6 +3707,259 @@
 		}
 	});
 
+	/**
+	 * Class wp.customize.CodeEditorControl
+	 *
+	 * @since 4.9.0
+	 *
+	 * @constructor
+	 * @augments wp.customize.Control
+	 * @augments wp.customize.Class
+	 */
+	api.CodeEditorControl = api.Control.extend({
+
+		/**
+		 * Initialize the editor when the containing section is ready and expanded.
+		 *
+		 * @since 4.9.0
+		 * @returns {void}
+		 */
+		ready: function() {
+			var control = this;
+			if ( ! control.section() ) {
+				control.initEditor();
+				return;
+			}
+
+			// Wait to initialize editor until section is embedded and expanded.
+			api.section( control.section(), function( section ) {
+				section.deferred.embedded.done( function() {
+					var onceExpanded;
+					if ( section.expanded() ) {
+						control.initEditor();
+					} else {
+						onceExpanded = function( isExpanded ) {
+							if ( isExpanded ) {
+								control.initEditor();
+								section.expanded.unbind( onceExpanded );
+							}
+						};
+						section.expanded.bind( onceExpanded );
+					}
+				} );
+			} );
+		},
+
+		/**
+		 * Initialize editor.
+		 *
+		 * @since 4.9.0
+		 * @returns {void}
+		 */
+		initEditor: function() {
+			var control = this, element;
+
+			element = new api.Element( control.container.find( 'textarea' ) );
+			control.elements.push( element );
+			element.sync( control.setting );
+			element.set( control.setting() );
+
+			if ( control.params.editor_settings ) {
+				control.initSyntaxHighlightingEditor( control.params.editor_settings );
+			} else {
+				control.initPlainTextareaEditor();
+			}
+		},
+
+		/**
+		 * Make sure editor gets focused when control is focused.
+		 *
+		 * @since 4.9.0
+		 * @param {Object}   [params] - Focus params.
+		 * @param {Function} [params.completeCallback] - Function to call when expansion is complete.
+		 * @returns {void}
+		 */
+		focus: function( params ) {
+			var control = this, extendedParams = _.extend( {}, params ), originalCompleteCallback;
+			originalCompleteCallback = extendedParams.completeCallback;
+			extendedParams.completeCallback = function() {
+				if ( originalCompleteCallback ) {
+					originalCompleteCallback();
+				}
+				if ( control.editor ) {
+					control.editor.codemirror.focus();
+				}
+			};
+			api.Control.prototype.focus.call( control, extendedParams );
+		},
+
+		/**
+		 * Initialize syntax-highlighting editor.
+		 *
+		 * @since 4.9.0
+		 * @param {object} codeEditorSettings - Code editor settings.
+		 * @returns {void}
+		 */
+		initSyntaxHighlightingEditor: function( codeEditorSettings ) {
+			var control = this, $textarea = control.container.find( 'textarea' ), settings, suspendEditorUpdate = false;
+
+			settings = _.extend( {}, codeEditorSettings, {
+				onTabNext: _.bind( control.onTabNext, control ),
+				onTabPrevious: _.bind( control.onTabPrevious, control ),
+				onUpdateErrorNotice: _.bind( control.onUpdateErrorNotice, control )
+			});
+
+			control.editor = wp.codeEditor.initialize( $textarea, settings );
+
+			// Improve the editor accessibility.
+			$( control.editor.codemirror.display.lineDiv )
+				.attr({
+					role: 'textbox',
+					'aria-multiline': 'true',
+					'aria-label': control.params.label,
+					'aria-describedby': 'editor-keyboard-trap-help-1 editor-keyboard-trap-help-2 editor-keyboard-trap-help-3 editor-keyboard-trap-help-4'
+				});
+
+			// Focus the editor when clicking on its label.
+			control.container.find( 'label' ).on( 'click', function() {
+				control.editor.codemirror.focus();
+			});
+
+			/*
+			 * When the CodeMirror instance changes, mirror to the textarea,
+			 * where we have our "true" change event handler bound.
+			 */
+			control.editor.codemirror.on( 'change', function( codemirror ) {
+				suspendEditorUpdate = true;
+				$textarea.val( codemirror.getValue() ).trigger( 'change' );
+				suspendEditorUpdate = false;
+			});
+
+			// Update CodeMirror when the setting is changed by another plugin.
+			control.setting.bind( function( value ) {
+				if ( ! suspendEditorUpdate ) {
+					control.editor.codemirror.setValue( value );
+				}
+			});
+
+			// Prevent collapsing section when hitting Esc to tab out of editor.
+			control.editor.codemirror.on( 'keydown', function onKeydown( codemirror, event ) {
+				var escKeyCode = 27;
+				if ( escKeyCode === event.keyCode ) {
+					event.stopPropagation();
+				}
+			});
+		},
+
+		/**
+		 * Handle tabbing to the field after the editor.
+		 *
+		 * @since 4.9.0
+		 * @returns {void}
+		 */
+		onTabNext: function onTabNext() {
+			var control = this, controls, controlIndex, section;
+			section = api.section( control.section() );
+			controls = section.controls();
+			controlIndex = controls.indexOf( control );
+			if ( controls.length === controlIndex + 1 ) {
+				$( '#customize-footer-actions .collapse-sidebar' ).focus();
+			} else {
+				controls[ controlIndex + 1 ].container.find( ':focusable:first' ).focus();
+			}
+		},
+
+		/**
+		 * Handle tabbing to the field before the editor.
+		 *
+		 * @since 4.9.0
+		 * @returns {void}
+		 */
+		onTabPrevious: function onTabPrevious() {
+			var control = this, controls, controlIndex, section;
+			section = api.section( control.section() );
+			controls = section.controls();
+			controlIndex = controls.indexOf( control );
+			if ( 0 === controlIndex ) {
+				section.contentContainer.find( '.customize-section-title .customize-help-toggle, .customize-section-title .customize-section-description.open .section-description-close' ).last().focus();
+			} else {
+				controls[ controlIndex - 1 ].contentContainer.find( ':focusable:first' ).focus();
+			}
+		},
+
+		/**
+		 * Update error notice.
+		 *
+		 * @since 4.9.0
+		 * @param {Array} errorAnnotations - Error annotations.
+		 * @returns {void}
+		 */
+		onUpdateErrorNotice: function onUpdateErrorNotice( errorAnnotations ) {
+			var control = this, message;
+			control.setting.notifications.remove( 'csslint_error' );
+
+			if ( 0 !== errorAnnotations.length ) {
+				if ( 1 === errorAnnotations.length ) {
+					message = api.l10n.customCssError.singular.replace( '%d', '1' );
+				} else {
+					message = api.l10n.customCssError.plural.replace( '%d', String( errorAnnotations.length ) );
+				}
+				control.setting.notifications.add( 'csslint_error', new api.Notification( 'csslint_error', {
+					message: message,
+					type: 'error'
+				} ) );
+			}
+		},
+
+		/**
+		 * Initialize plain-textarea editor when syntax highlighting is disabled.
+		 *
+		 * @since 4.9.0
+		 * @returns {void}
+		 */
+		initPlainTextareaEditor: function() {
+			var control = this, $textarea = control.container.find( 'textarea' ), textarea = $textarea[0];
+
+			$textarea.on( 'blur', function onBlur() {
+				$textarea.data( 'next-tab-blurs', false );
+			} );
+
+			$textarea.on( 'keydown', function onKeydown( event ) {
+				var selectionStart, selectionEnd, value, tabKeyCode = 9, escKeyCode = 27;
+
+				if ( escKeyCode === event.keyCode ) {
+					if ( ! $textarea.data( 'next-tab-blurs' ) ) {
+						$textarea.data( 'next-tab-blurs', true );
+						event.stopPropagation(); // Prevent collapsing the section.
+					}
+					return;
+				}
+
+				// Short-circuit if tab key is not being pressed or if a modifier key *is* being pressed.
+				if ( tabKeyCode !== event.keyCode || event.ctrlKey || event.altKey || event.shiftKey ) {
+					return;
+				}
+
+				// Prevent capturing Tab characters if Esc was pressed.
+				if ( $textarea.data( 'next-tab-blurs' ) ) {
+					return;
+				}
+
+				selectionStart = textarea.selectionStart;
+				selectionEnd = textarea.selectionEnd;
+				value = textarea.value;
+
+				if ( selectionStart >= 0 ) {
+					textarea.value = value.substring( 0, selectionStart ).concat( '\t', value.substring( selectionEnd ) );
+					$textarea.selectionStart = textarea.selectionEnd = selectionStart + 1;
+				}
+
+				event.stopPropagation();
+				event.preventDefault();
+			});
+		}
+	});
+
 	// Change objects contained within the main customize object to Settings.
 	api.defaultConstructor = api.Setting;
 
@@ -3728,6 +4059,9 @@
 					customize_messenger_channel: previewFrame.query.customize_messenger_channel
 				}
 			);
+			if ( ! api.state( 'saved' ).get() ) {
+				params.customize_autosaved = 'on';
+			}
 
 			urlParser.search = $.param( params );
 			previewFrame.iframe = $( '<iframe />', {
@@ -3964,6 +4298,7 @@
 					delete queryParams.customize_changeset_uuid;
 					delete queryParams.customize_theme;
 					delete queryParams.customize_messenger_channel;
+					delete queryParams.customize_autosaved;
 					if ( _.isEmpty( queryParams ) ) {
 						urlParser.search = '';
 					} else {
@@ -4324,7 +4659,8 @@
 		header:              api.HeaderControl,
 		background:          api.BackgroundControl,
 		background_position: api.BackgroundPositionControl,
-		theme:               api.ThemeControl
+		theme:               api.ThemeControl,
+		code_editor:         api.CodeEditorControl
 	};
 	api.panelConstructor = {};
 	api.sectionConstructor = {
@@ -4587,6 +4923,9 @@
 					nonce: this.nonce.preview,
 					customize_changeset_uuid: api.settings.changeset.uuid
 				};
+				if ( ! api.state( 'saved' ).get() ) {
+					queryVars.customize_autosaved = 'on';
+				}
 
 				/*
 				 * Exclude customized data if requested especially for calls to requestChangesetUpdate.
@@ -4644,9 +4983,10 @@
 				}
 
 				submit = function () {
-					var request, query, settingInvalidities = {}, latestRevision = api._latestRevision;
+					var request, query, settingInvalidities = {}, latestRevision = api._latestRevision, errorCode = 'client_side_error';
 
 					api.bind( 'change', captureSettingModifiedDuringSave );
+					api.notifications.remove( errorCode );
 
 					/*
 					 * Block saving if there are any settings that are marked as
@@ -4668,6 +5008,14 @@
 					if ( ! _.isEmpty( invalidControls ) ) {
 						_.values( invalidControls )[0][0].focus();
 						api.unbind( 'change', captureSettingModifiedDuringSave );
+
+						api.notifications.add( errorCode, new api.Notification( errorCode, {
+							message: ( 1 === invalidSettings.length ? api.l10n.saveBlockedError.singular : api.l10n.saveBlockedError.plural ).replace( /%s/g, String( invalidSettings.length ) ),
+							type: 'error',
+							dismissible: true,
+							saveFailure: true
+						} ) );
+
 						deferred.rejectWith( previewer, [
 							{ setting_invalidities: settingInvalidities }
 						] );
@@ -4791,6 +5139,9 @@
 							api.settings.changeset.uuid = response.next_changeset_uuid;
 							parent.send( 'changeset-uuid', api.settings.changeset.uuid );
 						}
+
+						// Prevent subsequent requestChangesetUpdate() calls from including the settings that have been saved.
+						api._lastSavedRevision = Math.max( latestRevision, api._lastSavedRevision );
 
 						if ( response.setting_validities ) {
 							api._handleSettingValidities( {
@@ -5009,9 +5360,17 @@
 			api.bind( 'change', function() {
 				if ( state( 'saved' ).get() ) {
 					state( 'saved' ).set( false );
-					populateChangesetUuidParam( true );
 				}
 			});
+
+			// Populate changeset UUID param when state becomes dirty.
+			if ( api.settings.changeset.branching ) {
+				saved.bind( function( isSaved ) {
+					if ( ! isSaved ) {
+						populateChangesetUuidParam( true );
+					}
+				});
+			}
 
 			saving.bind( function( isSaving ) {
 				body.toggleClass( 'saving', isSaving );
@@ -5065,13 +5424,122 @@
 				history.replaceState( {}, document.title, urlParser.href );
 			};
 
-			changesetStatus.bind( function( newStatus ) {
-				populateChangesetUuidParam( '' !== newStatus && 'publish' !== newStatus );
-			} );
+			// Show changeset UUID in URL when in branching mode and there is a saved changeset.
+			if ( api.settings.changeset.branching ) {
+				changesetStatus.bind( function( newStatus ) {
+					populateChangesetUuidParam( '' !== newStatus && 'publish' !== newStatus );
+				} );
+			}
 
 			// Expose states to the API.
 			api.state = state;
 		}());
+
+		// Set up autosave prompt.
+		(function() {
+
+			/**
+			 * Obtain the URL to restore the autosave.
+			 *
+			 * @returns {string} Customizer URL.
+			 */
+			function getAutosaveRestorationUrl() {
+				var urlParser, queryParams;
+				urlParser = document.createElement( 'a' );
+				urlParser.href = location.href;
+				queryParams = api.utils.parseQueryString( urlParser.search.substr( 1 ) );
+				if ( api.settings.changeset.latestAutoDraftUuid ) {
+					queryParams.changeset_uuid = api.settings.changeset.latestAutoDraftUuid;
+				} else {
+					queryParams.customize_autosaved = 'on';
+				}
+				urlParser.search = $.param( queryParams );
+				return urlParser.href;
+			}
+
+			/**
+			 * Remove parameter from the URL.
+			 *
+			 * @param {Array} params - Parameter names to remove.
+			 * @returns {void}
+			 */
+			function stripParamsFromLocation( params ) {
+				var urlParser = document.createElement( 'a' ), queryParams, strippedParams = 0;
+				urlParser.href = location.href;
+				queryParams = api.utils.parseQueryString( urlParser.search.substr( 1 ) );
+				_.each( params, function( param ) {
+					if ( 'undefined' !== typeof queryParams[ param ] ) {
+						strippedParams += 1;
+						delete queryParams[ param ];
+					}
+				} );
+				if ( 0 === strippedParams ) {
+					return;
+				}
+
+				urlParser.search = $.param( queryParams );
+				history.replaceState( {}, document.title, urlParser.href );
+			}
+
+			/**
+			 * Add notification regarding the availability of an autosave to restore.
+			 *
+			 * @returns {void}
+			 */
+			function addAutosaveRestoreNotification() {
+				var code = 'autosave_available', onStateChange;
+
+				// Since there is an autosave revision and the user hasn't loaded with autosaved, add notification to prompt to load autosaved version.
+				api.notifications.add( code, new api.Notification( code, {
+					message: api.l10n.autosaveNotice,
+					type: 'warning',
+					dismissible: true,
+					render: function() {
+						var li = api.Notification.prototype.render.call( this ), link;
+
+						// Handle clicking on restoration link.
+						link = li.find( 'a' );
+						link.prop( 'href', getAutosaveRestorationUrl() );
+						link.on( 'click', function( event ) {
+							event.preventDefault();
+							location.replace( getAutosaveRestorationUrl() );
+						} );
+
+						// Handle dismissal of notice.
+						li.find( '.notice-dismiss' ).on( 'click', function() {
+							wp.ajax.post( 'dismiss_customize_changeset_autosave', {
+								wp_customize: 'on',
+								customize_theme: api.settings.theme.stylesheet,
+								customize_changeset_uuid: api.settings.changeset.latestAutoDraftUuid || api.settings.changeset.uuid,
+								nonce: api.settings.nonce.dismiss_autosave
+							} );
+						} );
+
+						return li;
+					}
+				} ) );
+
+				// Remove the notification once the user starts making changes.
+				onStateChange = function() {
+					api.notifications.remove( code );
+					api.state( 'saved' ).unbind( onStateChange );
+					api.state( 'saving' ).unbind( onStateChange );
+					api.state( 'changesetStatus' ).unbind( onStateChange );
+				};
+				api.state( 'saved' ).bind( onStateChange );
+				api.state( 'saving' ).bind( onStateChange );
+				api.state( 'changesetStatus' ).bind( onStateChange );
+			}
+
+			if ( api.settings.changeset.autosaved ) {
+				stripParamsFromLocation( [ 'customize_autosaved' ] ); // Remove param when restoring autosave revision.
+			} else if ( ! api.settings.changeset.branching && 'auto-draft' === api.settings.changeset.status ) {
+				stripParamsFromLocation( [ 'changeset_uuid' ] ); // Remove UUID when restoring autosave auto-draft.
+			}
+			if ( api.settings.changeset.latestAutoDraftUuid || api.settings.changeset.hasAutosaveRevision ) {
+				addAutosaveRestoreNotification();
+			}
+		})();
 
 		// Check if preview url is valid and load the preview frame.
 		if ( api.previewer.previewUrl() ) {
@@ -5436,26 +5904,82 @@
 			channel: 'loader'
 		});
 
-		/*
-		 * If we receive a 'back' event, we're inside an iframe.
-		 * Send any clicks to the 'Return' link to the parent page.
-		 */
-		parent.bind( 'back', function() {
-			closeBtn.on( 'click.customize-controls-close', function( event ) {
-				event.preventDefault();
-				parent.send( 'close' );
-			});
-		});
+		// Handle exiting of Customizer.
+		(function() {
+			var isInsideIframe = false;
 
-		// Prompt user with AYS dialog if leaving the Customizer with unsaved changes
-		$( window ).on( 'beforeunload.customize-confirm', function () {
-			if ( ! api.state( 'saved' )() ) {
-				setTimeout( function() {
-					overlay.removeClass( 'customize-loading' );
-				}, 1 );
-				return api.l10n.saveAlert;
+			function isCleanState() {
+				return api.state( 'saved' ).get() && 'auto-draft' !== api.state( 'changesetStatus' ).get();
 			}
-		} );
+
+			/*
+			 * If we receive a 'back' event, we're inside an iframe.
+			 * Send any clicks to the 'Return' link to the parent page.
+			 */
+			parent.bind( 'back', function() {
+				isInsideIframe = true;
+			});
+
+			// Prompt user with AYS dialog if leaving the Customizer with unsaved changes
+			$( window ).on( 'beforeunload.customize-confirm', function() {
+				if ( ! isCleanState() ) {
+					setTimeout( function() {
+						overlay.removeClass( 'customize-loading' );
+					}, 1 );
+					return api.l10n.saveAlert;
+				}
+			});
+
+			closeBtn.on( 'click.customize-controls-close', function( event ) {
+				var clearedToClose = $.Deferred();
+				event.preventDefault();
+
+				/*
+				 * The isInsideIframe condition is because Customizer is not able to use a confirm()
+				 * since customize-loader.js will also use one. So autosave restorations are disabled
+				 * when customize-loader.js is used.
+				 */
+				if ( isInsideIframe && isCleanState() ) {
+					clearedToClose.resolve();
+				} else if ( confirm( api.l10n.saveAlert ) ) {
+
+					// Mark all settings as clean to prevent another call to requestChangesetUpdate.
+					api.each( function( setting ) {
+						setting._dirty = false;
+					});
+					$( document ).off( 'visibilitychange.wp-customize-changeset-update' );
+					$( window ).off( 'beforeunload.wp-customize-changeset-update' );
+
+					closeBtn.css( 'cursor', 'progress' );
+					if ( '' === api.state( 'changesetStatus' ).get() ) {
+						clearedToClose.resolve();
+					} else {
+						wp.ajax.send( 'dismiss_customize_changeset_autosave', {
+							timeout: 500, // Don't wait too long.
+							data: {
+								wp_customize: 'on',
+								customize_theme: api.settings.theme.stylesheet,
+								customize_changeset_uuid: api.settings.changeset.uuid,
+								nonce: api.settings.nonce.dismiss_autosave
+							}
+						} ).always( function() {
+							clearedToClose.resolve();
+						} );
+					}
+				} else {
+					clearedToClose.reject();
+				}
+
+				clearedToClose.done( function() {
+					$( window ).off( 'beforeunload.customize-confirm' );
+					if ( isInsideIframe ) {
+						parent.send( 'close' );
+					} else {
+						window.location.href = closeBtn.prop( 'href' );
+					}
+				} );
+			});
+		})();
 
 		// Pass events through to the parent.
 		$.each( [ 'saved', 'change' ], function ( i, event ) {
@@ -5610,30 +6134,52 @@
 			});
 		});
 
-		// Change previewed URL to the homepage when changing the page_on_front.
-		api( 'show_on_front', 'page_on_front', function( showOnFront, pageOnFront ) {
-			var updatePreviewUrl = function() {
-				if ( showOnFront() === 'page' && parseInt( pageOnFront(), 10 ) > 0 ) {
-					api.previewer.previewUrl.set( api.settings.url.home );
+		// Add behaviors to the static front page controls.
+		api( 'show_on_front', 'page_on_front', 'page_for_posts', function( showOnFront, pageOnFront, pageForPosts ) {
+			var handleChange = function() {
+				var setting = this, pageOnFrontId, pageForPostsId, errorCode = 'show_on_front_page_collision';
+				pageOnFrontId = parseInt( pageOnFront(), 10 );
+				pageForPostsId = parseInt( pageForPosts(), 10 );
+
+				if ( 'page' === showOnFront() ) {
+
+					// Change previewed URL to the homepage when changing the page_on_front.
+					if ( setting === pageOnFront && pageOnFrontId > 0 ) {
+						api.previewer.previewUrl.set( api.settings.url.home );
+					}
+
+					// Change the previewed URL to the selected page when changing the page_for_posts.
+					if ( setting === pageForPosts && pageForPostsId > 0 ) {
+						api.previewer.previewUrl.set( api.settings.url.home + '?page_id=' + pageForPostsId );
+					}
+				}
+
+				// Toggle notification when the homepage and posts page are both set and the same.
+				if ( 'page' === showOnFront() && pageOnFrontId && pageForPostsId && pageOnFrontId === pageForPostsId ) {
+					showOnFront.notifications.add( errorCode, new api.Notification( errorCode, {
+						type: 'error',
+						message: api.l10n.pageOnFrontError
+					} ) );
+				} else {
+					showOnFront.notifications.remove( errorCode );
 				}
 			};
-			showOnFront.bind( updatePreviewUrl );
-			pageOnFront.bind( updatePreviewUrl );
-		});
+			showOnFront.bind( handleChange );
+			pageOnFront.bind( handleChange );
+			pageForPosts.bind( handleChange );
+			handleChange.call( showOnFront, showOnFront() ); // Make sure initial notification is added after loading existing changeset.
 
-		// Change the previewed URL to the selected page when changing the page_for_posts.
-		api( 'page_for_posts', function( setting ) {
-			setting.bind(function( pageId ) {
-				pageId = parseInt( pageId, 10 );
-				if ( pageId > 0 ) {
-					api.previewer.previewUrl.set( api.settings.url.home + '?page_id=' + pageId );
-				}
+			// Move notifications container to the bottom.
+			api.control( 'show_on_front', function( showOnFrontControl ) {
+				showOnFrontControl.deferred.embedded.done( function() {
+					showOnFrontControl.container.append( showOnFrontControl.getNotificationsContainerElement() );
+				});
 			});
 		});
 
 		// Add code editor for Custom CSS.
 		(function() {
-			var ready, sectionReady = $.Deferred(), controlReady = $.Deferred();
+			var sectionReady = $.Deferred();
 
 			api.section( 'custom_css', function( section ) {
 				section.deferred.embedded.done( function() {
@@ -5648,209 +6194,48 @@
 					}
 				});
 			});
-			api.control( 'custom_css', function( control ) {
-				control.deferred.embedded.done( function() {
-					controlReady.resolve( control );
-				});
-			});
 
-			ready = $.when( sectionReady, controlReady );
-
-			// Set up the section desription behaviors.
-			ready.done( function setupSectionDescription( section, control ) {
+			// Set up the section description behaviors.
+			sectionReady.done( function setupSectionDescription( section ) {
+				var control = api.control( 'custom_css' );
 
 				// Close the section description when clicking the close button.
 				section.container.find( '.section-description-buttons .section-description-close' ).on( 'click', function() {
 					section.container.find( '.section-meta .customize-section-description:first' )
 						.removeClass( 'open' )
-						.slideUp()
-						.attr( 'aria-expanded', 'false' );
+						.slideUp();
+
+					section.container.find( '.customize-help-toggle' )
+						.attr( 'aria-expanded', 'false' )
+						.focus(); // Avoid focus loss.
 				});
 
 				// Reveal help text if setting is empty.
-				if ( ! control.setting.get() ) {
+				if ( control && ! control.setting.get() ) {
 					section.container.find( '.section-meta .customize-section-description:first' )
 						.addClass( 'open' )
-						.show()
-						.attr( 'aria-expanded', 'true' );
+						.show();
+
+					section.container.find( '.customize-help-toggle' ).attr( 'aria-expanded', 'true' );
 				}
 			});
-
-			// Set up the code editor itself.
-			if ( api.settings.customCss && api.settings.customCss.codeEditor ) {
-
-				// Set up the syntax highlighting editor.
-				ready.done( function setupSyntaxHighlightingEditor( section, control ) {
-					var $textarea = control.container.find( 'textarea' ), settings, suspendEditorUpdate = false;
-
-					// Make sure editor gets focused when control is focused.
-					control.focus = (function( originalFocus ) { // eslint-disable-line max-nested-callbacks
-						return function( params ) { // eslint-disable-line max-nested-callbacks
-							var extendedParams = _.extend( {}, params ), originalCompleteCallback;
-							originalCompleteCallback = extendedParams.completeCallback;
-							extendedParams.completeCallback = function() {
-								if ( originalCompleteCallback ) {
-									originalCompleteCallback();
-								}
-								if ( control.editor ) {
-									control.editor.codemirror.focus();
-								}
-							};
-							originalFocus.call( this, extendedParams );
-						};
-					})( control.focus );
-
-					settings = _.extend( {}, api.settings.customCss.codeEditor, {
-
-						/**
-						 * Handle tabbing to the field after the editor.
-						 *
-						 * @returns {void}
-						 */
-						onTabNext: function onTabNext() {
-							var controls, controlIndex;
-							controls = section.controls();
-							controlIndex = controls.indexOf( control );
-							if ( controls.length === controlIndex + 1 ) {
-								$( '#customize-footer-actions .collapse-sidebar' ).focus();
-							} else {
-								controls[ controlIndex + 1 ].container.find( ':focusable:first' ).focus();
-							}
-						},
-
-						/**
-						 * Handle tabbing to the field before the editor.
-						 *
-						 * @returns {void}
-						 */
-						onTabPrevious: function onTabPrevious() {
-							var controls, controlIndex;
-							controls = section.controls();
-							controlIndex = controls.indexOf( control );
-							if ( 0 === controlIndex ) {
-								section.contentContainer.find( '.customize-section-title .customize-help-toggle, .customize-section-title .customize-section-description.open .section-description-close' ).last().focus();
-							} else {
-								controls[ controlIndex - 1 ].contentContainer.find( ':focusable:first' ).focus();
-							}
-						},
-
-						/**
-						 * Update error notice.
-						 *
-						 * @param {Array} errorAnnotations - Error annotations.
-						 * @returns {void}
-						 */
-						onUpdateErrorNotice: function onUpdateErrorNotice( errorAnnotations ) {
-							var message;
-							control.setting.notifications.remove( 'csslint_error' );
-
-							if ( 0 !== errorAnnotations.length ) {
-								if ( 1 === errorAnnotations.length ) {
-									message = api.l10n.customCssError.singular.replace( '%d', '1' );
-								} else {
-									message = api.l10n.customCssError.plural.replace( '%d', String( errorAnnotations.length ) );
-								}
-								control.setting.notifications.add( 'csslint_error', new api.Notification( 'csslint_error', {
-									message: message,
-									type: 'error'
-								} ) );
-							}
-						}
-					});
-
-					control.editor = wp.codeEditor.initialize( $textarea, settings );
-
-					// Refresh when receiving focus.
-					control.editor.codemirror.on( 'focus', function( codemirror ) {
-						codemirror.refresh();
-					});
-
-					/*
-					 * When the CodeMirror instance changes, mirror to the textarea,
-					 * where we have our "true" change event handler bound.
-					 */
-					control.editor.codemirror.on( 'change', function( codemirror ) {
-						suspendEditorUpdate = true;
-						$textarea.val( codemirror.getValue() ).trigger( 'change' );
-						suspendEditorUpdate = false;
-					});
-
-					// Update CodeMirror when the setting is changed by another plugin.
-					control.setting.bind( function( value ) {
-						if ( ! suspendEditorUpdate ) {
-							control.editor.codemirror.setValue( value );
-						}
-					});
-
-					// Prevent collapsing section when hitting Esc to tab out of editor.
-					control.editor.codemirror.on( 'keydown', function onKeydown( codemirror, event ) {
-						var escKeyCode = 27;
-						if ( escKeyCode === event.keyCode ) {
-							event.stopPropagation();
-						}
-					});
-				});
-			} else {
-
-				// Allow tabs to be entered in Custom CSS textarea.
-				ready.done( function allowTabs( section, control ) {
-
-					var $textarea = control.container.find( 'textarea' ), textarea = $textarea[0];
-
-					$textarea.on( 'blur', function onBlur() {
-						$textarea.data( 'next-tab-blurs', false );
-					} );
-
-					$textarea.on( 'keydown', function onKeydown( event ) {
-						var selectionStart, selectionEnd, value, tabKeyCode = 9, escKeyCode = 27;
-
-						if ( escKeyCode === event.keyCode ) {
-							if ( ! $textarea.data( 'next-tab-blurs' ) ) {
-								$textarea.data( 'next-tab-blurs', true );
-								event.stopPropagation(); // Prevent collapsing the section.
-							}
-							return;
-						}
-
-						// Short-circuit if tab key is not being pressed or if a modifier key *is* being pressed.
-						if ( tabKeyCode !== event.keyCode || event.ctrlKey || event.altKey || event.shiftKey ) {
-							return;
-						}
-
-						// Prevent capturing Tab characters if Esc was pressed.
-						if ( $textarea.data( 'next-tab-blurs' ) ) {
-							return;
-						}
-
-						selectionStart = textarea.selectionStart;
-						selectionEnd = textarea.selectionEnd;
-						value = textarea.value;
-
-						if ( selectionStart >= 0 ) {
-							textarea.value = value.substring( 0, selectionStart ).concat( '\t', value.substring( selectionEnd ) );
-							$textarea.selectionStart = textarea.selectionEnd = selectionStart + 1;
-						}
-
-						event.stopPropagation();
-						event.preventDefault();
-					});
-				});
-			}
 		})();
 
 		// Toggle visibility of Header Video notice when active state change.
 		api.control( 'header_video', function( headerVideoControl ) {
 			headerVideoControl.deferred.embedded.done( function() {
 				var toggleNotice = function() {
-					var section = api.section( headerVideoControl.section() ), notice;
+					var section = api.section( headerVideoControl.section() ), noticeCode = 'video_header_not_available';
 					if ( ! section ) {
 						return;
 					}
-					notice = section.container.find( '.header-video-not-currently-previewable:first' );
 					if ( headerVideoControl.active.get() ) {
-						notice.stop().slideUp( 'fast' );
+						section.notifications.remove( noticeCode );
 					} else {
-						notice.stop().slideDown( 'fast' );
+						section.notifications.add( noticeCode, new api.Notification( noticeCode, {
+							type: 'info',
+							message: api.l10n.videoHeaderNotice
+						} ) );
 					}
 				};
 				toggleNotice();
@@ -5917,6 +6302,13 @@
 		( function() {
 			var timeoutId, updateChangesetWithReschedule, scheduleChangesetUpdate, updatePending = false;
 
+			api.state( 'saved' ).bind( function( isSaved ) {
+				if ( ! isSaved && ! api.settings.changeset.autosaved ) {
+					api.settings.changeset.autosaved = true; // Once a change is made then autosaving kicks in.
+					api.previewer.send( 'autosaving' );
+				}
+			} );
+
 			/**
 			 * Request changeset update and then re-schedule the next changeset update time.
 			 *
@@ -5926,7 +6318,7 @@
 			updateChangesetWithReschedule = function() {
 				if ( ! updatePending ) {
 					updatePending = true;
-					api.requestChangesetUpdate().always( function() {
+					api.requestChangesetUpdate( {}, { autosave: true } ).always( function() {
 						updatePending = false;
 					} );
 				}
@@ -5950,8 +6342,10 @@
 			scheduleChangesetUpdate();
 
 			// Save changeset when focus removed from window.
-			$( window ).on( 'blur.wp-customize-changeset-update', function() {
-				updateChangesetWithReschedule();
+			$( document ).on( 'visibilitychange.wp-customize-changeset-update', function() {
+				if ( document.hidden ) {
+					updateChangesetWithReschedule();
+				}
 			} );
 
 			// Save changeset before unloading window.

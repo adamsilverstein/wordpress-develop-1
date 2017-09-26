@@ -681,13 +681,16 @@ function switch_theme( $stylesheet ) {
 
 	$_sidebars_widgets = null;
 	if ( 'wp_ajax_customize_save' === current_action() ) {
-		$_sidebars_widgets = $wp_customize->post_value( $wp_customize->get_setting( 'old_sidebars_widgets_data' ) );
+		$old_sidebars_widgets_data_setting = $wp_customize->get_setting( 'old_sidebars_widgets_data' );
+		if ( $old_sidebars_widgets_data_setting ) {
+			$_sidebars_widgets = $wp_customize->post_value( $old_sidebars_widgets_data_setting );
+		}
 	} elseif ( is_array( $sidebars_widgets ) ) {
 		$_sidebars_widgets = $sidebars_widgets;
 	}
 
 	if ( is_array( $_sidebars_widgets ) ) {
-		set_theme_mod( 'sidebars_widgets', array( 'time' => time(), 'data' => $_sidebars_widgets ) );
+		set_theme_mod( 'sidebars_widgets', $_sidebars_widgets );
 	}
 
 	$nav_menu_locations = get_theme_mod( 'nav_menu_locations' );
@@ -2784,15 +2787,17 @@ function _wp_customize_include() {
 	 * called before wp_magic_quotes() gets called. Besides this fact, none of
 	 * the values should contain any characters needing slashes anyway.
 	 */
-	$keys = array( 'changeset_uuid', 'customize_changeset_uuid', 'customize_theme', 'theme', 'customize_messenger_channel' );
+	$keys = array( 'changeset_uuid', 'customize_changeset_uuid', 'customize_theme', 'theme', 'customize_messenger_channel', 'customize_autosaved' );
 	$input_vars = array_merge(
 		wp_array_slice_assoc( $_GET, $keys ),
 		wp_array_slice_assoc( $_POST, $keys )
 	);
 
 	$theme = null;
-	$changeset_uuid = null;
+	$changeset_uuid = false; // Value false indicates UUID should be determined after_setup_theme to either re-use existing saved changeset or else generate a new UUID if none exists.
 	$messenger_channel = null;
+	$autosaved = null;
+	$branching = false; // Set initially fo false since defaults to true for back-compat; can be overridden via the customize_changeset_branching filter.
 
 	if ( $is_customize_admin_page && isset( $input_vars['changeset_uuid'] ) ) {
 		$changeset_uuid = sanitize_key( $input_vars['changeset_uuid'] );
@@ -2806,6 +2811,11 @@ function _wp_customize_include() {
 	} elseif ( isset( $input_vars['customize_theme'] ) ) {
 		$theme = $input_vars['customize_theme'];
 	}
+
+	if ( ! empty( $input_vars['customize_autosaved'] ) ) {
+		$autosaved = true;
+	}
+
 	if ( isset( $input_vars['customize_messenger_channel'] ) ) {
 		$messenger_channel = sanitize_key( $input_vars['customize_messenger_channel'] );
 	}
@@ -2827,7 +2837,7 @@ function _wp_customize_include() {
 	$settings_previewed = ! $is_customize_save_action;
 
 	require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
-	$GLOBALS['wp_customize'] = new WP_Customize_Manager( compact( 'changeset_uuid', 'theme', 'messenger_channel', 'settings_previewed' ) );
+	$GLOBALS['wp_customize'] = new WP_Customize_Manager( compact( 'changeset_uuid', 'theme', 'messenger_channel', 'settings_previewed', 'autosaved', 'branching' ) );
 }
 
 /**

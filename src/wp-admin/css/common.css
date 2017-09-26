@@ -1461,6 +1461,22 @@ div.error {
 	margin: 5px 0 15px;
 }
 
+.wrap #templateside .notice {
+	display: block;
+	margin: 0;
+	padding: 5px 12px;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.wrap #templateside span.notice {
+  margin-left: -12px;
+}
+
+#templateside li.notice a {
+  padding: 0;
+}
+
 /* Update icon. */
 .update-message p:before,
 .updating-message p:before,
@@ -2202,6 +2218,14 @@ h1.nav-tab-wrapper, /* Back-compat for pre-4.4 */
 
 #template > div {
 	margin-right: 190px;
+}
+#template .active-plugin-edit-warning {
+	margin-top: 1em;
+	margin-right: 30%;
+	margin-right: calc( 184px + 3% );
+}
+#template .active-plugin-edit-warning p {
+	width: auto;
 }
 
 .metabox-holder .stuffbox > h3, /* Back-compat for pre-4.4 */
@@ -3027,6 +3051,12 @@ img {
 	height: calc( 100vh - 220px );
 }
 
+#template label {
+	display: inline-block;
+	margin-bottom: 1em;
+	font-weight: 600;
+}
+
 /* rtl:ignore */
 #template textarea,
 #docs-list {
@@ -3609,9 +3639,10 @@ img {
 		margin-top: -5px;
 	}
 
-	#template > div {
+	#template > div,
+	#template  .active-plugin-edit-warning {
 		float: none;
-		margin: 0;
+		margin: 1em 0;
 		width: auto;
 	}
 

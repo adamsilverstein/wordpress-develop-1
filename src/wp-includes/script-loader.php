@@ -285,7 +285,7 @@ function wp_default_scripts( &$scripts ) {
 
 	$scripts->add( 'swfobject', "/wp-includes/js/swfobject.js", array(), '2.2-20120417');
 
-	// error message for both plupload and swfupload
+	// Error messages for Plupload.
 	$uploader_l10n = array(
 		'queue_limit_exceeded' => __('You have attempted to queue too many files.'),
 		'file_exceeds_size_limit' => __('%s exceeds the maximum upload size for this site.'),
@@ -312,7 +312,8 @@ function wp_default_scripts( &$scripts ) {
 		'error_uploading' => __('&#8220;%s&#8221; has failed to upload.')
 	);
 
-	$scripts->add( 'plupload', '/wp-includes/js/plupload/plupload.full.min.js', array(), '2.1.8' );
+	$scripts->add( 'moxiejs', "/wp-includes/js/plupload/moxie$suffix.js", array(), '1.3.5' );
+	$scripts->add( 'plupload', "/wp-includes/js/plupload/plupload$suffix.js", array( 'moxiejs' ), '2.1.9' );
 	// Back compat handles:
 	foreach ( array( 'all', 'html5', 'flash', 'silverlight', 'html4' ) as $handle ) {
 		$scripts->add( "plupload-$handle", false, array( 'plupload' ), '2.1.1' );
@@ -326,10 +327,7 @@ function wp_default_scripts( &$scripts ) {
 
 	// keep 'swfupload' for back-compat.
 	$scripts->add( 'swfupload', '/wp-includes/js/swfupload/swfupload.js', array(), '2201-20110113');
-	$scripts->add( 'swfupload-swfobject', '/wp-includes/js/swfupload/plugins/swfupload.swfobject.js', array('swfupload', 'swfobject'), '2201a');
-	$scripts->add( 'swfupload-queue', '/wp-includes/js/swfupload/plugins/swfupload.queue.js', array('swfupload'), '2201');
-	$scripts->add( 'swfupload-speed', '/wp-includes/js/swfupload/plugins/swfupload.speed.js', array('swfupload'), '2201');
-	$scripts->add( 'swfupload-all', false, array('swfupload', 'swfupload-swfobject', 'swfupload-queue'), '2201');
+	$scripts->add( 'swfupload-all', false, array( 'swfupload' ), '2201' );
 	$scripts->add( 'swfupload-handlers', "/wp-includes/js/swfupload/handlers$suffix.js", array('swfupload-all', 'jquery'), '2201-20110524');
 	did_action( 'init' ) && $scripts->localize( 'swfupload-handlers', 'swfuploadL10n', $uploader_l10n );
 
@@ -466,13 +464,13 @@ function wp_default_scripts( &$scripts ) {
 		apply_filters( 'mejs_settings', $mejs_settings )
 	);
 
-	$scripts->add( 'codemirror', '/wp-includes/js/codemirror/codemirror.min.js', array(), '5.29.1-alpha-ee20357' );
+	$scripts->add( 'wp-codemirror', '/wp-includes/js/codemirror/codemirror.min.js', array(), '5.29.1-alpha-ee20357' );
 	$scripts->add( 'csslint', '/wp-includes/js/codemirror/csslint.js', array(), '1.0.5' );
 	$scripts->add( 'jshint', '/wp-includes/js/codemirror/jshint.js', array(), '2.9.5' );
 	$scripts->add( 'jsonlint', '/wp-includes/js/codemirror/jsonlint.js', array(), '1.6.2' );
 	$scripts->add( 'htmlhint', '/wp-includes/js/codemirror/htmlhint.js', array(), '0.9.14-xwp' );
 	$scripts->add( 'htmlhint-kses', '/wp-includes/js/codemirror/htmlhint-kses.js', array( 'htmlhint' ) );
-	$scripts->add( 'code-editor', "/wp-admin/js/code-editor$suffix.js", array( 'jquery', 'codemirror' ) );
+	$scripts->add( 'code-editor', "/wp-admin/js/code-editor$suffix.js", array( 'jquery', 'wp-codemirror' ) );
 	$scripts->add( 'wp-theme-plugin-editor', "/wp-admin/js/theme-plugin-editor$suffix.js", array( 'code-editor', 'jquery', 'jquery-ui-core', 'wp-a11y', 'underscore' ) );
 	did_action( 'init' ) && $scripts->add_inline_script( 'wp-theme-plugin-editor', sprintf( 'wp.themePluginEditor.l10n = %s;', wp_json_encode( wp_array_slice_assoc(
 		/* translators: placeholder is error count */
@@ -563,11 +561,20 @@ function wp_default_scripts( &$scripts ) {
 		'expandSidebar'      => _x( 'Show Controls', 'label for hide controls button without length constraints' ),
 		'untitledBlogName'   => __( '(Untitled)' ),
 		'serverSaveError'    => __( 'Failed connecting to the server. Please try saving again.' ),
+		/* translators: placeholder is URL to the Customizer to load the autosaved version */
+		'autosaveNotice'     => __( 'There is a more recent autosave of your changes than the one you are previewing. <a href="%s">Restore the autosave</a>' ),
+		'videoHeaderNotice'   => __( 'This theme doesn\'t support video headers on this page. Navigate to the front page or another page that supports video headers.' ),
 		// Used for overriding the file types allowed in plupload.
 		'allowedFiles'       => __( 'Allowed Files' ),
 		'customCssError'     => wp_array_slice_assoc(
 			/* translators: placeholder is error count */
 			_n_noop( 'There is %d error which must be fixed before you can save.', 'There are %d errors which must be fixed before you can save.' ),
+			array( 'singular', 'plural' )
+		),
+		'pageOnFrontError' => __( 'Homepage and posts page must be different.' ),
+		'saveBlockedError' => wp_array_slice_assoc(
+			/* translators: placeholder is error count */
+			_n_noop( 'Unable to save due to %s invalid setting.', 'Unable to save due to %s invalid settings.' ),
 			array( 'singular', 'plural' )
 		),
 	) );
@@ -668,17 +675,6 @@ function wp_default_scripts( &$scripts ) {
 			'permalinkSaved' => __( 'Permalink saved' ),
 		) );
 
-		$scripts->add( 'press-this', "/wp-admin/js/press-this$suffix.js", array( 'jquery', 'tags-box', 'wp-sanitize' ), false, 1 );
-		did_action( 'init' ) && $scripts->localize( 'press-this', 'pressThisL10n', array(
-			'newPost' => __( 'Title' ),
-			'serverError' => __( 'Connection lost or the server is busy. Please try again later.' ),
-			'saveAlert' => __( 'The changes you made will be lost if you navigate away from this page.' ),
-			/* translators: %d: nth embed found in a post */
-			'suggestedEmbedAlt' => __( 'Suggested embed #%d' ),
-			/* translators: %d: nth image found in a post */
-			'suggestedImgAlt' => __( 'Suggested image #%d' ),
-		) );
-
 		$scripts->add( 'editor-expand', "/wp-admin/js/editor-expand$suffix.js", array( 'jquery', 'underscore' ), false, 1 );
 
 		$scripts->add( 'link', "/wp-admin/js/link$suffix.js", array( 'wp-lists', 'postbox' ), false, 1 );
@@ -705,6 +701,7 @@ function wp_default_scripts( &$scripts ) {
 
 		$scripts->add( 'media-audio-widget', "/wp-admin/js/widgets/media-audio-widget$suffix.js", array( 'media-widgets', 'media-audiovideo' ) );
 		$scripts->add( 'media-image-widget', "/wp-admin/js/widgets/media-image-widget$suffix.js", array( 'media-widgets' ) );
+		$scripts->add( 'media-gallery-widget', "/wp-admin/js/widgets/media-gallery-widget$suffix.js", array( 'media-widgets' ) );
 		$scripts->add( 'media-video-widget', "/wp-admin/js/widgets/media-video-widget$suffix.js", array( 'media-widgets', 'media-audiovideo', 'wp-api-request' ) );
 		$scripts->add( 'text-widgets', "/wp-admin/js/widgets/text-widgets$suffix.js", array( 'jquery', 'backbone', 'editor', 'wp-util', 'wp-a11y' ) );
 		$scripts->add( 'custom-html-widgets', "/wp-admin/js/widgets/custom-html-widgets$suffix.js", array( 'code-editor', 'jquery', 'backbone', 'wp-util', 'jquery-ui-core', 'wp-a11y' ) );
@@ -811,7 +808,7 @@ function wp_default_scripts( &$scripts ) {
 				'activateImporter'           => __( 'Run Importer' ),
 				/* translators: %s: Importer name */
 				'activateImporterLabel'      => __( 'Run %s' ),
-				'unknownError'               => __( 'An unknown error occurred' ),
+				'unknownError'               => __( 'An unidentified error has occurred.' ),
 				'connectionError'            => __( 'Connection lost or the server is busy. Please try again later.' ),
 				'nonceError'                 => __( 'An error has occurred. Please reload the page and try again.' ),
 				'pluginsFound'               => __( 'Number of plugins found: %d' ),
@@ -948,7 +945,7 @@ function wp_default_styles( &$styles ) {
 	$styles->add( 'widgets',             "/wp-admin/css/widgets$suffix.css", array( 'wp-pointer' ) );
 	$styles->add( 'site-icon',           "/wp-admin/css/site-icon$suffix.css" );
 	$styles->add( 'l10n',                "/wp-admin/css/l10n$suffix.css" );
-	$styles->add( 'code-editor',         "/wp-admin/css/code-editor$suffix.css", array( 'codemirror' ) );
+	$styles->add( 'code-editor',         "/wp-admin/css/code-editor$suffix.css", array( 'wp-codemirror' ) );
 
 	$styles->add( 'wp-admin', false, array( 'dashicons', 'common', 'forms', 'admin-menu', 'dashboard', 'list-tables', 'edit', 'revisions', 'media', 'themes', 'about', 'nav-menus', 'widgets', 'site-icon', 'l10n' ) );
 
@@ -958,7 +955,6 @@ function wp_default_styles( &$styles ) {
 	$styles->add( 'customize-controls',  "/wp-admin/css/customize-controls$suffix.css", array( 'wp-admin', 'colors', 'ie', 'imgareaselect' ) );
 	$styles->add( 'customize-widgets',   "/wp-admin/css/customize-widgets$suffix.css", array( 'wp-admin', 'colors' ) );
 	$styles->add( 'customize-nav-menus', "/wp-admin/css/customize-nav-menus$suffix.css", array( 'wp-admin', 'colors' ) );
-	$styles->add( 'press-this',          "/wp-admin/css/press-this$suffix.css", array( 'buttons' ) );
 
 	$styles->add( 'ie', "/wp-admin/css/ie$suffix.css" );
 	$styles->add_data( 'ie', 'conditional', 'lte IE 7' );
@@ -983,7 +979,7 @@ function wp_default_styles( &$styles ) {
 	$styles->add( 'mediaelement',        "/wp-includes/js/mediaelement/mediaelementplayer-legacy.min.css", array(), '4.2.5-74e01a40' );
 	$styles->add( 'wp-mediaelement',     "/wp-includes/js/mediaelement/wp-mediaelement$suffix.css", array( 'mediaelement' ) );
 	$styles->add( 'thickbox',            '/wp-includes/js/thickbox/thickbox.css', array( 'dashicons' ) );
-	$styles->add( 'codemirror',          '/wp-includes/js/codemirror/codemirror.min.css', array(), '5.29.1-alpha-ee20357' );
+	$styles->add( 'wp-codemirror',       '/wp-includes/js/codemirror/codemirror.min.css', array(), '5.29.1-alpha-ee20357' );
 
 	// Deprecated CSS
 	$styles->add( 'deprecated-media', "/wp-admin/css/deprecated-media$suffix.css" );
@@ -997,7 +993,7 @@ function wp_default_styles( &$styles ) {
 		// wp-admin
 		'common', 'forms', 'admin-menu', 'dashboard', 'list-tables', 'edit', 'revisions', 'media', 'themes', 'about', 'nav-menus',
 		'widgets', 'site-icon', 'l10n', 'install', 'wp-color-picker', 'customize-controls', 'customize-widgets', 'customize-nav-menus', 'customize-preview',
-		'ie', 'login', 'press-this',
+		'ie', 'login',
 		// wp-includes
 		'buttons', 'admin-bar', 'wp-auth-check', 'editor-buttons', 'media-views', 'wp-pointer',
 		'wp-jquery-ui-dialog',
@@ -1050,6 +1046,10 @@ function wp_just_in_time_script_localization() {
 	wp_localize_script( 'autosave', 'autosaveL10n', array(
 		'autosaveInterval' => AUTOSAVE_INTERVAL,
 		'blog_id' => get_current_blog_id(),
+	) );
+
+	wp_localize_script( 'mce-view', 'mceViewL10n', array(
+		'shortcodes' => ! empty( $GLOBALS['shortcode_tags'] ) ? array_keys( $GLOBALS['shortcode_tags'] ) : array()
 	) );
 }
 
