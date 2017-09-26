@@ -505,6 +505,8 @@
 				/**
 				 * Get meta by key for a post.
 				 *
+				 * @param {string} key The meta key.
+				 *
 				 * @return {object} The post meta value.
 				 */
 				getMeta: function( key ) {
@@ -513,18 +515,18 @@
 				},
 
 				/**
-				 * Get all meta values for a post.
+				 * Get all meta key/values for a post.
 				 *
-				 * @return {object} The post meta, as a key value pair object.
+				 * @return {object} The post metas, as a key value pair object.
 				 */
 				getMetas: function() {
 					return this.get( 'meta' );
 				},
 
 				/**
-				 * Set the meta for a post.
+				 * Set a group of meta key/values for a post.
 				 *
-				 * @param {object} meta The post meta, as a key value pair object.
+				 * @param {object} meta The post meta to set, as key/value pairs.
 				 */
 				setMetas: function( meta ) {
 					var metas = this.get( 'meta' );
@@ -533,18 +535,16 @@
 				},
 
 				/**
-				 * Set a single meta value for a post.
+				 * Set a single meta value for a post, by key.
 				 *
 				 * @param {string} key   The meta key.
-				 * @param {object} meta  The meta value.
+				 * @param {object} value The meta value.
 				 */
-				setMeta: function( key, meta ) {
+				setMeta: function( key, value ) {
 					var metas = this.get( 'meta' );
-					metas[ key ] = meta;
+					metas[ key ] = value;
 					this.set( 'meta', metas );
 				},
-
-
 			},
 
 			/**
