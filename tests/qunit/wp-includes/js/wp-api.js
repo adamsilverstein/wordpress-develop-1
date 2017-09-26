@@ -343,4 +343,33 @@
 		} );
 	});
 
+	// Test post meta.
+	wp.api.loadPromise.done( function() {
+		QUnit.test( 'Check meta support.' , function( assert ) {
+			var theModels = new wp.api.collections.Posts();
+
+			theModels.fetch().done( function() {
+
+				// Get the main endpoint.
+				var endpoint = theModels.at(0)
+
+				// Verify the meta object returned correctly from `getMetas()`.
+				assert.equal( JSON.stringify( endpoint.getMetas() ), '{"meta_key":"meta_value"}', 'Full meta key/values object should be readable.' );
+
+				// Verify single meta returned correctly from `getMeta()`
+				assert.equal( endpoint.getMeta( 'meta_key' ), 'meta_value', 'Single meta should be readable by key.' );
+
+				// Verify setting meta values with `setMetas()`.
+				endpoint.setMetas( { 'test_key':'test_value' } );
+				assert.equal( endpoint.getMeta( 'test_key' ), 'test_value', 'Multiple meta should be writable via setMetas.' );
+
+				// Verify setting a single meta value with `setMeta()`.
+				endpoint.setMeta( 'test_key2', 'test_value2' );
+				assert.equal( endpoint.getMeta( 'test_key2' ), 'test_value2', 'Single meta should be writable via setMeta.' );
+
+			} );
+		} );
+	} );
+
+
 } )( window.QUnit );
