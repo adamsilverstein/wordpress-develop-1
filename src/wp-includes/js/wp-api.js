@@ -503,22 +503,45 @@
 			MetaMixin = {
 
 				/**
-				 * Get the meta for a post.
+				 * Get meta by key for a post.
+				 *
+				 * @return {object} The post meta value.
+				 */
+				getMeta: function( key ) {
+					var metas = this.get( 'meta' );
+					return metas[ key ];
+				},
+
+				/**
+				 * Get all meta values for a post.
 				 *
 				 * @return {object} The post meta, as a key value pair object.
 				 */
-				getMeta: function() {
+				getMetas: function() {
 					return this.get( 'meta' );
 				},
 
 				/**
 				 * Set the meta for a post.
 				 *
-				 * @param {object}
+				 * @param {object} meta The post meta, as a key value pair object.
 				 */
+				setMetas: function( meta ) {
+					var metas = this.get( 'meta' );
+					_.extend( metas, meta );
+					this.set( 'meta', metas );
+				},
 
-				setMeta: function( meta ) {
-					this.set( 'meta', meta );
+				/**
+				 * Set a single meta value for a post.
+				 *
+				 * @param {string} key   The meta key.
+				 * @param {object} meta  The meta value.
+				 */
+				setMeta: function( key, meta ) {
+					var metas = this.get( 'meta' );
+					metas[ key ] = meta;
+					this.set( 'meta', metas );
 				},
 
 
