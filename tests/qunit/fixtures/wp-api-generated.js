@@ -3560,7 +3560,9 @@ mockedApiResponse.PostsCollection = [
         "sticky": false,
         "template": "",
         "format": "standard",
-        "meta": [],
+        "meta": {
+            "meta_key": "meta_value"
+        },
         "categories": [
             1
         ],
@@ -3651,7 +3653,9 @@ mockedApiResponse.PostModel = {
     "sticky": false,
     "template": "",
     "format": "standard",
-    "meta": [],
+    "meta": {
+        "meta_key": "meta_value"
+    },
     "categories": [
         1
     ],
@@ -3745,7 +3749,9 @@ mockedApiResponse.PagesCollection = [
         "comment_status": "closed",
         "ping_status": "closed",
         "template": "",
-        "meta": [],
+        "meta": {
+            "meta_key": ""
+        },
         "_links": {
             "self": [
                 {
@@ -3820,7 +3826,9 @@ mockedApiResponse.PageModel = {
     "comment_status": "closed",
     "ping_status": "closed",
     "template": "",
-    "meta": []
+    "meta": {
+        "meta_key": ""
+    }
 };
 
 mockedApiResponse.pageRevisions = [
@@ -3899,7 +3907,9 @@ mockedApiResponse.MediaCollection = [
         "comment_status": "open",
         "ping_status": "closed",
         "template": "",
-        "meta": [],
+        "meta": {
+            "meta_key": ""
+        },
         "description": {
             "rendered": "<p class=\"attachment\"><!-- <a...><img.../></a> --></p>"
         },
@@ -3958,7 +3968,9 @@ mockedApiResponse.MediaModel = {
     "comment_status": "open",
     "ping_status": "closed",
     "template": "",
-    "meta": [],
+    "meta": {
+        "meta_key": ""
+    },
     "description": {
         "rendered": "<p class=\"attachment\"><!-- <a...><img.../></a> --></p>"
     },
