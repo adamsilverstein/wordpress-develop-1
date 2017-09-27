@@ -544,7 +544,7 @@
 					var metas = this.get( 'meta' );
 					metas[ key ] = value;
 					this.set( 'meta', metas );
-				},
+				}
 			},
 
 			/**
