@@ -78,8 +78,7 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 		$wp_install = network_site_url();
 		$multisite_enabled = 1;
 	} else {
-		$user_count = count_users();
-		$user_count = $user_count['total_users'];
+		$user_count = wp_get_active_user_count();
 		$multisite_enabled = 0;
 		$num_blogs = 1;
 		$wp_install = home_url( '/' );
@@ -301,7 +300,7 @@ function wp_update_plugins( $extra_stats = array() ) {
 			'locale'       => wp_json_encode( $locales ),
 			'all'          => wp_json_encode( true ),
 		),
-		'user-agent' => 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' )
+		'user-agent' => 'WordPress/' . $wp_version . '; ' . home_url( '/' )
 	);
 
 	if ( $extra_stats ) {
@@ -479,7 +478,7 @@ function wp_update_themes( $extra_stats = array() ) {
 			'translations' => wp_json_encode( $translations ),
 			'locale'       => wp_json_encode( $locales ),
 		),
-		'user-agent'	=> 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' )
+		'user-agent'	=> 'WordPress/' . $wp_version . '; ' . home_url( '/' )
 	);
 
 	if ( $extra_stats ) {
