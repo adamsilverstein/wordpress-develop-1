@@ -505,6 +505,7 @@ function wp_default_scripts( &$scripts ) {
 		'ariaShow' => esc_attr__( 'Show password' ),
 		'ariaHide' => esc_attr__( 'Hide password' ),
 	) );
+	$scripts->add( 'wp-api-nonce', "/wp-includes/js/wp-api-nonce$suffix.js", array( 'jquery', 'wp-api', 'heartbeat' ), false, 1 );
 
 	$scripts->add( 'language-chooser', "/wp-admin/js/language-chooser$suffix.js", array( 'jquery' ), false, 1 );
 

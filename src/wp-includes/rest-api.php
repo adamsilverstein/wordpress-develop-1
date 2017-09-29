@@ -747,6 +747,27 @@ function rest_cookie_check_errors( $result ) {
 }
 
 /**
+ * Refresh the REST API nonce on heartbeat requests.
+ *
+ * @since 4.8
+ *
+ * @param array  $response  The Heartbeat response.
+ * @param array  $data      The $_POST data sent.
+ * @return array The Heartbeat response.
+ */
+function rest_refresh_nonce_on_heartbeat( $response, $data ) {
+	if ( array_key_exists( 'wp-refresh-rest-nonce', $data ) ) {
+		// Are we in the second tick?
+		if ( wp_verify_nonce( $data['wp-refresh-rest-nonce'] ) === 2 ) {
+			// Update nonce.
+			$response['wp-refresh-rest-nonce'] = wp_create_nonce( 'wp_rest' );
+		}
+	}
+
+	return $response;
+}
+
+/**
  * Collects cookie authentication status.
  *
  * Collects errors from wp_validate_auth_cookie for use by rest_cookie_check_errors.
