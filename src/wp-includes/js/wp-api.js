@@ -1245,6 +1245,7 @@
 
 										// Exclude models that support trash (Post, Page).
 										(
++											! _.isUndefined( endpoint.args.force ) &&
 											! _.isUndefined( endpoint.args.force.description ) &&
 											'Whether to bypass trash and force deletion.' !== endpoint.args.force.description
 										)
