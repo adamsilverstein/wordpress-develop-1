@@ -505,7 +505,7 @@ function wp_default_scripts( &$scripts ) {
 		'ariaShow' => esc_attr__( 'Show password' ),
 		'ariaHide' => esc_attr__( 'Hide password' ),
 	) );
-	$scripts->add( 'wp-api-nonce', "/wp-includes/js/wp-api-nonce$suffix.js", array( 'jquery', 'wp-api', 'heartbeat' ), false, 1 );
+	$scripts->add( 'wp-api-nonce', "/wp-includes/js/wp-api-nonce$suffix.js", array( 'jquery', 'heartbeat' ), false, 1 );
 
 	$scripts->add( 'language-chooser', "/wp-admin/js/language-chooser$suffix.js", array( 'jquery' ), false, 1 );
 
@@ -619,7 +619,7 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'media-audiovideo', "/wp-includes/js/media-audiovideo$suffix.js", array( 'media-editor' ), false, 1 );
 	$scripts->add( 'mce-view', "/wp-includes/js/mce-view$suffix.js", array( 'shortcode', 'jquery', 'media-views', 'media-audiovideo' ), false, 1 );
 
-	$scripts->add( 'wp-api', "/wp-includes/js/wp-api$suffix.js", array( 'jquery', 'backbone', 'underscore', 'wp-api-request' ), false, 1 );
+	$scripts->add( 'wp-api', "/wp-includes/js/wp-api$suffix.js", array( 'jquery', 'backbone', 'underscore', 'wp-api-request', 'wp-api-nonce' ), false, 1 );
 
 	if ( is_admin() ) {
 		$scripts->add( 'admin-tags', "/wp-admin/js/tags$suffix.js", array( 'jquery', 'wp-ajax-response' ), false, 1 );
