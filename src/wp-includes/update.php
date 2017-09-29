@@ -78,8 +78,7 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 		$wp_install = network_site_url();
 		$multisite_enabled = 1;
 	} else {
-		$user_count = count_users();
-		$user_count = $user_count['total_users'];
+		$user_count = wp_get_active_user_count();
 		$multisite_enabled = 0;
 		$num_blogs = 1;
 		$wp_install = home_url( '/' );
@@ -108,8 +107,10 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 	if ( $ssl = wp_http_supports( array( 'ssl' ) ) )
 		$url = set_url_scheme( $url, 'https' );
 
+	$doing_cron = wp_doing_cron();
+
 	$options = array(
-		'timeout' => ( ( defined('DOING_CRON') && DOING_CRON ) ? 30 : 3 ),
+		'timeout' => $doing_cron ? 30 : 3,
 		'user-agent' => 'WordPress/' . $wp_version . '; ' . home_url( '/' ),
 		'headers' => array(
 			'wp_install' => $wp_install,
@@ -177,7 +178,7 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 	}
 
 	// Trigger background updates if running non-interactively, and we weren't called from the update handler.
-	if ( defined( 'DOING_CRON' ) && DOING_CRON && ! doing_action( 'wp_maybe_auto_update' ) ) {
+	if ( $doing_cron && ! doing_action( 'wp_maybe_auto_update' ) ) {
 		do_action( 'wp_maybe_auto_update' );
 	}
 }
@@ -217,6 +218,8 @@ function wp_update_plugins( $extra_stats = array() ) {
 	$new_option = new stdClass;
 	$new_option->last_checked = time();
 
+	$doing_cron = wp_doing_cron();
+
 	// Check for update on a different schedule, depending on the page.
 	switch ( current_filter() ) {
 		case 'upgrader_process_complete' :
@@ -230,7 +233,7 @@ function wp_update_plugins( $extra_stats = array() ) {
 			$timeout = HOUR_IN_SECONDS;
 			break;
 		default :
-			if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+			if ( $doing_cron ) {
 				$timeout = 0;
 			} else {
 				$timeout = 12 * HOUR_IN_SECONDS;
@@ -282,7 +285,7 @@ function wp_update_plugins( $extra_stats = array() ) {
 	$locales = apply_filters( 'plugins_update_check_locales', $locales );
 	$locales = array_unique( $locales );
 
-	if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+	if ( $doing_cron ) {
 		$timeout = 30;
 	} else {
 		// Three seconds, plus one extra second for every 10 plugins
@@ -297,7 +300,7 @@ function wp_update_plugins( $extra_stats = array() ) {
 			'locale'       => wp_json_encode( $locales ),
 			'all'          => wp_json_encode( true ),
 		),
-		'user-agent' => 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' )
+		'user-agent' => 'WordPress/' . $wp_version . '; ' . home_url( '/' )
 	);
 
 	if ( $extra_stats ) {
@@ -400,6 +403,8 @@ function wp_update_themes( $extra_stats = array() ) {
 		);
 	}
 
+	$doing_cron = wp_doing_cron();
+
 	// Check for update on a different schedule, depending on the page.
 	switch ( current_filter() ) {
 		case 'upgrader_process_complete' :
@@ -413,11 +418,7 @@ function wp_update_themes( $extra_stats = array() ) {
 			$timeout = HOUR_IN_SECONDS;
 			break;
 		default :
-			if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
-				$timeout = 0;
-			} else {
-				$timeout = 12 * HOUR_IN_SECONDS;
-			}
+			$timeout = $doing_cron ? 0 : 12 * HOUR_IN_SECONDS;
 	}
 
 	$time_not_changed = isset( $last_update->last_checked ) && $timeout > ( time() - $last_update->last_checked );
@@ -463,7 +464,7 @@ function wp_update_themes( $extra_stats = array() ) {
 	$locales = apply_filters( 'themes_update_check_locales', $locales );
 	$locales = array_unique( $locales );
 
-	if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+	if ( $doing_cron ) {
 		$timeout = 30;
 	} else {
 		// Three seconds, plus one extra second for every 10 themes
@@ -477,7 +478,7 @@ function wp_update_themes( $extra_stats = array() ) {
 			'translations' => wp_json_encode( $translations ),
 			'locale'       => wp_json_encode( $locales ),
 		),
-		'user-agent'	=> 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' )
+		'user-agent'	=> 'WordPress/' . $wp_version . '; ' . home_url( '/' )
 	);
 
 	if ( $extra_stats ) {

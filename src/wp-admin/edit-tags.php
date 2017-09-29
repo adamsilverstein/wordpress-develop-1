@@ -65,7 +65,6 @@ if ( ! $referer ) { // For POST requests.
 	$referer = wp_unslash( $_SERVER['REQUEST_URI'] );
 }
 $referer = remove_query_arg( array( '_wp_http_referer', '_wpnonce', 'error', 'message', 'paged' ), $referer );
-
 switch ( $wp_list_table->current_action() ) {
 
 case 'add-tag':
@@ -106,6 +105,9 @@ case 'delete':
 	wp_delete_term( $tag_ID, $taxonomy );
 
 	$location = add_query_arg( 'message', 2, $referer );
+
+	// When deleting a term, prevent the action from redirecting back to a term that no longer exists.
+	$location = remove_query_arg( array( 'tag_ID', 'action' ), $location );
 
 	break;
 
@@ -525,6 +527,9 @@ do_action( "{$taxonomy}_add_form", $taxonomy );
 
 <div id="col-right">
 <div class="col-wrap">
+
+<?php $wp_list_table->views(); ?>
+
 <form id="posts-filter" method="post">
 <input type="hidden" name="taxonomy" value="<?php echo esc_attr( $taxonomy ); ?>" />
 <input type="hidden" name="post_type" value="<?php echo esc_attr( $post_type ); ?>" />
@@ -542,7 +547,7 @@ do_action( "{$taxonomy}_add_form", $taxonomy );
 		/* translators: %s: default category */
 		__( 'Deleting a category does not delete the posts in that category. Instead, posts that were only assigned to the deleted category are set to the category %s.' ),
 		/** This filter is documented in wp-includes/category-template.php */
-		'<strong>' . apply_filters( 'the_category', get_cat_name( get_option( 'default_category') ) ) . '</strong>'
+		'<strong>' . apply_filters( 'the_category', get_cat_name( get_option( 'default_category') ), '', '' ) . '</strong>'
 	);
 	?>
 </p>

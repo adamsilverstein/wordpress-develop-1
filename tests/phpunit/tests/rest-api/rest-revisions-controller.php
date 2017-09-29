@@ -317,7 +317,7 @@ class WP_Test_REST_Revisions_Controller extends WP_Test_REST_Controller_Testcase
 		$rendered_excerpt = apply_filters( 'the_excerpt', apply_filters( 'get_the_excerpt', $revision->post_excerpt, $revision ) );
 		$this->assertEquals( $rendered_excerpt, $response['excerpt']['rendered'] );
 
-		$rendered_guid = apply_filters( 'get_the_guid', $revision->guid );
+		$rendered_guid = apply_filters( 'get_the_guid', $revision->guid, $revision->ID );
 		$this->assertEquals( $rendered_guid, $response['guid']['rendered'] );
 
 		$this->assertEquals( $revision->ID, $response['id'] );
@@ -333,6 +333,18 @@ class WP_Test_REST_Revisions_Controller extends WP_Test_REST_Controller_Testcase
 		$parent_object = get_post_type_object( $parent->post_type );
 		$parent_base = ! empty( $parent_object->rest_base ) ? $parent_object->rest_base : $parent_object->name;
 		$this->assertEquals( rest_url( '/wp/v2/' . $parent_base . '/' . $revision->post_parent ), $links['parent'][0]['href'] );
+	}
+
+	public function test_get_item_sets_up_postdata() {
+		wp_set_current_user( self::$editor_id );
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$this->server->dispatch( $request );
+
+		$post = get_post();
+		$parent_post_id = wp_is_post_revision( $post->ID );
+
+		$this->assertEquals( $post->ID, $this->revision_id1 );
+		$this->assertEquals( $parent_post_id, self::$post_id );
 	}
 
 }

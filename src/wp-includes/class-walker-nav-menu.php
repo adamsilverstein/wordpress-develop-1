@@ -19,7 +19,6 @@ class Walker_Nav_Menu extends Walker {
 	 * What the class handles.
 	 *
 	 * @since 3.0.0
-	 * @access public
 	 * @var string
 	 *
 	 * @see Walker::$tree_type
@@ -30,7 +29,6 @@ class Walker_Nav_Menu extends Walker {
 	 * Database fields to use.
 	 *
 	 * @since 3.0.0
-	 * @access public
 	 * @todo Decouple this.
 	 * @var array
 	 *
@@ -59,6 +57,9 @@ class Walker_Nav_Menu extends Walker {
 		}
 		$indent = str_repeat( $t, $depth );
 
+		// Default class.
+		$classes = array( 'sub-menu' );
+
 		/**
 		 * Filters the CSS class(es) applied to a menu list element.
 		 *
@@ -68,12 +69,10 @@ class Walker_Nav_Menu extends Walker {
 		 * @param stdClass $args    An object of `wp_nav_menu()` arguments.
 		 * @param int      $depth   Depth of menu item. Used for padding.
 		 */
+		$class_names = join( ' ', apply_filters( 'nav_menu_submenu_css_class', $classes, $args, $depth ) );
+		$class_names = $class_names ? ' class="' . esc_attr( $class_names ) . '"' : '';
 
-		$classes = array( 'sub-menu' );
-		$classes = apply_filters( 'nav_menu_submenu_css_class', $classes, $args, $depth );
-		$class_names = join( ' ', $classes );
-
-		$output .= "{$n}{$indent}<ul class='" . esc_attr( $class_names ) . "'>{$n}";
+		$output .= "{$n}{$indent}<ul $class_names>{$n}";
 	}
 
 	/**

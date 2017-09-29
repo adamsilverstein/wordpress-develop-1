@@ -1,5 +1,6 @@
 /* global jQuery, JSON, _customizePartialRefreshExports, console */
 
+/** @namespace wp.customize.selectiveRefresh */
 wp.customize.selectiveRefresh = ( function( $, api ) {
 	'use strict';
 	var self, Partial, Placement;
@@ -24,6 +25,8 @@ wp.customize.selectiveRefresh = ( function( $, api ) {
 	 *
 	 * A partial provides a rendering of one or more settings according to a template.
 	 *
+	 * @memberOf wp.customize.selectiveRefresh
+	 *
 	 * @see PHP class WP_Customize_Partial.
 	 *
 	 * @class
@@ -39,7 +42,7 @@ wp.customize.selectiveRefresh = ( function( $, api ) {
 	 * @param {string} options.params.primarySetting   The ID for the primary setting the partial renders.
 	 * @param {bool}   options.params.fallbackRefresh  Whether to refresh the entire preview in case of a partial refresh failure.
 	 */
-	Partial = self.Partial = api.Class.extend({
+	Partial = self.Partial = api.Class.extend(/** @lends wp.customize.SelectiveRefresh.Partial.prototype */{
 
 		id: null,
 
@@ -457,6 +460,7 @@ wp.customize.selectiveRefresh = ( function( $, api ) {
 				if ( 'undefined' !== typeof console && console.error ) {
 					console.error( partial.id, error );
 				}
+				partial.fallback( error, [ placement ] );
 			}
 			/* jshint ignore:start */
 			document.write = self.orginalDocumentWrite;
@@ -466,8 +470,17 @@ wp.customize.selectiveRefresh = ( function( $, api ) {
 			partial.createEditShortcutForPlacement( placement );
 			placement.container.removeClass( 'customize-partial-refreshing' );
 
-			// Prevent placement container from being being re-triggered as being rendered among nested partials.
+			// Prevent placement container from being re-triggered as being rendered among nested partials.
 			placement.container.data( 'customize-partial-content-rendered', true );
+
+			/*
+			 * Note that the 'wp_audio_shortcode_library' and 'wp_video_shortcode_library' filters
+			 * will determine whether or not wp.mediaelement is loaded and whether it will
+			 * initialize audio and video respectively. See also https://core.trac.wordpress.org/ticket/40144
+			 */
+			if ( wp.mediaelement ) {
+				wp.mediaelement.initialize();
+			}
 
 			/**
 			 * Announce when a partial's placement has been rendered so that dynamic elements can be re-built.
@@ -498,11 +511,13 @@ wp.customize.selectiveRefresh = ( function( $, api ) {
 	 * It also may have information in relation to how a placement may have just changed.
 	 * The placement is conceptually similar to a DOM Range or MutationRecord.
 	 *
-	 * @class
+	 * @memberOf wp.customize.selectiveRefresh
+	 *
+	 * @class Placement
 	 * @augments wp.customize.Class
 	 * @since 4.5.0
 	 */
-	self.Placement = Placement = api.Class.extend({
+	self.Placement = Placement = api.Class.extend(/** @lends wp.customize.selectiveRefresh.prototype */{
 
 		/**
 		 * The partial with which the container is associated.

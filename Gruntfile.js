@@ -4,6 +4,7 @@ module.exports = function(grunt) {
 		fs = require( 'fs' ),
 		SOURCE_DIR = 'src/',
 		BUILD_DIR = 'build/',
+ 		BANNER_TEXT = '/*! This file is auto-generated */',
 		autoprefixer = require('autoprefixer'),
 		mediaConfig = {},
 		mediaBuilds = ['audiovideo', 'grid', 'models', 'views'];
@@ -26,13 +27,16 @@ module.exports = function(grunt) {
 				processors: [
 					autoprefixer({
 						browsers: [
-							'Android >= 2.1',
-							'Chrome >= 21',
-							'Edge >= 12',
-							'Explorer >= 7',
-							'Firefox >= 17',
-							'Opera >= 12.1',
-							'Safari >= 6.0'
+							'> 1%',
+							'ie >= 11',
+							'last 1 Android versions',
+							'last 1 ChromeAndroid versions',
+							'last 2 Chrome versions',
+							'last 2 Firefox versions',
+							'last 2 Safari versions',
+							'last 2 iOS versions',
+							'last 2 Edge versions',
+							'last 2 Opera versions'
 						],
 						cascade: false
 					})
@@ -53,6 +57,20 @@ module.exports = function(grunt) {
 				dest: BUILD_DIR,
 				src: [
 					'wp-admin/css/colors/*/colors.css'
+				]
+			}
+		},
+ 		usebanner: {
+			options: {
+				position: 'top',
+				banner: BANNER_TEXT,
+				linebreak: true
+			},
+			files: {
+				src: [
+					BUILD_DIR + 'wp-admin/css/*.min.css',
+					BUILD_DIR + 'wp-includes/css/*.min.css',
+					BUILD_DIR + 'wp-admin/css/colors/*/*.css'
 				]
 			}
 		},
@@ -329,7 +347,7 @@ module.exports = function(grunt) {
 				expand: true,
 				cwd: SOURCE_DIR,
 				src: [
-					'wp-admin/js/*.js',
+					'wp-admin/js/**/*.js',
 					'wp-includes/js/*.js',
 					// Built scripts.
 					'!wp-includes/js/media-*',
@@ -342,6 +360,7 @@ module.exports = function(grunt) {
 					'wp-includes/js/tinymce/plugins/wordpress/plugin.js',
 					'wp-includes/js/tinymce/plugins/wp*/plugin.js',
 					// Third party scripts
+					'!wp-includes/js/codemirror/*.js',
 					'!wp-admin/js/farbtastic.js',
 					'!wp-includes/js/backbone*.js',
 					'!wp-includes/js/swfobject.js',
@@ -351,7 +370,8 @@ module.exports = function(grunt) {
 					'!wp-includes/js/json2.js',
 					'!wp-includes/js/tw-sack.js',
 					'!wp-includes/js/twemoji.js',
-					'!**/*.min.js'
+					'!**/*.min.js',
+					'!wp-includes/js/wp-hooks.js'
 				],
 				// Remove once other JSHint errors are resolved
 				options: {
@@ -417,6 +437,14 @@ module.exports = function(grunt) {
 				}
 			}
 		},
+		jsdoc : {
+			dist : {
+				dest: 'jsdoc',
+				options: {
+					configure : 'jsdoc.conf.json'
+				}
+			}
+		},
 		qunit: {
 			files: [
 				'tests/qunit/**/*.html',
@@ -456,17 +484,15 @@ module.exports = function(grunt) {
 				dest: BUILD_DIR,
 				ext: '.min.js',
 				src: [
-					'wp-admin/js/*.js',
+					'wp-admin/js/**/*.js',
 					'wp-includes/js/*.js',
+					'wp-includes/js/plupload/*.js',
 					'wp-includes/js/mediaelement/wp-mediaelement.js',
 					'wp-includes/js/mediaelement/wp-playlist.js',
-					'wp-includes/js/plupload/handlers.js',
-					'wp-includes/js/plupload/wp-plupload.js',
 					'wp-includes/js/tinymce/plugins/wordpress/plugin.js',
 					'wp-includes/js/tinymce/plugins/wp*/plugin.js',
 
 					// Exceptions
-					'!wp-admin/js/bookmarklet.*', // Minified and updated in /src with the precommit task. See uglify:bookmarklet.
 					'!wp-admin/js/custom-header.js', // Why? We should minify this.
 					'!wp-admin/js/farbtastic.js',
 					'!wp-admin/js/iris.min.js',
@@ -512,15 +538,6 @@ module.exports = function(grunt) {
 				dest: BUILD_DIR,
 				ext: '.min.js',
 				src: ['wp-includes/js/jquery/ui/*.js']
-			},
-			bookmarklet: {
-				options: {
-					compress: {
-						negate_iife: false
-					}
-				},
-				src: SOURCE_DIR + 'wp-admin/js/bookmarklet.js',
-				dest: SOURCE_DIR + 'wp-admin/js/bookmarklet.min.js'
 			},
 			masonry: {
 				options: {
@@ -605,6 +622,97 @@ module.exports = function(grunt) {
 			embed: {
 				src: BUILD_DIR + 'wp-includes/embed.php',
 				dest: '.'
+			}
+		},
+		replace: {
+			emojiRegex: {
+				options: {
+					patterns: [
+						{
+							match: /\/\/ START: emoji regex[\S\s]*\/\/ END: emoji regex/g,
+							replacement: function () {
+								var twemoji = grunt.file.read( SOURCE_DIR + 'wp-includes/js/twemoji.js' ),
+									found = twemoji.match( /re = \/(.*)\/g,/ ),
+									emojiRegex = found[1],
+									regex = '',
+									entities = '';
+
+								/*
+								 * Twemoji does some nifty regex optimisations, splitting up surrogate pairs unit, searching by
+								 * ranges of individual units, and compressing sets of individual units. This is super useful for
+								 * reducing the size of the regex.
+								 *
+								 * Unfortunately, PCRE doesn't allow regexes to search for individual units, so we can't just
+								 * blindly copy the Twemoji regex.
+								 *
+								 * The good news is, we don't have to worry about size restrictions, so we can just unravel the
+								 * entire regex, and convert it to a PCRE-friendly format.
+								 */
+
+								// Convert ranges: "\udc68-\udc6a" becomes "\udc68\udc69\udc6a".
+								emojiRegex = emojiRegex.replace( /(\\u\w{4})\-(\\u\w{4})/g, function ( match, first, last ) {
+									var start = parseInt( first.substr( 2 ), 16 );
+									var end = parseInt( last.substr( 2 ), 16 );
+
+									var replace = '';
+
+									for( var counter = start; counter <= end; counter++ ) {
+										replace += '\\u' + counter.toString( 16 );
+									}
+
+									return replace;
+								} );
+
+								// Convert sets: "\u200d[\u2640\u2642]\ufe0f" becomes "\u200d\u2640\ufe0f|\u200d\u2642\ufe0f".
+								emojiRegex = emojiRegex.replace( /((?:\\u\w{4})*)\[((?:\\u\w{4})+)\]((?:\\u\w{4})*)/g, function ( match, before, middle, after ) {
+									//return params[1].split( '\\u' ).join( '|' + params[0] + '\\u' ).substr( 1 );
+									if ( ! before && ! after ) {
+										return match;
+									}
+									var set = middle.match( /.{1,6}/g );
+
+									return before + set.join( after + '|' + before ) + after;
+								} );
+
+								// Convert surrogate pairs to their equivalent unicode scalar: "\ud83d\udc68" becomes "\u1f468".
+								emojiRegex = emojiRegex.replace( /(\\ud[89a-f][0-9a-f]{2})(\\ud[89a-f][0-9a-f]{2})/g, function ( match, first, second ) {
+									var high = parseInt( first.substr( 2 ), 16 );
+									var low = parseInt( second.substr( 2 ), 16 );
+
+									var scalar = ( ( high - 0xD800 ) * 0x400 ) + ( low - 0xDC00 ) + 0x10000;
+
+									return '\\u' + scalar.toString( 16 );
+								} );
+
+								// Convert JavaScript-style code points to PHP-style: "\u1f468" becomes "\x{1f468}".
+								emojiRegex = emojiRegex.replace( /\\u(\w+)/g, '\\x{$1}' );
+
+								// Convert PHP-style code points to HTML entities: "\x{1f468}" becomes "&#x1f468;".
+								entities = emojiRegex.replace( /\\x{(\w+)}/g, '&#x$1;' );
+								entities = entities.replace( /\[([^\]]+)\]/g, function( match, codepoint ) {
+									return '(?:' + codepoint.replace( /;&/g, ';|&' ) + ')';
+								} );
+
+								regex += '// START: emoji regex\n';
+								regex += '\t$codepoints = \'/(' + emojiRegex + ')/u\';\n';
+								regex += '\t$entities = \'/(' + entities + ')/u\';\n';
+								regex += '\t// END: emoji regex';
+
+								return regex;
+							}
+						}
+					]
+				},
+				files: [
+					{
+						expand: true,
+						flatten: true,
+						src: [
+							SOURCE_DIR + 'wp-includes/formatting.php'
+						],
+						dest: SOURCE_DIR + 'wp-includes/'
+					}
+				]
 			}
 		},
 		_watch: {
@@ -705,7 +813,6 @@ module.exports = function(grunt) {
 	grunt.registerTask( 'precommit:js', [
 		'browserify',
 		'jshint:corejs',
-		'uglify:bookmarklet',
 		'uglify:masonry',
 		'qunit:compiled'
 	] );
@@ -716,6 +823,10 @@ module.exports = function(grunt) {
 
 	grunt.registerTask( 'precommit:php', [
 		'phpunit'
+	] );
+
+	grunt.registerTask( 'precommit:emoji', [
+		'replace:emojiRegex'
 	] );
 
 	grunt.registerTask( 'precommit', 'Runs test and build tasks in preparation for a commit', function() {
@@ -783,6 +894,11 @@ module.exports = function(grunt) {
 							taskList.push( 'precommit:' + extension );
 						}
 					} );
+
+					if ( [ 'twemoji.js' ].some( testPath ) ) {
+						grunt.log.writeln( 'twemoji.js has updated. Running `precommit:emoji.' );
+						taskList.push( 'precommit:emoji' );
+					}
 				}
 
 				grunt.task.run( taskList );
@@ -816,6 +932,7 @@ module.exports = function(grunt) {
 		'concat:emoji',
 		'includes:emoji',
 		'includes:embed',
+		'usebanner',
 		'jsvalidate:build'
 	] );
 

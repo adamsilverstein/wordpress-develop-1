@@ -24,14 +24,20 @@ get_current_screen()->add_help_tab( array(
 'id'		=> 'overview',
 'title'		=> __('Overview'),
 'content'	=>
-	'<p>' . __('You can use the Theme Editor to edit the individual CSS and PHP files which make up your theme.') . '</p>
-	<p>' . __( 'Begin by choosing a theme to edit from the dropdown menu and clicking the Select button. A list then appears of the theme&#8217;s template files. Clicking once on any file name causes the file to appear in the large Editor box.' ) . '</p>
-	<p>' . __('For PHP files, you can use the Documentation dropdown to select from functions recognized in that file. Look Up takes you to a web page with reference material about that particular function.') . '</p>
-	<p id="newcontent-description">' . __( 'In the editing area the Tab key enters a tab character. To move below this area by pressing Tab, press the Esc key followed by the Tab key. In some cases the Esc key will need to be pressed twice before the Tab key will allow you to continue.' ) . '</p>
-	<p>' . __('After typing in your edits, click Update File.') . '</p>
-	<p>' . __('<strong>Advice:</strong> think very carefully about your site crashing if you are live-editing the theme currently in use.') . '</p>
-	<p>' . sprintf( __('Upgrading to a newer version of the same theme will override changes made here. To avoid this, consider creating a <a href="%s">child theme</a> instead.'), __('https://codex.wordpress.org/Child_Themes') ) . '</p>' .
-	( is_network_admin() ? '<p>' . __('Any edits to files from this screen will be reflected on all sites in the network.') . '</p>' : '' )
+	'<p>' . __( 'You can use the Theme Editor to edit the individual CSS and PHP files which make up your theme.' ) . '</p>' .
+	'<p>' . __( 'Begin by choosing a theme to edit from the dropdown menu and clicking the Select button. A list then appears of the theme&#8217;s template files. Clicking once on any file name causes the file to appear in the large Editor box.' ) . '</p>' .
+	'<p>' . __( 'For PHP files, you can use the Documentation dropdown to select from functions recognized in that file. Look Up takes you to a web page with reference material about that particular function.' ) . '</p>' .
+	'<p id="editor-keyboard-trap-help-1">' . __( 'When using a keyboard to navigate:' ) . '</p>' .
+	'<ul>' .
+	'<li id="editor-keyboard-trap-help-2">' . __( 'In the editing area, the Tab key enters a tab character.' ) . '</li>' .
+	'<li id="editor-keyboard-trap-help-3">' . __( 'To move away from this area, press the Esc key followed by the Tab key.' ) . '</li>' .
+	'<li id="editor-keyboard-trap-help-4">' . __( 'Screen reader users: when in forms mode, you may need to press the Esc key twice.' ) . '</li>' .
+	'</ul>' .
+	'<p>' . __( 'After typing in your edits, click Update File.' ) . '</p>' .
+	'<p>' . __( '<strong>Advice:</strong> think very carefully about your site crashing if you are live-editing the theme currently in use.' ) . '</p>' .
+	/* translators: %s: link to codex article about child themes */
+	'<p>' . sprintf( __( 'Upgrading to a newer version of the same theme will override changes made here. To avoid this, consider creating a <a href="%s">child theme</a> instead.' ), __( 'https://codex.wordpress.org/Child_Themes' ) ) . '</p>' .
+	( is_network_admin() ? '<p>' . __( 'Any edits to files from this screen will be reflected on all sites in the network.' ) . '</p>' : '' ),
 ) );
 
 get_current_screen()->set_help_sidebar(
@@ -63,7 +69,40 @@ if ( $theme->errors() && 'theme_no_stylesheet' == $theme->errors()->get_error_co
 
 $allowed_files = $style_files = array();
 $has_templates = false;
-$default_types = array( 'php', 'css' );
+$default_types = array(
+	'bash',
+	'conf',
+	'css',
+	'diff',
+	'htm',
+	'html',
+	'http',
+	'inc',
+	'include',
+	'js',
+	'json',
+	'jsx',
+	'less',
+	'md',
+	'patch',
+	'php',
+	'php3',
+	'php4',
+	'php5',
+	'php7',
+	'phps',
+	'phtml',
+	'sass',
+	'scss',
+	'sh',
+	'sql',
+	'svg',
+	'text',
+	'txt',
+	'xml',
+	'yaml',
+	'yml',
+);
 
 /**
  * Filters the list of file types allowed for editing in the Theme editor.
@@ -99,7 +138,7 @@ if ( empty( $file ) ) {
 	$relative_file = 'style.css';
 	$file = $allowed_files['style.css'];
 } else {
-	$relative_file = $file;
+	$relative_file = wp_unslash( $file );
 	$file = $theme->get_stylesheet_directory() . '/' . $relative_file;
 }
 
@@ -125,6 +164,12 @@ case 'update':
 	exit;
 
 default:
+
+	$settings = wp_enqueue_code_editor( compact( 'file' ) );
+	if ( ! empty( $settings ) ) {
+		wp_enqueue_script( 'wp-theme-plugin-editor' );
+		wp_add_inline_script( 'wp-theme-plugin-editor', sprintf( 'jQuery( function() { wp.themePluginEditor.init( %s ); } )', wp_json_encode( $settings ) ) );
+	}
 
 	require_once( ABSPATH . 'wp-admin/admin-header.php' );
 
@@ -156,10 +201,12 @@ default:
  <div id="message" class="updated notice is-dismissible"><p><?php _e( 'File edited successfully.' ) ?></p></div>
 <?php endif;
 
-$description = get_file_description( $relative_file );
+$file_description = get_file_description( $relative_file );
 $file_show = array_search( $file, array_filter( $allowed_files ) );
-if ( $description != $file_show )
-	$description .= ' <span>(' . $file_show . ')</span>';
+$description = esc_html( $file_description );
+if ( $file_description != $file_show ) {
+	$description .= ' <span>(' . esc_html( $file_show ) . ')</span>';
+}
 ?>
 <div class="wrap">
 <h1><?php echo esc_html( $title ); ?></h1>
@@ -230,13 +277,13 @@ if ( $allowed_files ) :
 			echo "\t<ul>\n";
 		}
 
-		$file_description = get_file_description( $filename );
+		$file_description = esc_html( get_file_description( $filename ) );
 		if ( $filename !== basename( $absolute_filename ) || $file_description !== $filename ) {
-			$file_description .= '<br /><span class="nonessential">(' . $filename . ')</span>';
+			$file_description .= '<br /><span class="nonessential">(' . esc_html( $filename ) . ')</span>';
 		}
 
 		if ( $absolute_filename === $file ) {
-			$file_description = '<span class="highlight">' . $file_description . '</span>';
+			$file_description = '<span class="notice notice-info">' . $file_description . '</span>';
 		}
 
 		$previous_file_type = $file_type;
@@ -253,11 +300,13 @@ if ( $allowed_files ) :
 else : ?>
 	<form name="template" id="template" action="theme-editor.php" method="post">
 	<?php wp_nonce_field( 'edit-theme_' . $file . $stylesheet ); ?>
-		<div><textarea cols="70" rows="30" name="newcontent" id="newcontent" aria-describedby="newcontent-description"><?php echo $content; ?></textarea>
-		<input type="hidden" name="action" value="update" />
-		<input type="hidden" name="file" value="<?php echo esc_attr( $relative_file ); ?>" />
-		<input type="hidden" name="theme" value="<?php echo esc_attr( $theme->get_stylesheet() ); ?>" />
-		<input type="hidden" name="scrollto" id="scrollto" value="<?php echo $scrollto; ?>" />
+		<div>
+			<label for="newcontent" id="theme-plugin-editor-label"><?php _e( 'Selected file content:' ); ?></label>
+			<textarea cols="70" rows="30" name="newcontent" id="newcontent" aria-describedby="editor-keyboard-trap-help-1 editor-keyboard-trap-help-2 editor-keyboard-trap-help-3 editor-keyboard-trap-help-4"><?php echo $content; ?></textarea>
+			<input type="hidden" name="action" value="update" />
+			<input type="hidden" name="file" value="<?php echo esc_attr( $relative_file ); ?>" />
+			<input type="hidden" name="theme" value="<?php echo esc_attr( $theme->get_stylesheet() ); ?>" />
+			<input type="hidden" name="scrollto" id="scrollto" value="<?php echo esc_attr( $scrollto ); ?>" />
 		</div>
 	<?php if ( ! empty( $functions ) ) : ?>
 		<div id="documentation" class="hide-if-no-js">

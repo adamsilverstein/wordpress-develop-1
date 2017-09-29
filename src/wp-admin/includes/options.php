@@ -78,32 +78,10 @@ function options_general_add_js() {
 			// Don't show a spinner for English and installed languages,
 			// as there is nothing to download.
 			if ( ! languageSelect.find( 'option:selected' ).data( 'installed' ) ) {
-				$( '#submit', this ).after( '<span class="spinner language-install-spinner" />' );
+				$( '#submit', this ).after( '<span class="spinner language-install-spinner is-active" />' );
 			}
 		});
 	});
-</script>
-<?php
-}
-
-/**
- * Display JavaScript on the page.
- *
- * @since 3.5.0
- */
-function options_permalink_add_js() {
-	?>
-<script type="text/javascript">
-jQuery(document).ready(function() {
-	jQuery('.permalink-structure input:radio').change(function() {
-		if ( 'custom' == this.value )
-			return;
-		jQuery('#permalink_structure').val( this.value );
-	});
-	jQuery('#permalink_structure').focus(function() {
-		jQuery("#custom_selection").attr('checked', 'checked');
-	});
-});
 </script>
 <?php
 }

@@ -267,6 +267,18 @@ https://w.org</a>'
 		$this->assertEquals( 'image', $prepped['mime'] );
 		$this->assertEquals( 'image', $prepped['type'] );
 		$this->assertEquals( '', $prepped['subtype'] );
+
+		// Test that if author is not found, we return "(no author)" as `display_name`.
+		// The previously used test post contains no author, so we can reuse it.
+		$this->assertEquals( '(no author)', $prepped['authorName'] );
+
+		// Test that if author has HTML entities in display_name, they're decoded correctly.
+		$html_entity_author = self::factory()->user->create( array(
+			'display_name' => 'You &amp; Me',
+		) );
+		$post->post_author = $html_entity_author;
+		$prepped = wp_prepare_attachment_for_js( $post );
+		$this->assertEquals( 'You & Me', $prepped['authorName'] );
 	}
 
 	/**
@@ -653,6 +665,53 @@ VIDEO;
 	}
 
 	/**
+	 * Test [video] shortcode processing
+	 *
+	 */
+	function test_video_shortcode_body() {
+		$width = 720;
+		$height = 480;
+
+		$w = empty( $GLOBALS['content_width'] ) ? 640 : $GLOBALS['content_width'];
+		if ( $width > $w ) {
+			$width = $w;
+		}
+
+		$post_id = get_post() ? get_the_ID() : 0;
+
+		$video =<<<VIDEO
+[video width="$width" height="480" mp4="http://domain.tld/wp-content/uploads/2013/12/xyz.mp4"]
+<!-- WebM/VP8 for Firefox4, Opera, and Chrome -->
+<source type="video/webm" src="myvideo.webm" />
+<!-- Ogg/Vorbis for older Firefox and Opera versions -->
+<source type="video/ogg" src="myvideo.ogv" />
+<!-- Optional: Add subtitles for each language -->
+<track kind="subtitles" src="subtitles.srt" srclang="en" />
+<!-- Optional: Add chapters -->
+<track kind="chapters" src="chapters.srt" srclang="en" />
+[/video]
+VIDEO;
+
+
+		$h = ceil( ( $height * $width ) / $width );
+
+		$content = apply_filters( 'the_content', $video );
+
+		$expected = '<div style="width: ' . $width . 'px;" class="wp-video">' .
+			"<!--[if lt IE 9]><script>document.createElement('video');</script><![endif]-->\n" .
+			'<video class="wp-video-shortcode" id="video-' . $post_id . '-1" width="' . $width . '" height="' . $h . '" preload="metadata" controls="controls">' .
+			'<source type="video/mp4" src="http://domain.tld/wp-content/uploads/2013/12/xyz.mp4?_=1" />' .
+			'<!-- WebM/VP8 for Firefox4, Opera, and Chrome --><source type="video/webm" src="myvideo.webm" />' .
+			'<!-- Ogg/Vorbis for older Firefox and Opera versions --><source type="video/ogg" src="myvideo.ogv" />' .
+			'<!-- Optional: Add subtitles for each language --><track kind="subtitles" src="subtitles.srt" srclang="en" />' .
+			'<!-- Optional: Add chapters --><track kind="chapters" src="chapters.srt" srclang="en" />' .
+			'<a href="http://domain.tld/wp-content/uploads/2013/12/xyz.mp4">' .
+			"http://domain.tld/wp-content/uploads/2013/12/xyz.mp4</a></video></div>\n";
+
+		$this->assertEquals( $expected, $content );
+	}
+
+	/**
 	 * @ticket  35367
 	 * @depends test_video_shortcode_body
 	 */
@@ -712,50 +771,65 @@ VIDEO;
 	}
 
 	/**
-	 * Test [video] shortcode processing
-	 *
+	 * @ticket 40866
+	 * @depends test_video_shortcode_body
 	 */
-	function test_video_shortcode_body() {
-		$width = 720;
-		$height = 480;
+	function test_wp_video_shortcode_youtube_remove_feature() {
+		$actual = wp_video_shortcode( array(
+			'src' => 'https://www.youtube.com/watch?v=i_cVJgIz_Cs&feature=youtu.be',
+		) );
 
-		$w = empty( $GLOBALS['content_width'] ) ? 640 : $GLOBALS['content_width'];
-		if ( $width > $w ) {
-			$width = $w;
-		}
+		$this->assertNotContains( 'feature=youtu.be', $actual );
+	}
 
-		$post_id = get_post() ? get_the_ID() : 0;
+	/**
+	 * @ticket 40866
+	 * @depends test_video_shortcode_body
+	 */
+	function test_wp_video_shortcode_youtube_force_ssl() {
+		$actual = wp_video_shortcode( array(
+			'src' => 'http://www.youtube.com/watch?v=i_cVJgIz_Cs',
+		) );
 
-		$video =<<<VIDEO
-[video width="$width" height="480" mp4="http://domain.tld/wp-content/uploads/2013/12/xyz.mp4"]
-<!-- WebM/VP8 for Firefox4, Opera, and Chrome -->
-<source type="video/webm" src="myvideo.webm" />
-<!-- Ogg/Vorbis for older Firefox and Opera versions -->
-<source type="video/ogg" src="myvideo.ogv" />
-<!-- Optional: Add subtitles for each language -->
-<track kind="subtitles" src="subtitles.srt" srclang="en" />
-<!-- Optional: Add chapters -->
-<track kind="chapters" src="chapters.srt" srclang="en" />
-[/video]
-VIDEO;
+		$this->assertContains( 'src="https://www.youtube.com/watch?v=i_cVJgIz_Cs', $actual );
+	}
 
+	/**
+	 * @ticket 40866
+	 * @depends test_video_shortcode_body
+	 */
+	function test_wp_video_shortcode_vimeo_force_ssl_remove_query_args() {
+		$actual = wp_video_shortcode( array(
+			'src' => 'http://vimeo.com/190372437?blah=meh',
+		) );
 
-		$h = ceil( ( $height * $width ) / $width );
+		$this->assertContains( 'src="https://vimeo.com/190372437', $actual );
+		$this->assertNotContains( 'blah=meh', $actual );
+	}
 
-		$content = apply_filters( 'the_content', $video );
+	/**
+	 * @ticket 40977
+	 * @depends test_video_shortcode_body
+	 */
+	function test_wp_video_shortcode_vimeo_adds_loop() {
+		$actual = wp_video_shortcode( array(
+			'src' => 'http://vimeo.com/190372437',
+		) );
 
-		$expected = '<div style="width: ' . $width . 'px;" class="wp-video">' .
-			"<!--[if lt IE 9]><script>document.createElement('video');</script><![endif]-->\n" .
-			'<video class="wp-video-shortcode" id="video-' . $post_id . '-1" width="' . $width . '" height="' . $h . '" preload="metadata" controls="controls">' .
-			'<source type="video/mp4" src="http://domain.tld/wp-content/uploads/2013/12/xyz.mp4?_=1" />' .
-			'<!-- WebM/VP8 for Firefox4, Opera, and Chrome --><source type="video/webm" src="myvideo.webm" />' .
-			'<!-- Ogg/Vorbis for older Firefox and Opera versions --><source type="video/ogg" src="myvideo.ogv" />' .
-			'<!-- Optional: Add subtitles for each language --><track kind="subtitles" src="subtitles.srt" srclang="en" />' .
-			'<!-- Optional: Add chapters --><track kind="chapters" src="chapters.srt" srclang="en" />' .
-			'<a href="http://domain.tld/wp-content/uploads/2013/12/xyz.mp4">' .
-			"http://domain.tld/wp-content/uploads/2013/12/xyz.mp4</a></video></div>\n";
+		$this->assertContains( 'src="https://vimeo.com/190372437?loop=0', $actual );
+	}
 
-		$this->assertEquals( $expected, $content );
+	/**
+	 * @ticket 40977
+	 * @depends test_video_shortcode_body
+	 */
+	function test_wp_video_shortcode_vimeo_force_adds_loop_true() {
+		$actual = wp_video_shortcode( array(
+			'src' => 'http://vimeo.com/190372437',
+			'loop' => true,
+		) );
+
+		$this->assertContains( 'src="https://vimeo.com/190372437?loop=1', $actual );
 	}
 
 	/**

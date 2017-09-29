@@ -21,7 +21,6 @@
 /* Note: widget-tops are more compact when (max-height: 700px) and (min-width: 981px). */
 .customize-control-widget_form .widget-top {
 	background: #fff;
-	-webkit-transition: opacity 0.5s;
 	transition: opacity 0.5s;
 }
 
@@ -76,7 +75,6 @@
 }
 
 .customize-control-widget_form.wide-widget-control .widget-top {
-	-webkit-transition: background-color 0.4s;
 	transition: background-color 0.4s;
 }
 .customize-control-widget_form.wide-widget-control.expanding .widget-top,
@@ -114,7 +112,6 @@
 .control-section.accordion-section.highlighted > .accordion-section-title,
 .customize-control-widget_form.highlighted {
 	outline: none;
-	-webkit-box-shadow: 0 0 2px rgba(30,140,190,0.8);
 	box-shadow: 0 0 2px rgba(30,140,190,0.8);
 	position: relative;
 	z-index: 1;
@@ -213,6 +210,21 @@
 	display: block;
 }
 
+/* Text Widget */
+.wp-customizer div.mce-inline-toolbar-grp,
+.wp-customizer div.mce-tooltip {
+	z-index: 500100 !important;
+}
+.wp-customizer .ui-autocomplete.wplink-autocomplete {
+	z-index: 500110; /* originally 100110, but z-index of .wp-full-overlay is 500000 */
+}
+.wp-customizer #wp-link-backdrop {
+	z-index: 500100; /* originally 100100, but z-index of .wp-full-overlay is 500000 */
+}
+.wp-customizer #wp-link-wrap {
+	z-index: 500105; /* originally 100105, but z-index of .wp-full-overlay is 500000 */
+}
+
 /**
  * Styles for new widget addition panel
  */
@@ -224,7 +236,6 @@
 }
 
 .ios #available-widgets {
-	-webkit-transition: left 0s;
 	transition: left 0s;
 }
 
@@ -251,7 +262,6 @@
 }
 
 #customize-preview {
-	-webkit-transition: all 0.2s;
 	transition: all 0.2s;
 }
 
@@ -290,8 +300,6 @@ body.adding-widget #customize-preview {
 	color: #32373c;
 	font: normal 20px/1 dashicons;
 	text-align: center;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -430,7 +438,6 @@ body.adding-widget #customize-preview {
 	}
 
 	.widget-top {
-		-webkit-box-shadow: none;
 		box-shadow: none;
 		margin-top: -1px;
 	}

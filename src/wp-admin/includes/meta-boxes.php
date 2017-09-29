@@ -58,7 +58,7 @@ if ( 'publish' == $post->post_status ) {
 $preview_button = sprintf( '%1$s<span class="screen-reader-text"> %2$s</span>',
 	$preview_button_text,
 	/* translators: accessibility text */
-	__( '(link opens in a new window)' )
+	__( '(opens in a new window)' )
 );
 ?>
 <a class="preview button" href="<?php echo $preview_link; ?>" target="wp-preview-<?php echo (int) $post->ID; ?>" id="post-preview"><?php echo $preview_button; ?></a>
@@ -244,8 +244,12 @@ do_action( 'post_submitbox_misc_actions', $post );
  * Fires at the beginning of the publishing actions section of the Publish meta box.
  *
  * @since 2.7.0
+ * @since 4.9.0 Added the `$post` parameter.
+ *
+ * @param WP_Post|null $post WP_Post object for the current post on Edit Post screen,
+ *                           null on Edit Link screen.
  */
-do_action( 'post_submitbox_start' );
+do_action( 'post_submitbox_start', $post );
 ?>
 <div id="delete-action">
 <?php
@@ -326,8 +330,11 @@ function attachment_submit_meta_box( $post ) {
 	 * in the attachment editing screen.
 	 *
 	 * @since 3.5.0
+	 * @since 4.9.0 Added the `$post` parameter.
+	 *
+	 * @param WP_Post $post WP_Post object for the current attachment. 
 	 */
-	do_action( 'attachment_submitbox_misc_actions' );
+	do_action( 'attachment_submitbox_misc_actions', $post );
 	?>
 </div><!-- #misc-publishing-actions -->
 <div class="clear"></div>
@@ -453,7 +460,7 @@ function post_tags_meta_box( $post, $box ) {
 		<p><?php echo $taxonomy->labels->no_terms; ?></p>
 	<?php endif; ?>
 	</div>
-	<div class="tagchecklist"></div>
+	<ul class="tagchecklist" role="list"></ul>
 </div>
 <?php if ( $user_can_assign_terms ) : ?>
 <p class="hide-if-no-js"><button type="button" class="button-link tagcloud-link" id="link-<?php echo $tax_name; ?>" aria-expanded="false"><?php echo $taxonomy->labels->choose_from_most_used; ?></button></p>
@@ -496,7 +503,7 @@ function post_categories_meta_box( $post, $box ) {
 	<div id="taxonomy-<?php echo $tax_name; ?>" class="categorydiv">
 		<ul id="<?php echo $tax_name; ?>-tabs" class="category-tabs">
 			<li class="tabs"><a href="#<?php echo $tax_name; ?>-all"><?php echo $taxonomy->labels->all_items; ?></a></li>
-			<li class="hide-if-no-js"><a href="#<?php echo $tax_name; ?>-pop"><?php _e( 'Most Used' ); ?></a></li>
+			<li class="hide-if-no-js"><a href="#<?php echo $tax_name; ?>-pop"><?php echo esc_html( $taxonomy->labels->most_used ); ?></a></li>
 		</ul>
 
 		<div id="<?php echo $tax_name; ?>-pop" class="tabs-panel" style="display: none;">
@@ -914,7 +921,7 @@ function link_submit_meta_box($link) {
 <div id="major-publishing-actions">
 <?php
 /** This action is documented in wp-admin/includes/meta-boxes.php */
-do_action( 'post_submitbox_start' );
+do_action( 'post_submitbox_start', null );
 ?>
 <div id="delete-action">
 <?php
