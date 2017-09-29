@@ -343,7 +343,7 @@
 		} );
 	});
 
-
+	// Test models that should have meta support.
 	var theModelTypesWithMeta = [
 		'Posts',
 		'Comments',
@@ -351,13 +351,15 @@
 		'Users'
 	];
 
+	// Run tests on each model type
 	_.each( theModelTypesWithMeta, function( modelType ) {
-
-		// Test post meta.
 		wp.api.loadPromise.done( function() {
 			QUnit.test( 'Check meta support for ' + modelType + '.', function( assert ) {
+
+				// Set up the model.
 				var theModels = new wp.api.collections[ modelType ]();
 
+				// Fetch the model, resolves with the fixture data.
 				theModels.fetch().done( function() {
 
 					// Get the main endpoint.
@@ -376,7 +378,6 @@
 					// Verify setting a single meta value with `setMeta()`.
 					endpoint.setMeta( 'test_key2', 'test_value2' );
 					assert.equal( endpoint.getMeta( 'test_key2' ), 'test_value2', 'Single meta should be writable via setMeta.' );
-
 				} );
 			} );
 		} );
