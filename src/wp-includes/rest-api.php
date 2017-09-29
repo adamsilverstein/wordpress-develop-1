@@ -749,7 +749,7 @@ function rest_cookie_check_errors( $result ) {
 /**
  * Refresh the REST API nonce on heartbeat requests.
  *
- * @since 4.8
+ * @since 4.9
  *
  * @param array  $response  The Heartbeat response.
  * @param array  $data      The $_POST data sent.
