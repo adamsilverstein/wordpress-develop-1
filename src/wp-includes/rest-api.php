@@ -757,8 +757,10 @@ function rest_cookie_check_errors( $result ) {
  */
 function rest_refresh_nonce_on_heartbeat( $response, $data ) {
 	if ( array_key_exists( 'wp-refresh-rest-nonce', $data ) ) {
-		// Are we in the second tick?
-		if ( wp_verify_nonce( $data['wp-refresh-rest-nonce'] ) === 2 ) {
+
+		// Are we in the second tick, meaning the nonce was generated between 12 and 24 hours ago?
+		if ( 2 === wp_verify_nonce( $data['wp-refresh-rest-nonce'] ) ) {
+
 			// Update nonce.
 			$response['wp-refresh-rest-nonce'] = wp_create_nonce( 'wp_rest' );
 		}
