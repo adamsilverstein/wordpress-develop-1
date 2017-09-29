@@ -405,7 +405,7 @@
 			wp.api.loadPromise.done( function() {
 
 				var theModel = new wp.api.models[ model.name ]();
-				console.log( theModel );
+
 				assert.equal(
 					theModel.requireForceForDelete,
 					model.expect,
