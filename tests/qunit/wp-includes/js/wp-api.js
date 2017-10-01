@@ -372,7 +372,7 @@
 				assert.equal(
 					theModel.requireForceForDelete,
 					model.expect,
-					'wp.api.models.' + model.name + '.requireForceForDelete should be ' + model.expect ) + '.'
+					'wp.api.models.' + model.name + '.requireForceForDelete should be ' + model.expect + '.'
 				);
 
 				// Trigger Qunit async completion.
@@ -380,6 +380,5 @@
 			} );
 		} );
 	} );
-
 
 } )( window.QUnit );
