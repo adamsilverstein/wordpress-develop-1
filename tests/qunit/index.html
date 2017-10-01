@@ -62,6 +62,8 @@
 	</head>
 	<body>
 		<div id="qunit"></div>
+		<!-- Load api-request early for test overwriting -->
+		<script src="../../src/wp-includes/js/api-request.js"></script>
 		<div id="qunit-fixture">
 			<script src="fixtures/customize-header.js"></script>
 			<script src="fixtures/customize-settings.js"></script>
@@ -79,7 +81,6 @@
 		<script src="../../src/wp-includes/js/shortcode.js"></script>
 		<script src="../../src/wp-includes/js/wp-hooks.js"></script>
 		<script src="../../src/wp-admin/js/customize-controls.js"></script>
-		<script src="../../src/wp-includes/js/api-request.js"></script>
 		<script src="../../src/wp-includes/js/wp-api.js"></script>
 
 		<script type='text/javascript' src='../../src/wp-includes/js/jquery/ui/core.js'></script>

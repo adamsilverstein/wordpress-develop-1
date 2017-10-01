@@ -809,7 +809,7 @@
 			 * @returns {*}.
 			 */
 			sync: function( method, model, options ) {
-				var beforeSend;
+				var beforeSend, toReturn, storedAjax;
 
 				options = options || {};
 
@@ -852,7 +852,11 @@
 				if ( this.requireForceForDelete && 'delete' === method ) {
 					model.url = model.url() + '?force=true';
 				}
-				return Backbone.sync( method, model, options );
+				storedAjax = Backbone.ajax;
+				Backbone.ajax = wp.apiRequest.transport;
+				toReturn = Backbone.sync( method, model, options );
+				Backbone.ajax = storedAjax;
+				return toReturn;
 			},
 
 			/**

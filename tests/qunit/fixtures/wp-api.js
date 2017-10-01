@@ -36,7 +36,7 @@ var pathToData = {
  *
  * @return {Object}       A jQuery deferred object that resolves with the mapped data.
  */
-Backbone.ajax = function ( param ) {
+wp.apiRequest.transport = Backbone.ajax = function ( param ) {
 
 	var data,
 		request = param.url
