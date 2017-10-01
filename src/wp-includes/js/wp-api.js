@@ -770,6 +770,36 @@
 	wp.api.WPApiBaseModel = Backbone.Model.extend(
 		/** @lends WPApiBaseModel.prototype  */
 		{
+			initialize: function( attributes, options ) {
+
+				/**
+				 * Determine if a model requires ?force=true to actually delete them.
+				 */
+				if (
+					! _.isEmpty(
+						_.filter(
+							this.endpoints,
+							function( endpoint ) {
+								return (
+
+									// Does the method support DELETE?
+									'DELETE' === endpoint.methods[0] &&
+
+									// Exclude models that support trash (Post, Page).
+									(
+										! _.isUndefined( endpoint.args.force ) &&
+										! _.isUndefined( endpoint.args.force.description ) &&
+										'Whether to bypass trash and force deletion.' !== endpoint.args.force.description
+									)
+								);
+							}
+						)
+					)
+				) {
+					this.requireForceForDelete = true;
+				}
+			},
+
 			/**
 			 * Set nonce header before every Backbone sync.
 			 *
@@ -1227,37 +1257,6 @@
 					routeName = 'me';
 				}
 
-				var initializeModel = function( attributes, options ) {
-					wp.api.WPApiBaseModel.prototype.initialize.call( this, attributes, options );
-
-					/**
-					 * Determine if a model requires ?force=true to actually delete them.
-					 */
-					if (
-						! _.isEmpty(
-							_.filter(
-								this.endpoints,
-								function( endpoint ) {
-									return (
-
-										// Does the method support DELETE?
-										'DELETE' === endpoint.methods[0] &&
-
-										// Exclude models that support trash (Post, Page).
-										(
-											! _.isUndefined( endpoint.args.force ) &&
-											! _.isUndefined( endpoint.args.force.description ) &&
-											'Whether to bypass trash and force deletion.' !== endpoint.args.force.description
-										)
-									);
-								}
-							)
-						)
-					) {
-						this.requireForceForDelete = true;
-					}
-				};
-
 				// If the model has a parent in its route, add that to its class name.
 				if ( '' !== parentName && parentName !== routeName ) {
 					modelClassName = wp.api.utils.capitalizeAndCamelCaseDashes( parentName ) + wp.api.utils.capitalizeAndCamelCaseDashes( routeName );
@@ -1298,9 +1297,7 @@
 						methods: modelRoute.route.methods,
 
 						// Include the array of route endpoints for easy reference.
-						endpoints: modelRoute.route.endpoints,
-
-						initialize: initializeModel
+						endpoints: modelRoute.route.endpoints
 					} );
 				} else {
 
@@ -1338,9 +1335,7 @@
 						methods: modelRoute.route.methods,
 
 						// Include the array of route endpoints for easy reference.
-						endpoints: modelRoute.route.endpoints,
-
-						initialize: initializeModel
+						endpoints: modelRoute.route.endpoints
 					} );
 				}
 
