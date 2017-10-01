@@ -345,11 +345,11 @@ window.wp = window.wp || {};
 		 *
 		 * Using DomQuery syntax to create it, since it's used as both text and as a DOM element.
 		 *
-		 * @param {Object} editor The TinyMCE editor instance.
+		 * @param {Object} domLib DOM library instance.
 		 * @param {string} content The content to insert into the cusror marker element.
 		 */
-		function getCursorMarkerSpan( editor, content ) {
-			return editor.$( '<span>' ).css( {
+		function getCursorMarkerSpan( domLib, content ) {
+			return domLib( '<span>' ).css( {
 						display: 'inline-block',
 						width: 0,
 						overflow: 'hidden',
@@ -434,9 +434,8 @@ window.wp = window.wp || {};
 		 * to run after the markers are added.
 		 *
 		 * @param {object} $textarea TinyMCE's textarea wrapped as a DomQuery object
-		 * @param {object} jQuery A jQuery instance
 		 */
-		function addHTMLBookmarkInTextAreaContent( $textarea, jQuery ) {
+		function addHTMLBookmarkInTextAreaContent( $textarea ) {
 			if ( ! $textarea || ! $textarea.length ) {
 				// If no valid $textarea object is provided, there's nothing we can do.
 				return;
@@ -456,7 +455,7 @@ window.wp = window.wp || {};
 				mode = htmlModeCursorStartPosition !== htmlModeCursorEndPosition ? 'range' : 'single',
 
 				selectedText = null,
-				cursorMarkerSkeleton = getCursorMarkerSpan( { $: jQuery }, '&#65279;' );
+				cursorMarkerSkeleton = getCursorMarkerSpan( $$, '&#65279;' );
 
 			if ( mode === 'range' ) {
 				var markedText = textArea.value.slice( htmlModeCursorStartPosition, htmlModeCursorEndPosition ),
@@ -509,47 +508,26 @@ window.wp = window.wp || {};
 			scrollVisualModeToStartElement( editor, startNode );
 
 
-			removeSelectionMarker( editor, startNode );
-			removeSelectionMarker( editor, endNode );
+			removeSelectionMarker( startNode );
+			removeSelectionMarker( endNode );
 		}
 
 		/**
-		 * @summary Remove selection marker with optional `<p>` parent.
+		 * @summary Remove selection marker and the parent node if it is an empty paragraph.
 		 *
-		 * By default TinyMCE puts every inline node at the main level in a `<p>` wrapping tag.
+		 * By default TinyMCE wraps loose inline tags in a `<p>`.
+		 * When removing selection markers an empty `<p>` may be left behind, remove it.
 		 *
-		 * In the case with selection markers, when removed they leave an empty `<p>` behind,
-		 * which adds an empty paragraph line with `&nbsp;` when switched to Text mode.
-		 *
-		 * In order to prevent that the wrapping `<p>` needs to be removed when removing the
-		 * selection marker.
-		 *
-		 * @param {object} editor The TinyMCE Editor instance
-		 * @param {object} marker The marker to be removed from the editor DOM
+		 * @param {object} $marker The marker to be removed from the editor DOM, wrapped in an instnce of `editor.$`
 		 */
-		function removeSelectionMarker( editor, marker ) {
-			var markerParent = editor.$( marker ).parent();
+		function removeSelectionMarker( $marker ) {
+			var $markerParent = $marker.parent();
 
-			if (
-				! markerParent.length ||
-				markerParent.prop('tagName').toLowerCase() !== 'p' ||
-				markerParent[0].childNodes.length > 1 ||
-				! markerParent.prop('outerHTML').match(/^<p>/)
-			) {
-				/**
-				 * The selection marker is not self-contained in a <p>.
-				 * In this case only the selection marker is removed, since
-				 * it will affect the content.
-				 */
-				marker.remove();
-			}
-			else {
-				/**
-				 * The marker is self-contained in an blank `<p>` tag.
-				 *
-				 * This is usually inserted by TinyMCE
-				 */
-				markerParent.remove();
+			$marker.remove();
+
+			//Remove empty paragraph left over after removing the marker.
+			if ( $markerParent.is( 'p' ) && ! $markerParent.children().length && ! $markerParent.text() ) {
+				$markerParent.remove();
 			}
 		}
 
@@ -646,7 +624,7 @@ window.wp = window.wp || {};
 			 * The elements have hardcoded style that makes them invisible. This is done to avoid seeing
 			 * random content flickering in the editor when switching between modes.
 			 */
-			var spanSkeleton = getCursorMarkerSpan( editor, selectionID ),
+			var spanSkeleton = getCursorMarkerSpan( editor.$, selectionID ),
 				startElement = spanSkeleton.clone().addClass( 'mce_SELRES_start' ),
 				endElement = spanSkeleton.clone().addClass( 'mce_SELRES_end' );
 
