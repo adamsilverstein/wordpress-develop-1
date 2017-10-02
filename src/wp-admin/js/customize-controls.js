@@ -3,6 +3,41 @@
 	var Container, focus, normalizedTransitionendEventName, api = wp.customize;
 
 	/**
+	 * A notification that is displayed in a full-screen overlay.
+	 *
+	 * @since 4.9.0
+	 * @class
+	 * @augments wp.customize.Notification
+	 */
+	api.OverlayNotification = api.Notification.extend({
+
+		/**
+		 * Whether the notification should show a loading spinner.
+		 *
+		 * @since 4.9.0
+		 * @var {boolean}
+		 */
+		loading: false,
+
+		/**
+		 * Initialize.
+		 *
+		 * @since 4.9.0
+		 *
+		 * @param {string} code - Code.
+		 * @param {object} params - Params.
+		 */
+		initialize: function( code, params ) {
+			var notification = this;
+			api.Notification.prototype.initialize.call( notification, code, params );
+			notification.classes += ' notification-overlay';
+			if ( notification.loading ) {
+				notification.classes += ' notification-loading';
+			}
+		}
+	});
+
+	/**
 	 * A collection of observable notifications.
 	 *
 	 * @since 4.9.0
@@ -145,7 +180,7 @@
 		 */
 		render: function() {
 			var collection = this,
-				notifications,
+				notifications, hadOverlayNotification = false, hasOverlayNotification,
 				previousNotificationsByCode = {},
 				listElement;
 
@@ -178,11 +213,29 @@
 
 			// Add all notifications in the sorted order.
 			_.each( notifications, function( notification ) {
+				var notificationContainer;
 				if ( wp.a11y && ( ! previousNotificationsByCode[ notification.code ] || ! _.isEqual( notification.message, previousNotificationsByCode[ notification.code ].message ) ) ) {
 					wp.a11y.speak( notification.message, 'assertive' );
 				}
-				listElement.append( $( notification.render() ) ); // @todo Consider slideDown() as enhancement.
+				notificationContainer = $( notification.render() );
+				listElement.append( notificationContainer ); // @todo Consider slideDown() as enhancement.
+
+				// @todo Constraing focus in notificationContainer if notification.extended( api.OverlayNotification ).
 			});
+
+			hasOverlayNotification = Boolean( _.find( notifications, function( notification ) {
+				return notification.extended( api.OverlayNotification );
+			} ) );
+			if ( collection.previousNotifications ) {
+				hadOverlayNotification = Boolean( _.find( collection.previousNotifications, function( notification ) {
+					return notification.extended( api.OverlayNotification );
+				} ) );
+			}
+
+			if ( hasOverlayNotification !== hadOverlayNotification ) {
+				$( document.body ).toggleClass( 'customize-loading', hasOverlayNotification );
+				collection.container.toggleClass( 'has-overlay-notifications', hasOverlayNotification );
+			}
 
 			collection.previousNotifications = notifications;
 			collection.previousContainer = collection.container;
@@ -367,6 +420,12 @@
 	api.requestChangesetUpdate = function requestChangesetUpdate( changes, args ) {
 		var deferred, request, submittedChanges = {}, data, submittedArgs;
 		deferred = new $.Deferred();
+
+		// Prevent attempting changeset update while request is being made.
+		if ( 0 !== api.state( 'processing' ).get() ) {
+			deferred.reject( 'already_processing' );
+			return deferred.promise();
+		}
 
 		submittedArgs = _.extend( {
 			title: null,
@@ -1572,12 +1631,7 @@
 
 			// Preview installed themes.
 			section.container.on( 'click', '.theme-actions .preview-theme', function() {
-				var themeId = $( this ).data( 'slug' );
-
-				$( '.wp-full-overlay' ).addClass( 'customize-loading' );
-				api.panel( 'themes' ).loadThemePreview( themeId ).fail( function() {
-					$( '.wp-full-overlay' ).removeClass( 'customize-loading' );
-				} );
+				api.panel( 'themes' ).loadThemePreview( $( this ).data( 'slug' ) );
 			});
 
 			// Theme navigation in details view.
@@ -1763,7 +1817,7 @@
 			// Parameters for every API query. Additional params are set in PHP.
 			page = Math.ceil( section.loaded / 100 ) + 1;
 			params = {
-				'switch-themes-nonce': api.settings.nonce['switch-themes'],
+				'nonce': api.settings.nonce.switch_themes,
 				'wp_customize': 'on',
 				'theme_action': section.params.action,
 				'customized_theme': api.settings.theme.stylesheet,
@@ -1780,7 +1834,7 @@
 			section.headContainer.closest( '.wp-full-overlay' ).addClass( 'loading' );
 			section.loading = true;
 			section.container.find( '.no-themes' ).hide();
-			request = wp.ajax.post( 'customize-load-themes', params );
+			request = wp.ajax.post( 'customize_load_themes', params );
 			request.done(function( data ) {
 				var themes = data.themes, themeControl, newThemeControls;
 
@@ -2213,58 +2267,12 @@
 		 * @since 4.7.0
 		 * @access public
 		 *
+		 * @deprecated
 		 * @param {string} themeId Theme ID.
 		 * @returns {jQuery.promise} Promise.
 		 */
 		loadThemePreview: function( themeId ) {
-			var deferred = $.Deferred(), onceProcessingComplete, overlay, urlParser;
-
-			urlParser = document.createElement( 'a' );
-			urlParser.href = location.href;
-			urlParser.search = $.param( _.extend(
-				api.utils.parseQueryString( urlParser.search.substr( 1 ) ),
-				{
-					theme: themeId,
-					changeset_uuid: api.settings.changeset.uuid
-				}
-			) );
-
-			overlay = $( '.wp-full-overlay' );
-			overlay.addClass( 'customize-loading' );
-
-			onceProcessingComplete = function() {
-				var request;
-				if ( api.state( 'processing' ).get() > 0 ) {
-					return;
-				}
-
-				api.state( 'processing' ).unbind( onceProcessingComplete );
-
-				request = api.requestChangesetUpdate( {}, { autosave: true } );
-				request.done( function() {
-					$( window ).off( 'beforeunload.customize-confirm' );
-
-					// Include autosaved param to load autosave revision without prompting user to restore it.
-					if ( ! api.state( 'saved' ).get() ) {
-						urlParser.search += '&customize_autosaved=on';
-					}
-
-					top.location.href = urlParser.href;
-					deferred.resolve();
-				} );
-				request.fail( function() {
-					overlay.removeClass( 'customize-loading' );
-					deferred.reject();
-				} );
-			};
-
-			if ( 0 === api.state( 'processing' ).get() ) {
-				onceProcessingComplete();
-			} else {
-				api.state( 'processing' ).bind( onceProcessingComplete );
-			}
-
-			return deferred.promise();
+			return api.ThemesPanel.prototype.loadThemePreview.call( this, themeId );
 		},
 
 		/**
@@ -2844,10 +2852,9 @@
 			$( document ).one( 'wp-theme-install-success', function( event, response ) {
 				var theme = false, customizeId, themeControl;
 				if ( preview ) {
+					api.notifications.remove( 'theme_installing' );
 
-					panel.loadThemePreview( slug ).fail( function() {
-						$( '.wp-full-overlay' ).removeClass( 'customize-loading' );
-					} );
+					panel.loadThemePreview( slug );
 
 				} else {
 					api.control.each( function( control ) {
@@ -2899,8 +2906,12 @@
 			// Also preview the theme as the event is triggered on Install & Preview.
 			if ( $( event.target ).hasClass( 'preview' ) ) {
 				preview = true;
-				$( '.wp-full-overlay' ).addClass( 'customize-loading' );
-				wp.a11y.speak( $( '#customize-themes-loading-container .customize-loading-text-installing-theme' ).text() );
+
+				api.notifications.add( 'theme_installing', new api.OverlayNotification( 'theme_installing', {
+					message: api.l10n.themeDownloading,
+					type: 'info',
+					loading: true
+				} ) );
 			}
 		},
 
@@ -2913,24 +2924,31 @@
 		 * @returns {jQuery.promise} Promise.
 		 */
 		loadThemePreview: function( themeId ) {
-			var deferred = $.Deferred(), onceProcessingComplete, overlay, urlParser;
+			var deferred = $.Deferred(), onceProcessingComplete, urlParser, queryParams;
 
 			urlParser = document.createElement( 'a' );
 			urlParser.href = location.href;
-			urlParser.search = $.param( _.extend(
+			queryParams = _.extend(
 				api.utils.parseQueryString( urlParser.search.substr( 1 ) ),
 				{
 					theme: themeId,
 					changeset_uuid: api.settings.changeset.uuid
 				}
-			) );
+			);
+
+			// Include autosaved param to load autosave revision without prompting user to restore it.
+			if ( ! api.state( 'saved' ).get() ) {
+				queryParams.customize_autosaved = 'on';
+			}
+
+			urlParser.search = $.param( queryParams );
 
 			// Update loading message. Everything else is handled by reloading the page.
-			$( '#customize-themes-loading-container span' ).hide();
-			$( '#customize-themes-loading-container .customize-loading-text' ).css( 'display', 'block' );
-			wp.a11y.speak( $( '#customize-themes-loading-container .customize-loading-text' ).text() );
-			overlay = $( '.wp-full-overlay' );
-			overlay.addClass( 'customize-loading' );
+			api.notifications.add( 'theme_previewing', new api.OverlayNotification( 'theme_previewing', {
+				message: api.l10n.themePreviewWait,
+				type: 'info',
+				loading: true
+			} ) );
 
 			onceProcessingComplete = function() {
 				var request;
@@ -2940,14 +2958,17 @@
 
 				api.state( 'processing' ).unbind( onceProcessingComplete );
 
-				request = api.requestChangesetUpdate();
+				request = api.requestChangesetUpdate( {}, { autosave: true } );
 				request.done( function() {
 					deferred.resolve();
 					$( window ).off( 'beforeunload.customize-confirm' );
-					window.location.href = urlParser.href;
+					window.location.href = urlParser.href; // @todo Use location.replace()?
 				} );
 				request.fail( function() {
-					overlay.removeClass( 'customize-loading' );
+
+					// @todo Show notification regarding failure.
+					api.notifications.remove( 'theme_previewing' );
+
 					deferred.reject();
 				} );
 			};
@@ -4908,10 +4929,6 @@
 	 */
 	api.DateTimeControl = api.Control.extend({
 
-		dateInputs: {},
-		inputElements: {},
-		invalidDate: false,
-
 		/**
 		 * Initialize behaviors.
 		 *
@@ -4921,50 +4938,68 @@
 		ready: function ready() {
 			var control = this;
 
-			_.bindAll( control, 'populateSetting', 'updateDaysForMonth', 'updateMinutesForHour' );
+			control.inputElements = {};
+			control.invalidDate = false;
 
-			control.dateInputs = control.container.find( '.date-input' );
+			_.bindAll( control, 'populateSetting', 'updateDaysForMonth', 'updateMinutesForHour', 'populateDateInputs' );
 
 			// @todo This needs https://core.trac.wordpress.org/ticket/37964
 			if ( ! control.setting ) {
 				control.setting = new api.Value();
 			}
 
+			// @todo Should this be? Default should be on client. The default value should be in the setting itself.
 			if ( ! control.setting.get() && control.params.defaultValue ) {
 				control.setting.set( control.params.defaultValue );
 			}
 
-			control.dateInputs.each( function() {
+			control.container.find( '.date-input' ).each( function() {
 				var input = $( this ), component, element;
 				component = input.data( 'component' );
 				element = new api.Element( input );
-				element.validate = function( value ) {
-					return _.contains( [ 'am', 'pm' ], value ) ? value : parseInt( value, 10 );
-				};
+				if ( 'meridian' === component ) {
+					element.validate = function( value ) {
+						if ( 'am' !== value && 'pm' !== value ) {
+							return null;
+						}
+						return value;
+					};
+				} else {
+					element.validate = function( value ) {
+						var val = parseInt( value, 10 );
+						if ( isNaN( val ) ) {
+							return null;
+						}
+						return val;
+					};
+				}
+				element.bind( control.populateSetting );
 				control.inputElements[ component ] = element;
 				control.elements.push( element );
 			} );
 
-			control.dateInputs.on( 'input', control.populateSetting );
 			control.inputElements.month.bind( control.updateDaysForMonth );
 			control.inputElements.year.bind( control.updateDaysForMonth );
-			control.inputElements.hour.bind( control.updateMinutesForHour );
+			if ( control.params.includeTime ) {
+				control.inputElements.hour.bind( control.updateMinutesForHour );
+			}
 			control.populateDateInputs();
+			control.setting.bind( control.populateDateInputs );
 		},
 
 		/**
 		 * Parse datetime string.
 		 *
 		 * @since 4.9.0
-		 * @param {string} datetime Date/Time string. Accepts Y-m-d H:i:s format.
-		 * @param {boolean} twelveHourFormat If twelve hour format array is required.
+		 *
+		 * @param {string} datetime - Date/Time string. Accepts Y-m-d[ H:i[:s]] format.
 		 * @returns {object|null} Returns object containing date components or null if parse error.
 		 */
-		parseDateTime: function parseDateTime( datetime, twelveHourFormat ) {
-			var matches, date, midDayHour = 12;
+		parseDateTime: function parseDateTime( datetime ) {
+			var control = this, matches, date, midDayHour = 12;
 
 			if ( datetime ) {
-				matches = datetime.match( /^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)$/ );
+				matches = datetime.match( /^(\d\d\d\d)-(\d\d)-(\d\d)(?: (\d\d):(\d\d)(?::(\d\d))?)?$/ );
 			}
 
 			if ( ! matches ) {
@@ -4977,16 +5012,16 @@
 				year: matches.shift(),
 				month: matches.shift(),
 				day: matches.shift(),
-				hour: matches.shift(),
-				minute: matches.shift(),
-				second: matches.shift()
+				hour: matches.shift() || '00',
+				minute: matches.shift() || '00',
+				second: matches.shift() || '00'
 			};
 
-			if ( twelveHourFormat ) {
+			if ( control.params.includeTime && control.params.twelveHourFormat ) {
 				date.hour = parseInt( date.hour, 10 );
-				date.ampm = date.hour >= midDayHour ? 'pm' : 'am';
+				date.meridian = date.hour >= midDayHour ? 'pm' : 'am';
 				date.hour = date.hour % midDayHour ? String( date.hour % midDayHour ) : String( midDayHour );
-				delete date.second;
+				delete date.second; // @todo Why only if twelveHourFormat?
 			}
 
 			return date;
@@ -4999,25 +5034,31 @@
 		 * @return {boolean} If date input fields has error.
 		 */
 		validateInputs: function validateInputs() {
-			var control = this, errorMessage;
+			var control = this, errorMessage, components;
 
 			control.invalidDate = false;
 
-			_.each( [ 'day', 'hour', 'year', 'minute' ], function( component ) {
-				var element, el, max, min, maxLength, value;
+			components = [ 'year', 'day' ];
+			if ( control.params.includeTime ) {
+				components.push( 'hour', 'minute' );
+			}
+
+			_.each( components, function( component ) {
+				var element, el, max, min, value;
 
 				if ( ! control.invalidDate ) {
 					element = control.inputElements[ component ];
 					el = element.element.get( 0 );
 					max = parseInt( element.element.attr( 'max' ), 10 );
 					min = parseInt( element.element.attr( 'min' ), 10 );
-					maxLength = parseInt( element.element.attr( 'maxlength' ), 10 );
 					value = element();
-					control.invalidDate = value > max || value < min || String( value ).length > maxLength;
+					control.invalidDate = value > max || value < min;
 					errorMessage = control.invalidDate ? api.l10n.invalid + ' ' + component : '';
 
 					el.setCustomValidity( errorMessage );
-					_.result( el, 'reportValidity' );
+					if ( ! control.section() || api.section.has( control.section() ) && api.section( control.section() ).expanded() ) {
+						_.result( el, 'reportValidity' );
+					}
 				}
 			} );
 
@@ -5056,7 +5097,7 @@
 		updateMinutesForHour: function updateMinutesForHour() {
 			var control = this, maxHours = 24, minuteEl;
 
-			if ( control.inputElements.ampm ) {
+			if ( control.inputElements.meridian ) {
 				return;
 			}
 
@@ -5065,11 +5106,9 @@
 			if ( maxHours === control.inputElements.hour() ) {
 				control.inputElements.minute( 0 );
 				minuteEl.data( 'default-max', minuteEl.attr( 'max' ) );
-				minuteEl.data( 'default-maxlength', minuteEl.attr( 'maxlength' ) );
 				minuteEl.attr( 'max', '0' );
 			} else if ( minuteEl.data( 'default-max' ) ) {
 				minuteEl.attr( 'max', minuteEl.data( 'default-max' ) );
-				minuteEl.attr( 'maxlength', minuteEl.data( 'maxlength' ) );
 			}
 		},
 
@@ -5121,8 +5160,11 @@
 				return value;
 			};
 
-			hourInTwentyFourHourFormat = control.inputElements.ampm ? control.convertHourToTwentyFourHourFormat( control.inputElements.hour(), control.inputElements.ampm() ) : control.inputElements.hour();
-			dateFormat = [ 'year', '-', 'month', '-', 'day', ' ', pad( hourInTwentyFourHourFormat, 2 ), ':', 'minute', ':', '00' ];
+			dateFormat = [ 'year', '-', 'month', '-', 'day' ];
+			if ( control.params.includeTime ) {
+				hourInTwentyFourHourFormat = control.inputElements.meridian ? control.convertHourToTwentyFourHourFormat( control.inputElements.hour(), control.inputElements.meridian() ) : control.inputElements.hour();
+				dateFormat = dateFormat.concat( [ ' ', pad( hourInTwentyFourHourFormat, 2 ), ':', 'minute', ':', '00' ] );
+			}
 
 			_.each( dateFormat, function( component ) {
 				date += control.inputElements[ component ] ? getElementValue( component ) : component;
@@ -5146,18 +5188,21 @@
 		 * Convert hour in twelve hour format to twenty four hour format.
 		 *
 		 * @since 4.9.0
-		 * @param {string} hourInTwelveHourFormat Hour in twelve hour format.
-		 * @param {string} ampm am/pm
-		 * @return {string} Hour in twenty four hour format.
+		 * @param {string} hourInTwelveHourFormat - Hour in twelve hour format.
+		 * @param {string} meridian - Either 'am' or 'pm'.
+		 * @returns {string} Hour in twenty four hour format.
 		 */
-		convertHourToTwentyFourHourFormat: function convertHour( hourInTwelveHourFormat, ampm ) {
+		convertHourToTwentyFourHourFormat: function convertHour( hourInTwelveHourFormat, meridian ) {
 			var hourInTwentyFourHourFormat, hour, midDayHour = 12;
 
 			hour = parseInt( hourInTwelveHourFormat, 10 );
+			if ( isNaN( hour ) ) {
+				return '';
+			}
 
-			if ( 'pm' === ampm && hour < midDayHour ) {
+			if ( 'pm' === meridian && hour < midDayHour ) {
 				hourInTwentyFourHourFormat = hour + midDayHour;
-			} else if ( 'am' === ampm && midDayHour === hour ) {
+			} else if ( 'am' === meridian && midDayHour === hour ) {
 				hourInTwentyFourHourFormat = hour - midDayHour;
 			} else {
 				hourInTwentyFourHourFormat = hour;
@@ -5175,7 +5220,7 @@
 		populateDateInputs: function populateDateInputs() {
 			var control = this, parsed;
 
-			parsed = control.parseDateTime( control.setting.get(), control.params.twelveHourFormat );
+			parsed = control.parseDateTime( control.setting.get() );
 
 			if ( ! parsed ) {
 				return false;
@@ -5224,8 +5269,6 @@
 	 */
 	api.PreviewLinkControl = api.Control.extend({
 
-		previewElements: {},
-
 		/**
 		 * Override the templateSelector before embedding the control into the page.
 		 *
@@ -5245,13 +5288,15 @@
 		 * @returns {void}
 		 */
 		ready: function ready() {
-			var control = this, element, component, node, link, input, button;
+			var control = this, element, component, node, url, input, button;
 
 			_.bindAll( control, 'updatePreviewLink' );
 
 			if ( ! control.setting ) {
 			    control.setting = new api.Value();
 			}
+
+			control.previewElements = {};
 
 			control.container.find( '.preview-control-element' ).each( function() {
 				node = $( this );
@@ -5261,21 +5306,23 @@
 				control.elements.push( element );
 			} );
 
-			link = control.previewElements.link;
+			url = control.previewElements.url;
 			input = control.previewElements.input;
 			button = control.previewElements.button;
 
 			input.link( control.setting );
-			link.link( control.setting );
+			url.link( control.setting );
 
-			link.bind( function( value ) {
-				link.element.attr( 'href', value );
-				link.element.attr( 'target', api.settings.changeset.uuid );
+			url.bind( function( value ) {
+				url.element.parent().attr( {
+					href: value,
+					target: api.settings.changeset.uuid
+				} );
 			} );
 
 			api.bind( 'ready', control.updatePreviewLink );
-			api.bind( 'change', control.updatePreviewLink );
 			api.state( 'saved' ).bind( control.updatePreviewLink );
+			api.state( 'changesetStatus' ).bind( control.updatePreviewLink );
 
 			button.element.on( 'click', function( event ) {
 				event.preventDefault();
@@ -5286,8 +5333,8 @@
 				}
 			} );
 
-			link.element.on( 'click', function( event ) {
-				if ( link.element.hasClass( 'disabled' ) ) {
+			url.element.parent().on( 'click', function( event ) {
+				if ( $( this ).hasClass( 'disabled' ) ) {
 					event.preventDefault();
 				}
 			} );
@@ -5308,12 +5355,10 @@
 		updatePreviewLink: function updatePreviewLink() {
 			var control = this, unsavedDirtyValues;
 
-			unsavedDirtyValues = ! _.isEmpty( api.dirtyValues( {
-				unsaved: true
-			} ) );
+			unsavedDirtyValues = ! api.state( 'saved' ).get() || '' === api.state( 'changesetStatus' ).get() || 'auto-draft' === api.state( 'changesetStatus' ).get();
 
 			control.toggleSaveNotification( unsavedDirtyValues );
-			control.previewElements.link.element.toggleClass( 'disabled', unsavedDirtyValues );
+			control.previewElements.url.element.parent().toggleClass( 'disabled', unsavedDirtyValues );
 			control.previewElements.button.element.prop( 'disabled', unsavedDirtyValues );
 			control.setting.set( api.previewer.getFrontendPreviewUrl() );
 		},
@@ -6230,8 +6275,8 @@
 	api.state = new api.Values();
 	_.each( [
 		'saved',
-		'autosaved',
 		'saving',
+		'trashing',
 		'activated',
 		'processing',
 		'paneVisible',
@@ -6279,8 +6324,6 @@
 			publishSettingsBtn = $( '#publish-settings' ),
 			footerActions = $( '#customize-footer-actions' );
 
-		saveBtn.show();
-
 		api.section( 'publish_settings', function( section ) {
 			var updateButtonsState, previewLinkControl, previewLinkControlId = 'changeset_preview_link', updateSectionActive, isSectionActive;
 
@@ -6301,7 +6344,10 @@
 			 * @return {boolean} Is section active.
 			 */
 			isSectionActive = function() {
-				if ( ! api.state( 'activated' ) ) {
+				if ( ! api.state( 'activated' ).get() ) {
+					return false;
+				}
+				if ( api.state( 'trashing' ).get() || 'trash' === api.state( 'changesetStatus' ).get() ) {
 					return false;
 				}
 				if ( '' === api.state( 'changesetStatus' ).get() && api.state( 'saved' ).get() ) {
@@ -6316,6 +6362,7 @@
 				section.active.set( isSectionActive() );
 			};
 			api.state( 'activated' ).bind( updateSectionActive );
+			api.state( 'trashing' ).bind( updateSectionActive );
 			api.state( 'saved' ).bind( updateSectionActive );
 			api.state( 'changesetStatus' ).bind( updateSectionActive );
 			updateSectionActive();
@@ -6485,9 +6532,7 @@
 						} );
 					} );
 
-					/**
-					 * Find all invalid setting less controls with notification type error.
-					 */
+					// Find all invalid setting less controls with notification type error.
 					api.control.each( function( control ) {
 						if ( ! control.setting || ! control.setting.id && control.active.get() ) {
 							control.notifications.each( function( notification ) {
@@ -6551,15 +6596,13 @@
 					 * due to dependencies on other settings.
 					 */
 					request = wp.ajax.post( 'customize_save', query );
-
-					// Disable save button during the save request.
-					saveBtn.prop( 'disabled', true );
+					api.state( 'processing' ).set( api.state( 'processing' ).get() + 1 );
 
 					api.trigger( 'save', request );
 
 					request.always( function () {
+						api.state( 'processing' ).set( api.state( 'processing' ).get() - 1 );
 						api.state( 'saving' ).set( false );
-						saveBtn.prop( 'disabled', false );
 						api.unbind( 'change', captureSettingModifiedDuringSave );
 					} );
 
@@ -6636,7 +6679,9 @@
 						previewer.send( 'saved', response );
 
 						api.state( 'changesetStatus' ).set( response.changeset_status );
-						api.state( 'changesetDate' ).set( response.changeset_date );
+						if ( response.changeset_date ) {
+							api.state( 'changesetDate' ).set( response.changeset_date );
+						}
 
 						if ( 'publish' === response.changeset_status ) {
 
@@ -6691,6 +6736,74 @@
 				}
 
 				return deferred.promise();
+			},
+
+			/**
+			 * Trash the current changes.
+			 *
+			 * Revert the Customizer to it's previously-published state.
+			 *
+			 * @since 4.9.0
+			 *
+			 * @returns {jQuery.promise} Promise.
+			 */
+			trash: function trash() {
+				var request, success, fail;
+
+				api.state( 'trashing' ).set( true );
+				api.state( 'processing' ).set( api.state( 'processing' ).get() + 1 );
+
+				request = wp.ajax.post( 'customize_trash', {
+					customize_changeset_uuid: api.settings.changeset.uuid,
+					nonce: api.settings.nonce.trash
+				} );
+				api.notifications.add( 'changeset_trashing', new api.OverlayNotification( 'changeset_trashing', {
+					type: 'info',
+					message: api.l10n.revertingChanges,
+					loading: true
+				} ) );
+
+				success = function() {
+					var urlParser = document.createElement( 'a' ), queryParams;
+
+					api.state( 'changesetStatus' ).set( 'trash' );
+					api.each( function( setting ) {
+						setting._dirty = false;
+					} );
+					api.state( 'saved' ).set( true );
+
+					// Go back to Customizer without changeset.
+					urlParser.href = location.href;
+					queryParams = api.utils.parseQueryString( urlParser.search.substr( 1 ) );
+					delete queryParams.changeset_uuid;
+					urlParser.search = $.param( queryParams );
+					location.replace( urlParser.href );
+				};
+
+				fail = function( code, message ) {
+					var notificationCode = code || 'unknown_error';
+					api.state( 'processing' ).set( api.state( 'processing' ).get() - 1 );
+					api.state( 'trashing' ).set( false );
+					api.notifications.remove( 'changeset_trashing' );
+					api.notifications.add( notificationCode, new api.Notification( notificationCode, {
+						message: message || api.l10n.unknownError,
+						dismissible: true,
+						type: 'error'
+					} ) );
+				};
+
+				request.done( function( response ) {
+					success( response.message );
+				} );
+
+				request.fail( function( response ) {
+					var code = response.code || 'trashing_failed';
+					if ( response.success || 'non_existent_changeset' === code || 'changeset_already_trashed' === code ) {
+						success( response.message );
+					} else {
+						fail( code, response.message );
+					}
+				} );
 			},
 
 			/**
@@ -6842,6 +6955,7 @@
 		(function( state ) {
 			var saved = state.instance( 'saved' ),
 				saving = state.instance( 'saving' ),
+				trashing = state.instance( 'trashing' ),
 				activated = state.instance( 'activated' ),
 				processing = state.instance( 'processing' ),
 				paneVisible = state.instance( 'paneVisible' ),
@@ -6863,7 +6977,6 @@
 				if ( ! activated() ) {
 					saveBtn.val( api.l10n.activate );
 					closeBtn.find( '.screen-reader-text' ).text( api.l10n.cancel );
-					publishSettingsBtn.prop( 'disabled', false );
 
 				} else if ( '' === changesetStatus.get() && saved() ) {
 					if ( api.settings.changeset.currentUserCanPublish ) {
@@ -6871,7 +6984,6 @@
 					} else {
 						saveBtn.val( api.l10n.saved );
 					}
-					publishSettingsBtn.prop( 'disabled', true );
 					closeBtn.find( '.screen-reader-text' ).text( api.l10n.close );
 
 				} else {
@@ -6899,14 +7011,13 @@
 						saveBtn.val( api.l10n.publish );
 					}
 					closeBtn.find( '.screen-reader-text' ).text( api.l10n.cancel );
-					publishSettingsBtn.prop( 'disabled', false );
 				}
 
 				/*
 				 * Save (publish) button should be enabled if saving is not currently happening,
 				 * and if the theme is not active or the changeset exists but is not published.
 				 */
-				canSave = ! saving() && ( ! activated() || ! saved() || ( changesetStatus() !== selectedChangesetStatus() && '' !== changesetStatus() ) || ( 'future' === selectedChangesetStatus() && changesetDate.get() !== selectedChangesetDate.get() ) );
+				canSave = ! saving() && ! trashing() && ( ! activated() || ! saved() || ( changesetStatus() !== selectedChangesetStatus() && '' !== changesetStatus() ) || ( 'future' === selectedChangesetStatus() && changesetDate.get() !== selectedChangesetDate.get() ) );
 
 				saveBtn.prop( 'disabled', ! canSave );
 			});
@@ -6957,6 +7068,9 @@
 
 			saving.bind( function( isSaving ) {
 				body.toggleClass( 'saving', isSaving );
+			} );
+			trashing.bind( function( isTrashing ) {
+				body.toggleClass( 'trashing', isTrashing );
 			} );
 
 			api.bind( 'saved', function( response ) {
@@ -7028,7 +7142,7 @@
 			// Show changeset UUID in URL when in branching mode and there is a saved changeset.
 			if ( api.settings.changeset.branching ) {
 				changesetStatus.bind( function( newStatus ) {
-					populateChangesetUuidParam( '' !== newStatus && 'publish' !== newStatus );
+					populateChangesetUuidParam( '' !== newStatus && 'publish' !== newStatus && 'trash' !== newStatus );
 				} );
 			}
 		}( api.state ) );
@@ -7105,7 +7219,7 @@
 
 						// Handle dismissal of notice.
 						li.find( '.notice-dismiss' ).on( 'click', function() {
-							wp.ajax.post( 'dismiss_customize_changeset_autosave', {
+							wp.ajax.post( 'customize_dismiss_autosave', {
 								wp_customize: 'on',
 								customize_theme: api.settings.theme.stylesheet,
 								customize_changeset_uuid: api.settings.changeset.uuid,
@@ -7532,15 +7646,20 @@
 				isInsideIframe = true;
 			});
 
-			// Prompt user with AYS dialog if leaving the Customizer with unsaved changes
-			$( window ).on( 'beforeunload.customize-confirm', function() {
-				if ( ! isCleanState() ) {
-					setTimeout( function() {
-						overlay.removeClass( 'customize-loading' );
-					}, 1 );
-					return api.l10n.saveAlert;
-				}
-			});
+			function startPromptingBeforeUnload() {
+				api.unbind( 'change', startPromptingBeforeUnload );
+
+				// Prompt user with AYS dialog if leaving the Customizer with unsaved changes
+				$( window ).on( 'beforeunload.customize-confirm', function() {
+					if ( ! isCleanState() ) {
+						setTimeout( function() {
+							overlay.removeClass( 'customize-loading' );
+						}, 1 );
+						return api.l10n.saveAlert;
+					}
+				});
+			}
+			api.bind( 'change', startPromptingBeforeUnload );
 
 			closeBtn.on( 'click.customize-controls-close', function( event ) {
 				var clearedToClose = $.Deferred();
@@ -7566,7 +7685,7 @@
 					if ( '' === api.state( 'changesetStatus' ).get() ) {
 						clearedToClose.resolve();
 					} else {
-						wp.ajax.send( 'dismiss_customize_changeset_autosave', {
+						wp.ajax.send( 'customize_dismiss_autosave', {
 							timeout: 500, // Don't wait too long.
 							data: {
 								wp_customize: 'on',
@@ -7833,9 +7952,7 @@
 			});
 		})();
 
-		/**
-		 * Publish settings section and controls.
-		 */
+		// Publish settings section and controls.
 		api.control( 'changeset_status', 'changeset_scheduled_date', function( statusControl, dateControl ) {
 			$.when( statusControl.deferred.embedded, dateControl.deferred.embedded ).done( function() {
 				var radioNodes, statusElement, toggleDateControl, publishWhenTime, pollInterval, updateTimeArrivedPoller, timeArrivedPollingInterval = 1000;
@@ -7987,8 +8104,10 @@
 		} );
 
 		// Autosave changeset.
-		( function() {
+		function startAutosaving() {
 			var timeoutId, updateChangesetWithReschedule, scheduleChangesetUpdate, updatePending = false;
+
+			api.unbind( 'change', startAutosaving ); // Ensure startAutosaving only fires once.
 
 			api.state( 'saved' ).bind( function( isSaved ) {
 				if ( ! isSaved && ! api.settings.changeset.autosaved ) {
@@ -8040,7 +8159,8 @@
 			$( window ).on( 'beforeunload.wp-customize-changeset-update', function() {
 				updateChangesetWithReschedule();
 			} );
-		} ());
+		}
+		api.bind( 'change', startAutosaving );
 
 		// Make sure TinyMCE dialogs appear above Customizer UI.
 		$( document ).one( 'wp-before-tinymce-init', function() {
@@ -8049,6 +8169,7 @@
 			}
 		} );
 
+		body.addClass( 'ready' );
 		api.trigger( 'ready' );
 	});
 

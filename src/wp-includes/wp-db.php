@@ -1201,8 +1201,9 @@ class wpdb {
 	 *
 	 * All placeholders MUST be left unquoted in the query string. A corresponding argument MUST be passed for each placeholder.
 	 *
-	 * Literal percentage signs (%) in the query string must be written as %%. Percentage wildcards (for example, to use in LIKE syntax)
-	 * must be passed in the string argument, it cannot be inserted in the query string.
+	 * Literal percentage signs (%) in the query string must be written as %%. Percentage wildcards (for example,
+	 * to use in LIKE syntax) must be passed via a substitution argument containing the complete LIKE string, these
+	 * cannot be inserted directly in the query string. Also see {@see esc_like()}.
 	 *
 	 * This method DOES NOT support sign, padding, alignment, width or precision specifiers.
 	 * This method DOES NOT support argument numbering or swapping.
@@ -1229,6 +1230,7 @@ class wpdb {
 
 		// This is not meant to be foolproof -- but it will catch obviously incorrect usage.
 		if ( strpos( $query, '%' ) === false ) {
+			wp_load_translations_early();
 			_doing_it_wrong( 'wpdb::prepare', sprintf( __( 'The query argument of %s must have a placeholder.' ), 'wpdb::prepare()' ), '3.9.0' );
 		}
 
@@ -1242,6 +1244,7 @@ class wpdb {
 
 		foreach ( $args as $arg ) {
 			if ( ! is_scalar( $arg ) && ! is_null( $arg ) ) {
+				wp_load_translations_early();
 				_doing_it_wrong( 'wpdb::prepare', sprintf( __( 'Unsupported value type (%s).' ), gettype( $arg ) ), '4.8.2' );
 			}
 		}
@@ -1250,7 +1253,21 @@ class wpdb {
 		$query = str_replace( '"%s"', '%s', $query ); // doublequote unquoting
 		$query = preg_replace( '|(?<!%)%f|' , '%F', $query ); // Force floats to be locale unaware
 		$query = preg_replace( '|(?<!%)%s|', "'%s'", $query ); // quote the strings, avoiding escaped strings like %%s
-		$query = preg_replace( '/%(?:%|$|([^dsF]))/', '%%\\1', $query ); // escape any unescaped percents 
+		$query = preg_replace( '/%(?:%|$|([^dsF]))/', '%%\\1', $query ); // escape any unescaped percents
+
+		// Count the number of valid placeholders in the query
+		$placeholders = preg_match_all( '/(^|[^%]|(%%)+)%[sdF]/', $query, $matches );
+
+		if ( count ( $args ) !== $placeholders ) {
+			wp_load_translations_early();
+			_doing_it_wrong( 'wpdb::prepare',
+				sprintf( __( 'The query does not contain the correct number of placeholders (%d) for the number of arguments passed (%d).' ),
+					$placeholders,
+					count( $args ) ),
+				'4.9.0'
+			);
+		}
+
 		array_walk( $args, array( $this, 'escape_by_ref' ) );
 		return @vsprintf( $query, $args );
 	}
@@ -2045,7 +2062,7 @@ class wpdb {
 		$conditions = implode( ' AND ', $conditions );
 
 		$sql = "UPDATE `$table` SET $fields WHERE $conditions";
-
+		
 		$this->check_current_query = false;
 		return $this->query( $this->prepare( $sql, $values ) );
 	}

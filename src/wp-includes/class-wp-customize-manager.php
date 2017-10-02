@@ -374,10 +374,11 @@ final class WP_Customize_Manager {
 		remove_action( 'admin_init', '_maybe_update_plugins' );
 		remove_action( 'admin_init', '_maybe_update_themes' );
 
-		add_action( 'wp_ajax_customize_save',           array( $this, 'save' ) );
-		add_action( 'wp_ajax_customize_refresh_nonces', array( $this, 'refresh_nonces' ) );
-		add_action( 'wp_ajax_customize-load-themes',    array( $this, 'load_themes_ajax' ) );
-		add_action( 'wp_ajax_dismiss_customize_changeset_autosave', array( $this, 'handle_dismiss_changeset_autosave_request' ) );
+		add_action( 'wp_ajax_customize_save',             array( $this, 'save' ) );
+		add_action( 'wp_ajax_customize_trash',            array( $this, 'handle_changeset_trash_request' ) );
+		add_action( 'wp_ajax_customize_refresh_nonces',   array( $this, 'refresh_nonces' ) );
+		add_action( 'wp_ajax_customize_load_themes',      array( $this, 'handle_load_themes_request' ) );
+		add_action( 'wp_ajax_customize_dismiss_autosave', array( $this, 'handle_dismiss_autosave_request' ) );
 
 		add_action( 'customize_register',                 array( $this, 'register_controls' ) );
 		add_action( 'customize_register',                 array( $this, 'register_dynamic_settings' ), 11 ); // allow code to create settings first
@@ -2830,6 +2831,65 @@ final class WP_Customize_Manager {
 	}
 
 	/**
+	 * Handle request to trash a changeset.
+	 *
+	 * @since 4.9.0
+	 */
+	public function handle_changeset_trash_request() {
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'unauthenticated' );
+		}
+
+		if ( ! $this->is_preview() ) {
+			wp_send_json_error( 'not_preview' );
+		}
+
+		if ( ! check_ajax_referer( 'trash_customize_changeset', 'nonce', false ) ) {
+			wp_send_json_error( array(
+				'code' => 'invalid_nonce',
+				'message' => __( 'There was an authentication problem. Please reload and try again.' ),
+			) );
+		}
+
+		$changeset_post_id = $this->changeset_post_id();
+
+		if ( ! $changeset_post_id ) {
+			wp_send_json_error( array(
+				'message' => __( 'No changes saved yet, so there is nothing to trash.' ),
+				'code' => 'non_existent_changeset',
+			) );
+			return;
+		}
+
+		if ( $changeset_post_id && ! current_user_can( get_post_type_object( 'customize_changeset' )->cap->delete_post, $changeset_post_id ) ) {
+			wp_send_json_error( array(
+				'code' => 'changeset_trash_unauthorized',
+				'message' => __( 'Unable to trash changes.' ),
+			) );
+		}
+
+		if ( 'trash' === get_post_status( $changeset_post_id ) ) {
+			wp_send_json_error( array(
+				'message' => __( 'Changes have already been trashed.' ),
+				'code' => 'changeset_already_trashed',
+			) );
+			return;
+		}
+
+		$r = wp_trash_post( $changeset_post_id );
+		if ( ! ( $r instanceof WP_Post ) ) {
+			wp_send_json_error( array(
+				'code' => 'changeset_trash_failure',
+				'message' => __( 'Unable to trash changes.' ),
+			) );
+		}
+
+		wp_send_json_success( array(
+			'message' => __( 'Changes trashed successfully.' ),
+		) );
+	}
+
+	/**
 	 * Re-map 'edit_post' meta cap for a customize_changeset post to be the same as 'customize' maps.
 	 *
 	 * There is essentially a "meta meta" cap in play here, where 'edit_post' meta cap maps to
@@ -3102,12 +3162,12 @@ final class WP_Customize_Manager {
 	 *
 	 * @since 4.9.0
 	 */
-	public function handle_dismiss_changeset_autosave_request() {
+	public function handle_dismiss_autosave_request() {
 		if ( ! $this->is_preview() ) {
 			wp_send_json_error( 'not_preview', 400 );
 		}
 
-		if ( ! check_ajax_referer( 'dismiss_customize_changeset_autosave', 'nonce', false ) ) {
+		if ( ! check_ajax_referer( 'customize_dismiss_autosave', 'nonce', false ) ) {
 			wp_send_json_error( 'invalid_nonce', 403 );
 		}
 
@@ -3543,8 +3603,8 @@ final class WP_Customize_Manager {
 
 		?>
 		<script type="text/html" id="tmpl-customize-notification">
-			<li class="notice notice-{{ data.type || 'info' }} {{ data.alt ? 'notice-alt' : '' }} {{ data.dismissible ? 'is-dismissible' : '' }}" data-code="{{ data.code }}" data-type="{{ data.type }}">
-				{{{ data.message || data.code }}}
+			<li class="notice notice-{{ data.type || 'info' }} {{ data.alt ? 'notice-alt' : '' }} {{ data.dismissible ? 'is-dismissible' : '' }} {{ data.classes || '' }}" data-code="{{ data.code }}" data-type="{{ data.type }}">
+				<div class="notification-message">{{{ data.message || data.code }}}</div>
 				<# if ( data.dismissible ) { #>
 					<button type="button" class="notice-dismiss"><span class="screen-reader-text"><?php _e( 'Dismiss' ); ?></span></button>
 				<# } #>
@@ -3562,19 +3622,24 @@ final class WP_Customize_Manager {
 			</ul>
 		</script>
 		<script type="text/html" id="tmpl-customize-preview-link-control" >
-			<span class="customize-control-title">
-				<label><?php esc_html_e( 'Share Preview Link' ); ?></label>
-			</span>
-			<span class="description customize-control-description"><?php esc_html_e( 'See how changes would look live on your website, and share the preview with people who can\'t access the Customizer.' ); ?></span>
+			<# var elementPrefix = _.uniqueId( 'el' ) + '-' #>
+			<p class="customize-control-title">
+				<?php esc_html_e( 'Share Preview Link' ); ?>
+			</p>
+			<p class="description customize-control-description"><?php esc_html_e( 'See how changes would look live on your website, and share the preview with people who can\'t access the Customizer.' ); ?></p>
 			<div class="customize-control-notifications-container"></div>
 			<div class="preview-link-wrapper">
-				<label>
-					<span class="screen-reader-text"><?php esc_html_e( 'Preview Link' ); ?></span>
-					<a class="preview-control-element" data-component="link" href="" target=""></a>
-					<input readonly class="preview-control-element" data-component="input" value="test" >
-					<button class="customize-copy-preview-link preview-control-element button button-secondary" data-component="button" data-copy-text="<?php esc_attr_e( 'Copy' ); ?>" data-copied-text="<?php esc_attr_e( 'Copied' ); ?>" ><?php esc_html_e( 'Copy' ); ?></button>
-				</label>
+				<label for="{{ elementPrefix }}customize-preview-link-input" class="screen-reader-text"><?php esc_html_e( 'Preview Link' ); ?></label>
+				<a href="" target="">
+					<span class="preview-control-element" data-component="url"></span>
+					<span class="screen-reader-text"><?php _e( '(opens in a new window)' ); ?></span>
+				</a>
+				<input id="{{ elementPrefix }}customize-preview-link-input" readonly class="preview-control-element" data-component="input">
+				<button class="customize-copy-preview-link preview-control-element button button-secondary" data-component="button" data-copy-text="<?php esc_attr_e( 'Copy' ); ?>" data-copied-text="<?php esc_attr_e( 'Copied' ); ?>" ><?php esc_html_e( 'Copy' ); ?></button>
 			</div>
+		</script>
+		<script type="text/html" id="tmpl-customize-trash-changeset-control">
+			<button type="button" class="button-link button-link-delete"><?php _e( 'Trash unpublished changes' ); ?></button>
 		</script>
 		<?php
 	}
@@ -3901,8 +3966,9 @@ final class WP_Customize_Manager {
 		$nonces = array(
 			'save' => wp_create_nonce( 'save-customize_' . $this->get_stylesheet() ),
 			'preview' => wp_create_nonce( 'preview-customize_' . $this->get_stylesheet() ),
-			'switch-themes' => wp_create_nonce( 'switch-themes' ),
-			'dismiss_autosave' => wp_create_nonce( 'dismiss_customize_changeset_autosave' ),
+			'switch_themes' => wp_create_nonce( 'switch_themes' ),
+			'dismiss_autosave' => wp_create_nonce( 'customize_dismiss_autosave' ),
+			'trash' => wp_create_nonce( 'trash_customize_changeset' ),
 		);
 
 		/**
@@ -4159,6 +4225,7 @@ final class WP_Customize_Manager {
 
 		$this->add_control( 'changeset_status', array(
 			'section' => 'publish_settings',
+			'priority' => 10,
 			'settings' => array(),
 			'type' => 'radio',
 			'label' => __( 'Action' ),
@@ -4171,12 +4238,15 @@ final class WP_Customize_Manager {
 		} else {
 			$initial_date = current_time( 'mysql', false );
 		}
+
 		$this->add_control( new WP_Customize_Date_Time_Control( $this, 'changeset_scheduled_date', array(
 			'section' => 'publish_settings',
+			'priority' => 20,
 			'settings' => array(),
 			'type' => 'date_time',
 			'min_year' => date( 'Y' ),
 			'allow_past_date' => false,
+			'include_time' => true,
 			'twelve_hour_format' => false !== stripos( get_option( 'time_format' ), 'a' ),
 			'description' => __( 'Schedule your customization changes to publish ("go live") at a future date.' ),
 			'capability' => 'customize',
@@ -4723,8 +4793,8 @@ final class WP_Customize_Manager {
 	 *
 	 * @since 4.9.0
 	 */
-	public function load_themes_ajax() {
-		check_ajax_referer( 'switch-themes', 'switch-themes-nonce' );
+	public function handle_load_themes_request() {
+		check_ajax_referer( 'switch_themes', 'nonce' );
 
 		if ( ! current_user_can( 'switch_themes' ) ) {
 			wp_die( -1 );
