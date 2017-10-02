@@ -120,6 +120,7 @@ function create_initial_taxonomies() {
 			'separate_items_with_commas' => null,
 			'add_or_remove_items' => null,
 			'choose_from_most_used' => null,
+			'back_to_items' => __( '&larr; Back to Link Categories' ),
 		),
 		'capabilities' => array(
 			'manage_terms' => 'manage_links',
@@ -452,7 +453,7 @@ function unregister_taxonomy( $taxonomy ) {
  * @since 3.0.0
  * @since 4.3.0 Added the `no_terms` label.
  * @since 4.4.0 Added the `items_list_navigation` and `items_list` labels.
- * @since 4.9.0 Added the `most_used` label.
+ * @since 4.9.0 Added the `most_used` and `back_to_items` labels.
  *
  * @param WP_Taxonomy $tax Taxonomy object.
  * @return object {
@@ -489,6 +490,7 @@ function unregister_taxonomy( $taxonomy ) {
  *     @type string $items_list                 Label for the table hidden heading.
  *     @type string $most_used                  Title used for the Most Used panel. Not used for non-hierarchical
  *                                              taxonomies. Default 'Most Used'.
+ *     @type string $back_to_items              Label displayed after a term has been updated.
  * }
  */
 function get_taxonomy_labels( $tax ) {
@@ -520,7 +522,9 @@ function get_taxonomy_labels( $tax ) {
 		'no_terms' => array( __( 'No tags' ), __( 'No categories' ) ),
 		'items_list_navigation' => array( __( 'Tags list navigation' ), __( 'Categories list navigation' ) ),
 		'items_list' => array( __( 'Tags list' ), __( 'Categories list' ) ),
-		'most_used' => array( null, __( 'Most Used' ) ),
+		/* translators: Tab heading when selecting from the most used terms */
+		'most_used' => array( null, _x( 'Most Used', 'Most used categories' ) ),
+		'back_to_items' => array( __( '&larr; Back to Tags' ), __( '&larr; Back to Categories' ) ),
 	);
 	$nohier_vs_hier_defaults['menu_name'] = $nohier_vs_hier_defaults['name'];
 
@@ -3785,7 +3789,7 @@ function _wp_check_split_terms_in_menus( $term_id, $new_term_id, $term_taxonomy_
 			INNER JOIN {$wpdb->postmeta} AS m2 ON ( m2.post_id = m1.post_id )
 			INNER JOIN {$wpdb->postmeta} AS m3 ON ( m3.post_id = m1.post_id )
 		WHERE ( m1.meta_key = '_menu_item_type' AND m1.meta_value = 'taxonomy' )
-			AND ( m2.meta_key = '_menu_item_object' AND m2.meta_value = '%s' )
+			AND ( m2.meta_key = '_menu_item_object' AND m2.meta_value = %s )
 			AND ( m3.meta_key = '_menu_item_object_id' AND m3.meta_value = %d )",
 		$taxonomy,
 		$term_id

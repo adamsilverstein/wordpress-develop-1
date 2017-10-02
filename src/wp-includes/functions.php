@@ -4804,7 +4804,7 @@ function wp_scheduled_delete() {
 
 	$delete_timestamp = time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS );
 
-	$posts_to_delete = $wpdb->get_results($wpdb->prepare("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_trash_meta_time' AND meta_value < '%d'", $delete_timestamp), ARRAY_A);
+	$posts_to_delete = $wpdb->get_results($wpdb->prepare("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_trash_meta_time' AND meta_value < %d", $delete_timestamp), ARRAY_A);
 
 	foreach ( (array) $posts_to_delete as $post ) {
 		$post_id = (int) $post['post_id'];
@@ -4821,7 +4821,7 @@ function wp_scheduled_delete() {
 		}
 	}
 
-	$comments_to_delete = $wpdb->get_results($wpdb->prepare("SELECT comment_id FROM $wpdb->commentmeta WHERE meta_key = '_wp_trash_meta_time' AND meta_value < '%d'", $delete_timestamp), ARRAY_A);
+	$comments_to_delete = $wpdb->get_results($wpdb->prepare("SELECT comment_id FROM $wpdb->commentmeta WHERE meta_key = '_wp_trash_meta_time' AND meta_value < %d", $delete_timestamp), ARRAY_A);
 
 	foreach ( (array) $comments_to_delete as $comment ) {
 		$comment_id = (int) $comment['comment_id'];
@@ -5832,4 +5832,65 @@ All at ###SITENAME###
 		$email_change_email['subject'],
 		$site_name
 	), $email_change_email['message'], $email_change_email['headers'] );
+}
+
+/**
+ * Whether or not we have a large site, based on its number of users.
+ *
+ * The default criteria for a large site is more than 10,000 users.
+ *
+ * @since 4.9.0
+ *
+ * @return bool True if the site meets the criteria for large. False otherwise.
+ */
+function wp_is_large_user_count() {
+	$count = wp_get_active_user_count();
+
+	/**
+	 * Filters whether the site is considered large, based on its number of users.
+	 *
+	 * The default criteria for a large site is more than 10,000 users.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param bool $is_large_user_count Whether the site is considered large.
+	 * @param int  $count               The number of users on the site.
+	 */
+	return apply_filters( 'wp_is_large_user_count', $count > 10000, $count );
+}
+
+/**
+ * Update the active user count.
+ *
+ * @since 4.9.0
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @return int The active user count.
+ */
+function wp_update_active_user_count() {
+	global $wpdb;
+
+	$count = $wpdb->get_var( "
+		SELECT COUNT(ID) as c
+		FROM {$wpdb->users}
+	" );
+	update_option( 'active_user_count', $count );
+
+	return (int) $count;
+}
+
+/**
+ * The number of active users.
+ *
+ * @since 4.9.0
+ *
+ * @return int The active user count.
+ */
+function wp_get_active_user_count() {
+	$count = get_option( 'active_user_count', false );
+
+	if ( false === $count ) {
+		$count = wp_update_active_user_count();
+	}
+	return (int) $count;
 }

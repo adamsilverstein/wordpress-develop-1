@@ -683,7 +683,7 @@ themes.view.Details = wp.Backbone.View.extend({
 
 		// Set initial focus on the primary action control.
 		_.delay( function() {
-			$( '.theme-wrap a.button-primary:visible' ).focus();
+			$( '.theme-overlay' ).focus();
 		}, 100 );
 
 		// Constrain tabbing within the modal.
@@ -1539,7 +1539,10 @@ themes.view.InstallerSearch =  themes.view.Search.extend({
 			request.tag = [ value.slice( 4 ) ];
 		}
 
-		$( '.filter-links li > a.current' ).removeClass( 'current' );
+		$( '.filter-links li > a.current' )
+			.removeClass( 'current' )
+			.removeAttr( 'aria-current' );
+
 		$( 'body' ).removeClass( 'show-filters filters-applied show-favorites-form' );
 		$( '.drawer-toggle' ).attr( 'aria-expanded', 'false' );
 
@@ -1603,7 +1606,11 @@ themes.view.Installer = themes.view.Appearance.extend({
 		this.listenTo( this.collection, 'query:fail', function() {
 			$( 'body' ).removeClass( 'loading-content' );
 			$( '.theme-browser' ).find( 'div.error' ).remove();
-			$( '.theme-browser' ).find( 'div.themes' ).before( '<div class="error"><p>' + l10n.error + '</p></div>' );
+			$( '.theme-browser' ).find( 'div.themes' ).before( '<div class="error"><p>' + l10n.error + '</p><p><button class="button try-again">' + l10n.tryAgain + '</button></p></div>' );
+			$( '.theme-browser .error .try-again' ).on( 'click', function( e ) {
+				e.preventDefault();
+				$( 'input.wp-filter-search' ).trigger( 'input' );
+			} );
 		});
 
 		if ( this.view ) {
@@ -1659,8 +1666,13 @@ themes.view.Installer = themes.view.Appearance.extend({
 		// Track sorting so we can restore the correct tab when closing preview.
 		themes.router.selectedTab = sort;
 
-		$( '.filter-links li > a, .theme-filter' ).removeClass( this.activeClass );
-		$( '[data-sort="' + sort + '"]' ).addClass( this.activeClass );
+		$( '.filter-links li > a, .theme-filter' )
+			.removeClass( this.activeClass )
+			.removeAttr( 'aria-current' );
+
+		$( '[data-sort="' + sort + '"]' )
+			.addClass( this.activeClass )
+			.attr( 'aria-current', 'page' );
 
 		if ( 'favorites' === sort ) {
 			$( 'body' ).addClass( 'show-favorites-form' );
@@ -1682,8 +1694,12 @@ themes.view.Installer = themes.view.Appearance.extend({
 			return;
 		}
 
-		$( '.filter-links li > a, .theme-section' ).removeClass( this.activeClass );
-		$el.addClass( this.activeClass );
+		$( '.filter-links li > a, .theme-section' )
+			.removeClass( this.activeClass )
+			.removeAttr( 'aria-current' );
+		$el
+			.addClass( this.activeClass )
+			.attr( 'aria-current', 'page' );
 
 		if ( ! filter ) {
 			return;
@@ -1721,7 +1737,10 @@ themes.view.Installer = themes.view.Appearance.extend({
 		}
 
 		$( 'body' ).addClass( 'filters-applied' );
-		$( '.filter-links li > a.current' ).removeClass( 'current' );
+		$( '.filter-links li > a.current' )
+			.removeClass( 'current' )
+			.removeAttr( 'aria-current' );
+
 		filteringBy.empty();
 
 		_.each( tags, function( tag ) {

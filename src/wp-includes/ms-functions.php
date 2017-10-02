@@ -34,19 +34,17 @@ function get_sitestats() {
  *
  * @since MU (3.0.0) 1.0
  *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
  * @param int $user_id The unique ID of the user
  * @return WP_Site|void The blog object
  */
 function get_active_blog_for_user( $user_id ) {
-	global $wpdb;
 	$blogs = get_blogs_of_user( $user_id );
 	if ( empty( $blogs ) )
 		return;
 
-	if ( !is_multisite() )
-		return $blogs[$wpdb->blogid];
+	if ( ! is_multisite() ) {
+		return $blogs[ get_current_blog_id() ];
+	}
 
 	$primary_blog = get_user_meta( $user_id, 'primary_blog', true );
 	$first_blog = current($blogs);
@@ -2203,30 +2201,6 @@ function update_blog_public( $old_value, $value ) {
 }
 
 /**
- * Check whether a usermeta key has to do with the current blog.
- *
- * @since MU (3.0.0)
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param string $key
- * @param int    $user_id Optional. Defaults to current user.
- * @param int    $blog_id Optional. Defaults to current blog.
- * @return bool
- */
-function is_user_option_local( $key, $user_id = 0, $blog_id = 0 ) {
-	global $wpdb;
-
-	$current_user = wp_get_current_user();
-	if ( $blog_id == 0 ) {
-		$blog_id = $wpdb->blogid;
-	}
-	$local_key = $wpdb->get_blog_prefix( $blog_id ) . $key;
-
-	return isset( $current_user->$local_key );
-}
-
-/**
  * Check whether users can self-register, based on Network settings.
  *
  * @since MU (3.0.0)
@@ -2553,6 +2527,11 @@ function wp_is_large_network( $using = 'sites', $network_id = null ) {
 
 	if ( 'users' == $using ) {
 		$count = get_user_count( $network_id );
+		$is_large = ( $count > 10000 );
+
+		/** This filter is documented in wp-includes/functions.php */
+		$is_large = apply_filters( 'wp_is_large_user_count', $is_large, $count );
+
 		/**
 		 * Filters whether the network is considered large.
 		 *
@@ -2564,7 +2543,7 @@ function wp_is_large_network( $using = 'sites', $network_id = null ) {
 		 * @param int    $count            The count of items for the component.
 		 * @param int    $network_id       The ID of the network being checked.
 		 */
-		return apply_filters( 'wp_is_large_network', $count > 10000, 'users', $count, $network_id );
+		return apply_filters( 'wp_is_large_network', $is_large, 'users', $count, $network_id );
 	}
 
 	$count = get_blog_count( $network_id );
@@ -2595,6 +2574,84 @@ function get_subdirectory_reserved_names() {
 	 * @param array $subdirectory_reserved_names Array of reserved names.
 	 */
 	return apply_filters( 'subdirectory_reserved_names', $names );
+}
+
+/**
+ * Send a confirmation request email when a change of network admin email address is attempted.
+ *
+ * The new network admin address will not become active until confirmed.
+ *
+ * @since 4.9.0
+ *
+ * @param string $old_value The old network admin email address.
+ * @param string $value     The proposed new network admin email address.
+ */
+function update_network_option_new_admin_email( $old_value, $value ) {
+	if ( $value == get_site_option( 'admin_email' ) || ! is_email( $value ) ) {
+		return;
+	}
+
+	$hash = md5( $value . time() . mt_rand() );
+	$new_admin_email = array(
+		'hash'     => $hash,
+		'newemail' => $value,
+	);
+	update_site_option( 'network_admin_hash', $new_admin_email );
+
+	$switched_locale = switch_to_locale( get_user_locale() );
+
+	/* translators: Do not translate USERNAME, ADMIN_URL, EMAIL, SITENAME, SITEURL: those are placeholders. */
+	$email_text = __( 'Howdy ###USERNAME###,
+
+You recently requested to have the network admin email address on
+your network changed.
+
+If this is correct, please click on the following link to change it:
+###ADMIN_URL###
+
+You can safely ignore and delete this email if you do not want to
+take this action.
+
+This email has been sent to ###EMAIL###
+
+Regards,
+All at ###SITENAME###
+###SITEURL###' );
+
+	/**
+	 * Filters the text of the email sent when a change of network admin email address is attempted.
+	 *
+	 * The following strings have a special meaning and will get replaced dynamically:
+	 * ###USERNAME###  The current user's username.
+	 * ###ADMIN_URL### The link to click on to confirm the email change.
+	 * ###EMAIL###     The proposed new network admin email address.
+	 * ###SITENAME###  The name of the network.
+	 * ###SITEURL###   The URL to the network.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param string $email_text      Text in the email.
+	 * @param array  $new_admin_email {
+	 *     Data relating to the new network admin email address.
+	 *
+	 *     @type string $hash     The secure hash used in the confirmation link URL.
+	 *     @type string $newemail The proposed new network admin email address.
+	 * }
+	 */
+	$content = apply_filters( 'new_network_admin_email_content', $email_text, $new_admin_email );
+
+	$current_user = wp_get_current_user();
+	$content = str_replace( '###USERNAME###', $current_user->user_login, $content );
+	$content = str_replace( '###ADMIN_URL###', esc_url( network_admin_url( 'settings.php?network_admin_hash=' . $hash ) ), $content );
+	$content = str_replace( '###EMAIL###', $value, $content );
+	$content = str_replace( '###SITENAME###', wp_specialchars_decode( get_site_option( 'site_name' ), ENT_QUOTES ), $content );
+	$content = str_replace( '###SITEURL###', network_home_url(), $content );
+
+	wp_mail( $value, sprintf( __( '[%s] New Network Admin Email Address' ), wp_specialchars_decode( get_site_option( 'site_name' ), ENT_QUOTES ) ), $content );
+
+	if ( $switched_locale ) {
+		restore_previous_locale();
+	}
 }
 
 /**

@@ -139,7 +139,7 @@ wp_localize_script( 'theme', '_wpThemeSettings', array(
  		'search'            => __( 'Search Installed Themes' ),
  		'searchPlaceholder' => __( 'Search installed themes...' ), // placeholder (no ellipsis)
 		'themesFound'       => __( 'Number of Themes found: %d' ),
-		'noThemesFound'     => __( 'No themes found. Try a different search.' ),
+		'noThemesFound'     => __( 'No themes found. Try a different search query.' ),
   	),
 ) );
 
@@ -301,9 +301,9 @@ foreach ( $themes as $theme ) :
 <?php endforeach; ?>
 	</div>
 </div>
-<div class="theme-overlay"></div>
+<div class="theme-overlay" tabindex="0" role="dialog" aria-label="<?php esc_attr_e( 'Theme Details' ); ?>"></div>
 
-<p class="no-themes"><?php _e( 'No themes found. Try a different search.' ); ?></p>
+<p class="no-themes"><?php _e( 'No themes found. Try a different search query.' ); ?></p>
 
 <?php
 // List broken themes, if any.
@@ -431,7 +431,7 @@ $can_install = current_user_can( 'install_themes' );
 
 <script id="tmpl-theme-single" type="text/template">
 	<div class="theme-backdrop"></div>
-	<div class="theme-wrap wp-clearfix">
+	<div class="theme-wrap wp-clearfix" role="document">
 		<div class="theme-header">
 			<button class="left dashicons dashicons-no"><span class="screen-reader-text"><?php _e( 'Show previous theme' ); ?></span></button>
 			<button class="right dashicons dashicons-no"><span class="screen-reader-text"><?php _e( 'Show next theme' ); ?></span></button>

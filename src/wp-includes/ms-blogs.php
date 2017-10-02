@@ -12,13 +12,11 @@
  * Update the last_updated field for the current site.
  *
  * @since MU (3.0.0)
- *
- * @global wpdb $wpdb WordPress database abstraction object.
  */
 function wpmu_update_blogs_date() {
-	global $wpdb;
+	$site_id = get_current_blog_id();
 
-	update_blog_details( $wpdb->blogid, array('last_updated' => current_time('mysql', true)) );
+	update_blog_details( $site_id, array( 'last_updated' => current_time( 'mysql', true ) ) );
 	/**
 	 * Fires after the blog details are updated.
 	 *
@@ -26,7 +24,7 @@ function wpmu_update_blogs_date() {
 	 *
 	 * @param int $blog_id Site ID.
 	 */
-	do_action( 'wpmu_blog_updated', $wpdb->blogid );
+	do_action( 'wpmu_blog_updated', $site_id );
 }
 
 /**
@@ -792,7 +790,7 @@ function update_blog_option( $id, $option, $value, $deprecated = null ) {
  * @return true Always returns True.
  */
 function switch_to_blog( $new_blog, $deprecated = null ) {
-	global $wpdb, $wp_roles;
+	global $wpdb;
 
 	$blog_id = get_current_blog_id();
 	if ( empty( $new_blog ) ) {
@@ -847,12 +845,6 @@ function switch_to_blog( $new_blog, $deprecated = null ) {
 		}
 	}
 
-	if ( did_action( 'init' ) ) {
-		$wp_roles = new WP_Roles();
-		$current_user = wp_get_current_user();
-		$current_user->for_blog( $new_blog );
-	}
-
 	/** This filter is documented in wp-includes/ms-blogs.php */
 	do_action( 'switch_blog', $new_blog, $prev_blog_id );
 	$GLOBALS['switched'] = true;
@@ -876,7 +868,7 @@ function switch_to_blog( $new_blog, $deprecated = null ) {
  * @return bool True on success, false if we're already on the current blog
  */
 function restore_current_blog() {
-	global $wpdb, $wp_roles;
+	global $wpdb;
 
 	if ( empty( $GLOBALS['_wp_switched_stack'] ) ) {
 		return false;
@@ -921,12 +913,6 @@ function restore_current_blog() {
 		}
 	}
 
-	if ( did_action( 'init' ) ) {
-		$wp_roles = new WP_Roles();
-		$current_user = wp_get_current_user();
-		$current_user->for_blog( $blog );
-	}
-
 	/** This filter is documented in wp-includes/ms-blogs.php */
 	do_action( 'switch_blog', $blog, $prev_blog_id );
 
@@ -934,6 +920,27 @@ function restore_current_blog() {
 	$GLOBALS['switched'] = ! empty( $GLOBALS['_wp_switched_stack'] );
 
 	return true;
+}
+
+/**
+ * Switches the initialized roles and current user capabilities to another site.
+ *
+ * @since 4.9.0
+ *
+ * @param int $new_site_id New site ID.
+ * @param int $old_site_id Old site ID.
+ */
+function wp_switch_roles_and_user( $new_site_id, $old_site_id ) {
+	if ( $new_site_id == $old_site_id ) {
+		return;
+	}
+
+	if ( ! did_action( 'init' ) ) {
+		return;
+	}
+
+	wp_roles()->for_site( $new_site_id );
+	wp_get_current_user()->for_site( $new_site_id );
 }
 
 /**
@@ -1223,7 +1230,8 @@ function _prime_network_caches( $network_ids ) {
 }
 
 /**
- * Handler for updating the blog date when a post is published or an already published post is changed.
+ * Handler for updating the site's last updated date when a post is published or
+ * an already published post is changed.
  *
  * @since 3.3.0
  *
@@ -1247,7 +1255,8 @@ function _update_blog_date_on_post_publish( $new_status, $old_status, $post ) {
 }
 
 /**
- * Handler for updating the blog date when a published post is deleted.
+ * Handler for updating the current site's last updated date when a published
+ * post is deleted.
  *
  * @since 3.4.0
  *
@@ -1269,7 +1278,7 @@ function _update_blog_date_on_post_delete( $post_id ) {
 }
 
 /**
- * Handler for updating the blog posts count date when a post is deleted.
+ * Handler for updating the current site's posts count when a post is deleted.
  *
  * @since 4.0.0
  *
@@ -1278,7 +1287,7 @@ function _update_blog_date_on_post_delete( $post_id ) {
 function _update_posts_count_on_delete( $post_id ) {
 	$post = get_post( $post_id );
 
-	if ( ! $post || 'publish' !== $post->post_status ) {
+	if ( ! $post || 'publish' !== $post->post_status || 'post' !== $post->post_type ) {
 		return;
 	}
 
@@ -1286,15 +1295,21 @@ function _update_posts_count_on_delete( $post_id ) {
 }
 
 /**
- * Handler for updating the blog posts count date when a post status changes.
+ * Handler for updating the current site's posts count when a post status changes.
  *
  * @since 4.0.0
+ * @since 4.9.0 Added the `$post` parameter.
  *
- * @param string $new_status The status the post is changing to.
- * @param string $old_status The status the post is changing from.
+ * @param string  $new_status The status the post is changing to.
+ * @param string  $old_status The status the post is changing from.
+ * @param WP_Post $post       Post object
  */
-function _update_posts_count_on_transition_post_status( $new_status, $old_status ) {
+function _update_posts_count_on_transition_post_status( $new_status, $old_status, $post = null ) {
 	if ( $new_status === $old_status ) {
+		return;
+	}
+
+	if ( 'post' !== get_post_type( $post ) ) {
 		return;
 	}
 

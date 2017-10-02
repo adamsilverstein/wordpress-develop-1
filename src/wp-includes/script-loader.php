@@ -473,7 +473,7 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'code-editor', "/wp-admin/js/code-editor$suffix.js", array( 'jquery', 'wp-codemirror' ) );
 	$scripts->add( 'wp-theme-plugin-editor', "/wp-admin/js/theme-plugin-editor$suffix.js", array( 'code-editor', 'jquery', 'jquery-ui-core', 'wp-a11y', 'underscore' ) );
 	did_action( 'init' ) && $scripts->add_inline_script( 'wp-theme-plugin-editor', sprintf( 'wp.themePluginEditor.l10n = %s;', wp_json_encode( wp_array_slice_assoc(
-		/* translators: placeholder is error count */
+		/* translators: %d: error count */
 		_n_noop( 'There is %d error which must be fixed before you can save.', 'There are %d errors which must be fixed before you can save.' ),
 		array( 'singular', 'plural' )
 	) ) ) );
@@ -547,8 +547,18 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'customize-views',    "/wp-includes/js/customize-views.js",  array( 'jquery', 'underscore', 'imgareaselect', 'customize-models', 'media-editor', 'media-views' ), false, 1 );
 	$scripts->add( 'customize-controls', "/wp-admin/js/customize-controls$suffix.js", array( 'customize-base', 'wp-a11y', 'wp-util' ), false, 1 );
 	did_action( 'init' ) && $scripts->localize( 'customize-controls', '_wpCustomizeControlsL10n', array(
-		'activate'           => __( 'Save &amp; Activate' ),
-		'save'               => __( 'Save &amp; Publish' ),
+		'activate'           => __( 'Activate &amp; Publish' ),
+		'save'               => __( 'Save &amp; Publish' ), // @todo Remove as not required.
+		'publish'            => __( 'Publish' ),
+		'published'          => __( 'Published' ),
+		'saveDraft'          => __( 'Save Draft' ),
+		'draftSaved'         => __( 'Draft Saved' ),
+		'updating'           => __( 'Updating' ),
+		'schedule'           => __( 'Schedule' ),
+		'scheduled'          => __( 'Scheduled' ),
+		'invalid'            => __( 'Invalid' ),
+		'saveBeforeShare'    => __( 'Please save your changes in order to share the preview.' ),
+		'futureDateError'    => __( 'You must supply a future date to schedule.' ),
 		'saveAlert'          => __( 'The changes you made will be lost if you navigate away from this page.' ),
 		'saved'              => __( 'Saved' ),
 		'cancel'             => __( 'Cancel' ),
@@ -561,19 +571,23 @@ function wp_default_scripts( &$scripts ) {
 		'expandSidebar'      => _x( 'Show Controls', 'label for hide controls button without length constraints' ),
 		'untitledBlogName'   => __( '(Untitled)' ),
 		'serverSaveError'    => __( 'Failed connecting to the server. Please try saving again.' ),
-		/* translators: placeholder is URL to the Customizer to load the autosaved version */
+		'themeDownloading'   => __( 'Downloading your new theme&hellip;' ),
+		'themePreviewWait'   => __( 'Setting up your live preview. This may take a bit.' ),
+		'revertingChanges'   => __( 'Reverting unpublished changes&hellip;' ),
+		'trashConfirm'       => __( 'Are you sure you would like to discard your unpublished changes?' ),
+		/* translators: %s: URL to the Customizer to load the autosaved version */
 		'autosaveNotice'     => __( 'There is a more recent autosave of your changes than the one you are previewing. <a href="%s">Restore the autosave</a>' ),
-		'videoHeaderNotice'   => __( 'This theme doesn\'t support video headers on this page. Navigate to the front page or another page that supports video headers.' ),
+		'videoHeaderNotice'  => __( 'This theme doesn\'t support video headers on this page. Navigate to the front page or another page that supports video headers.' ),
 		// Used for overriding the file types allowed in plupload.
 		'allowedFiles'       => __( 'Allowed Files' ),
 		'customCssError'     => wp_array_slice_assoc(
-			/* translators: placeholder is error count */
+			/* translators: %d: error count */
 			_n_noop( 'There is %d error which must be fixed before you can save.', 'There are %d errors which must be fixed before you can save.' ),
 			array( 'singular', 'plural' )
 		),
 		'pageOnFrontError' => __( 'Homepage and posts page must be different.' ),
 		'saveBlockedError' => wp_array_slice_assoc(
-			/* translators: placeholder is error count */
+			/* translators: %s: error count */
 			_n_noop( 'Unable to save due to %s invalid setting.', 'Unable to save due to %s invalid settings.' ),
 			array( 'singular', 'plural' )
 		),
@@ -812,7 +826,7 @@ function wp_default_scripts( &$scripts ) {
 				'connectionError'            => __( 'Connection lost or the server is busy. Please try again later.' ),
 				'nonceError'                 => __( 'An error has occurred. Please reload the page and try again.' ),
 				'pluginsFound'               => __( 'Number of plugins found: %d' ),
-				'noPluginsFound'             => __( 'No plugins found. Try a different search.' ),
+				'noPluginsFound'             => __( 'No plugins found. Try a different search query.' ),
 			),
 		) );
 
@@ -1160,7 +1174,7 @@ function wp_localize_community_events() {
 			'could_not_locate_city' => __( 'We couldn&#8217;t locate %s. Please try another nearby city. For example: Kansas City; Springfield; Portland.' ),
 
 			// This one is only used with wp.a11y.speak(), so it can/should be more brief.
-			/* translators: %s is the name of a city. */
+			/* translators: %s: the name of a city */
 			'city_updated' => __( 'City updated. Listing events near %s.' ),
 		)
 	) );
