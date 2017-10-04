@@ -1,7 +1,7 @@
 /* jshint node:true */
 /* globals Set */
-var webpackConfig = require( './webpack.config' );
-var webpackDevConfig = require( './webpack-dev.config' );
+var webpackConfig = require( './webpack.config.prod' );
+var webpackDevConfig = require( './webpack.config.dev' );
 
 module.exports = function(grunt) {
 	var path = require('path'),
