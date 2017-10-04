@@ -10,7 +10,7 @@
 /**
  * Gets the network's site and user counts.
  *
- * @since MU (3.0.0) 1.0
+ * @since MU (3.0.0)
  *
  * @return array Site and user count for the network.
  */
@@ -32,7 +32,7 @@ function get_sitestats() {
  * is added as a Subscriber to the Dashboard Blog and that blog
  * is returned.
  *
- * @since MU (3.0.0) 1.0
+ * @since MU (3.0.0)
  *
  * @param int $user_id The unique ID of the user
  * @return WP_Site|void The blog object
@@ -96,7 +96,7 @@ function get_active_blog_for_user( $user_id ) {
  *
  * The count is cached and updated twice daily. This is not a live count.
  *
- * @since MU (3.0.0) 2.7
+ * @since MU (3.0.0)
  * @since 4.8.0 The $network_id parameter has been added.
  *
  * @param int|null $network_id ID of the network. Default is the current network.
@@ -111,7 +111,7 @@ function get_user_count( $network_id = null ) {
  *
  * The count is cached and updated twice daily. This is not a live count.
  *
- * @since MU (3.0.0) 1.0
+ * @since MU (3.0.0)
  * @since 3.7.0 The $network_id parameter has been deprecated.
  * @since 4.8.0 The $network_id parameter is now being used.
  *
@@ -125,7 +125,7 @@ function get_blog_count( $network_id = null ) {
 /**
  * Get a blog post from any site on the network.
  *
- * @since MU (3.0.0) 1.0
+ * @since MU (3.0.0)
  *
  * @param int $blog_id ID of the blog.
  * @param int $post_id ID of the post you're looking for.
@@ -144,7 +144,7 @@ function get_blog_post( $blog_id, $post_id ) {
  *
  * Use the {@see 'add_user_to_blog'} action to fire an event when users are added to a blog.
  *
- * @since MU (3.0.0) 1.0
+ * @since MU (3.0.0)
  *
  * @param int    $blog_id ID of the blog you're adding the user to.
  * @param int    $user_id ID of the user you're adding.
@@ -217,7 +217,7 @@ function add_user_to_blog( $blog_id, $user_id, $role ) {
  * Accepts an optional `$reassign` parameter, if you want to
  * reassign the user's blog posts to another user upon removal.
  *
- * @since MU (3.0.0) 1.0
+ * @since MU (3.0.0)
  *
  * @global wpdb $wpdb WordPress database abstraction object.
  *
@@ -320,7 +320,7 @@ function get_blog_permalink( $blog_id, $post_id ) {
  * subdirectory '/blog1/'. With subdomains like blog1.example.com,
  * $domain is 'blog1.example.com' and $path is '/'.
  *
- * @since MU (3.0.0) 2.6.5
+ * @since MU (3.0.0)
  *
  * @global wpdb $wpdb WordPress database abstraction object.
  *
@@ -342,6 +342,7 @@ function get_blog_id_from_url( $domain, $path = '/' ) {
 		'domain' => $domain,
 		'path' => $path,
 		'fields' => 'ids',
+		'number' => 1,
 	);
 	$result = get_sites( $args );
 	$id = array_shift( $result );
@@ -1278,7 +1279,7 @@ function newblog_notify_siteadmin( $blog_id, $deprecated = '' ) {
 	/* translators: New site notification email. 1: Site URL, 2: User IP address, 3: Settings screen URL */
 	$msg = sprintf( __( 'New Site: %1$s
 URL: %2$s
-Remote IP: %3$s
+Remote IP address: %3$s
 
 Disable these notifications: %4$s' ), $blogname, $siteurl, wp_unslash( $_SERVER['REMOTE_ADDR'] ), $options_site_url);
 	/**
@@ -1320,7 +1321,7 @@ function newuser_notify_siteadmin( $user_id ) {
 	$options_site_url = esc_url(network_admin_url('settings.php'));
 	/* translators: New user notification email. 1: User login, 2: User IP address, 3: Settings screen URL */
 	$msg = sprintf(__('New User: %1$s
-Remote IP: %2$s
+Remote IP address: %2$s
 
 Disable these notifications: %3$s'), $user->user_login, wp_unslash( $_SERVER['REMOTE_ADDR'] ), $options_site_url);
 
@@ -1407,7 +1408,7 @@ function insert_blog($domain, $path, $network_id) {
 		return false;
 
 	$blog_id = $wpdb->insert_id;
-	refresh_blog_details( $blog_id );
+	clean_blog_cache( $blog_id );
 
 	wp_maybe_update_network_site_counts( $network_id );
 
@@ -2159,7 +2160,7 @@ function add_new_user_to_blog( $user_id, $password, $meta ) {
  *
  * @since MU (3.0.0)
  *
- * @param PHPMailer $phpmailer The PHPMailer instance, passed by reference.
+ * @param PHPMailer $phpmailer The PHPMailer instance (passed by reference).
  */
 function fix_phpmailer_messageid( $phpmailer ) {
 	$phpmailer->Hostname = get_network()->domain;

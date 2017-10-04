@@ -471,11 +471,14 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'htmlhint', '/wp-includes/js/codemirror/htmlhint.js', array(), '0.9.14-xwp' );
 	$scripts->add( 'htmlhint-kses', '/wp-includes/js/codemirror/htmlhint-kses.js', array( 'htmlhint' ) );
 	$scripts->add( 'code-editor', "/wp-admin/js/code-editor$suffix.js", array( 'jquery', 'wp-codemirror' ) );
-	$scripts->add( 'wp-theme-plugin-editor', "/wp-admin/js/theme-plugin-editor$suffix.js", array( 'code-editor', 'jquery', 'jquery-ui-core', 'wp-a11y', 'underscore' ) );
-	did_action( 'init' ) && $scripts->add_inline_script( 'wp-theme-plugin-editor', sprintf( 'wp.themePluginEditor.l10n = %s;', wp_json_encode( wp_array_slice_assoc(
-		/* translators: %d: error count */
-		_n_noop( 'There is %d error which must be fixed before you can save.', 'There are %d errors which must be fixed before you can save.' ),
-		array( 'singular', 'plural' )
+	$scripts->add( 'wp-theme-plugin-editor', "/wp-admin/js/theme-plugin-editor$suffix.js", array( 'wp-util', 'jquery', 'jquery-ui-core', 'wp-a11y', 'underscore' ) );
+	did_action( 'init' ) && $scripts->add_inline_script( 'wp-theme-plugin-editor', sprintf( 'wp.themePluginEditor.l10n = %s;', wp_json_encode( array(
+		'saveAlert' => __( 'The changes you made will be lost if you navigate away from this page.' ),
+		'lintError' => wp_array_slice_assoc(
+			/* translators: %d: error count */
+			_n_noop( 'There is %d error which must be fixed before you can update this file.', 'There are %d errors which must be fixed before you can update this file.' ),
+			array( 'singular', 'plural' )
+		),
 	) ) ) );
 
 	$scripts->add( 'wp-playlist', "/wp-includes/js/mediaelement/wp-playlist$suffix.js", array( 'wp-util', 'backbone', 'mediaelement' ), false, 1 );
@@ -574,7 +577,7 @@ function wp_default_scripts( &$scripts ) {
 		'themeDownloading'   => __( 'Downloading your new theme&hellip;' ),
 		'themePreviewWait'   => __( 'Setting up your live preview. This may take a bit.' ),
 		'revertingChanges'   => __( 'Reverting unpublished changes&hellip;' ),
-		'trashConfirm'       => __( 'Are you sure you would like to discard your unpublished changes?' ),
+		'trashConfirm'       => __( 'Are you sure you&#8217;d like to discard your unpublished changes?' ),
 		/* translators: %s: URL to the Customizer to load the autosaved version */
 		'autosaveNotice'     => __( 'There is a more recent autosave of your changes than the one you are previewing. <a href="%s">Restore the autosave</a>' ),
 		'videoHeaderNotice'  => __( 'This theme doesn\'t support video headers on this page. Navigate to the front page or another page that supports video headers.' ),
