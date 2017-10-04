@@ -874,30 +874,30 @@ module.exports = function(grunt) {
 				}
 
 				if ( code === 0 ) {
-				if ( [ 'package.json', 'Gruntfile.js', 'webpack.config.js' ].some( testPath ) ) {
-					grunt.log.writeln( 'Configuration files modified. Running `prerelease`.' );
-					taskList.push( 'prerelease' );
-				} else {
-					if ( [ 'png', 'jpg', 'gif', 'jpeg' ].some( testExtension ) ) {
-						grunt.log.writeln( 'Image files modified. Minifying.' );
-						taskList.push( 'precommit:image' );
-					}
-
-					[ 'js', 'css', 'php' ].forEach( function( extension ) {
-						if ( testExtension( extension ) ) {
-							grunt.log.writeln( extension.toUpperCase() + ' files modified. ' + extension.toUpperCase() + ' tests will be run.' );
-							taskList.push( 'precommit:' + extension );
+					if ( [ 'package.json', 'Gruntfile.js' ].some( testPath ) ) {
+						grunt.log.writeln( 'Configuration files modified. Running `prerelease`.' );
+						taskList.push( 'prerelease' );
+					} else {
+						if ( [ 'png', 'jpg', 'gif', 'jpeg' ].some( testExtension ) ) {
+							grunt.log.writeln( 'Image files modified. Minifying.' );
+							taskList.push( 'precommit:image' );
 						}
-					} );
 
-					if ( [ 'twemoji.js' ].some( testPath ) ) {
-						grunt.log.writeln( 'twemoji.js has updated. Running `precommit:emoji.' );
-						taskList.push( 'precommit:emoji' );
+						[ 'js', 'css', 'php' ].forEach( function( extension ) {
+							if ( testExtension( extension ) ) {
+								grunt.log.writeln( extension.toUpperCase() + ' files modified. ' + extension.toUpperCase() + ' tests will be run.' );
+								taskList.push( 'precommit:' + extension );
+							}
+						} );
+
+						if ( [ 'twemoji.js' ].some( testPath ) ) {
+							grunt.log.writeln( 'twemoji.js has updated. Running `precommit:emoji.' );
+							taskList.push( 'precommit:emoji' );
+						}
 					}
-				}
 
-				grunt.task.run( taskList );
-				done();
+					grunt.task.run( taskList );
+					done();
 				} else {
 					runAllTasks();
 				}
