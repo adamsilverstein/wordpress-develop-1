@@ -612,6 +612,7 @@ final class WP_Customize_Manager {
 				$unpublished_changeset_posts = $this->get_changeset_posts( array(
 					'post_status' => array_diff( get_post_stati(), array( 'auto-draft', 'publish', 'trash', 'inherit', 'private' ) ),
 					'exclude_restore_dismissed' => false,
+					'author' => 'any',
 					'posts_per_page' => 1,
 					'order' => 'DESC',
 					'orderby' => 'date',
@@ -3603,7 +3604,7 @@ final class WP_Customize_Manager {
 
 		?>
 		<script type="text/html" id="tmpl-customize-notification">
-			<li class="notice notice-{{ data.type || 'info' }} {{ data.alt ? 'notice-alt' : '' }} {{ data.dismissible ? 'is-dismissible' : '' }} {{ data.classes || '' }}" data-code="{{ data.code }}" data-type="{{ data.type }}">
+			<li class="notice notice-{{ data.type || 'info' }} {{ data.alt ? 'notice-alt' : '' }} {{ data.dismissible ? 'is-dismissible' : '' }} {{ data.containerClasses || '' }}" data-code="{{ data.code }}" data-type="{{ data.type }}">
 				<div class="notification-message">{{{ data.message || data.code }}}</div>
 				<# if ( data.dismissible ) { #>
 					<button type="button" class="notice-dismiss"><span class="screen-reader-text"><?php _e( 'Dismiss' ); ?></span></button>
@@ -3639,7 +3640,7 @@ final class WP_Customize_Manager {
 			</div>
 		</script>
 		<script type="text/html" id="tmpl-customize-trash-changeset-control">
-			<button type="button" class="button-link button-link-delete"><?php _e( 'Trash unpublished changes' ); ?></button>
+			<button type="button" class="button-link button-link-delete"><?php _e( 'Discard changes' ); ?></button>
 		</script>
 		<?php
 	}
