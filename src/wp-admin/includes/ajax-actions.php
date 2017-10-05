@@ -3989,3 +3989,14 @@ function wp_ajax_edit_theme_plugin_file() {
 		) );
 	}
 }
+
+
+/**
+ * Update user meta when a user dismisses the 'Heads Up' warning modal displayed when using
+ * the plugin or theme editor for the first time.
+ */
+function wp_ajax_edit_theme_plugin_warning_dismissed( $args ) {
+	check_ajax_referer( 'dismiss-notice' );
+
+	return true;
+}
