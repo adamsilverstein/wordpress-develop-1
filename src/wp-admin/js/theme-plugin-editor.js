@@ -46,12 +46,12 @@ wp.themePluginEditor = (function( $ ) {
 		component.form.on( 'submit', component.submit );
 		component.textarea = component.form.find( '#newcontent' );
 		component.textarea.on( 'change', component.onChange );
-component.warning = $( '.file-editor-warning' );
+		component.warning = $( '.file-editor-warning' );
 
-if ( component.warning.length > 0 ) {
-	$( 'body' ).addClass( 'modal-open' );
-	component.warning.on( 'click', '.notice-dismiss', component.dismissWarning );
-};
+		if ( component.warning.length > 0 ) {
+			$( 'body' ).addClass( 'modal-open' );
+			component.warning.on( 'click', '.notice-dismiss', component.dismissWarning );
+		};
 
 
 		if ( false !== component.codeEditor ) {
@@ -73,14 +73,28 @@ if ( component.warning.length > 0 ) {
 		} );
 	};
 
-component.dismissWarning = function() {
-// update user meta
-// hide modal
-component.warning.remove();
-$( 'body' ).removeClass( 'modal-open' );
+	/**
+	 * Dismiss the warning modal.
+	 *
+	 * @param  {string} themesOrPlugins Which screen the modal is on - one of 'themes' or 'plugins'.
+	 */
+	component.dismissWarning = function( themesOrPlugins ) {
 
-// return focus
-}
+	// update user meta
+	var request
+	themesOrPlugins = 'undefined' === typeof themesOrPlugins ? themesOrPlugins : 'themes'
+
+	request = wp.ajax.post( 'edit-theme-plugin-warning-dismissed', {
+		nonce:     wp.themePluginEditor.nonce,
+		dismissed: themesOrPlugins
+	} );
+
+	// hide modal
+	component.warning.remove();
+	$( 'body' ).removeClass( 'modal-open' );
+
+	// return focus
+	}
 
 	/**
 	 * Callback for when a change happens.
