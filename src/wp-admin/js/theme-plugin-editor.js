@@ -46,6 +46,13 @@ wp.themePluginEditor = (function( $ ) {
 		component.form.on( 'submit', component.submit );
 		component.textarea = component.form.find( '#newcontent' );
 		component.textarea.on( 'change', component.onChange );
+component.warning = $( '.file-editor-warning' );
+
+if ( component.warning.length > 0 ) {
+	$( 'body' ).addClass( 'modal-open' );
+	component.warning.on( 'click', '.notice-dismiss', component.dismissWarning );
+};
+
 
 		if ( false !== component.codeEditor ) {
 			/*
@@ -65,6 +72,15 @@ wp.themePluginEditor = (function( $ ) {
 			return undefined;
 		} );
 	};
+
+component.dismissWarning = function() {
+// update user meta
+// hide modal
+component.warning.remove();
+$( 'body' ).removeClass( 'modal-open' );
+
+// return focus
+}
 
 	/**
 	 * Callback for when a change happens.

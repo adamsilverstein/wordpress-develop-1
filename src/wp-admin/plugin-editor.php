@@ -280,5 +280,21 @@ if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 <br class="clear" />
 </div>
 <?php
+$hide_notice = get_user_meta( get_current_user_id(), 'hide_plugin_editor_notice', true ); 
+if ( empty( $hide_notice ) ) :
+?>
+<div id="file-editor-warning" class="notification-dialog-wrap file-editor-warning hide-if-no-js">
+	<div class="notification-dialog-background"></div>
+	<div class="notification-dialog" role="dialog" aria-labelledby="file-editor-warning-title" tabindex="0">
+		<div class="file-editor-warning-content">
+			<h1 id="file-editor-warning-title"><?php _e( 'Heads up!' ); ?></h1>
+			<p><?php _e( 'You appear to be making direct edits to your plugin in the WordPress dashboard. We recommend that you don&#8217;t! Editing plugins directly may introduce incompatibilities that break your site or even leave you staring at the dreaded &#8220;White Screen of Death&#8221;. Your changes may also be overwritten by future updates.' ); ?></p>
+			<p><?php _e( 'If you absolutely must edit a plugin this way, WordPress will attempt to prevent you from being locked out from the dashboard entirely, but cannot guarantee results. Once dismissed, this notice will not appear again.' ); ?></p>
+		</div>
+		<button type="button" class="notice-dismiss"><span class="screen-reader-text"><?php _e( 'Dismiss' ); ?></span></button>
+	</div>
+</div>
+<?php
+endif; // editor warning notice
 
 include(ABSPATH . "wp-admin/admin-footer.php");
