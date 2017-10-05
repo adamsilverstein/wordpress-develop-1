@@ -478,6 +478,7 @@ function wp_default_scripts( &$scripts ) {
 			array( 'singular', 'plural' )
 		),
 	) ) ) );
+	did_action( 'init' ) && $scripts->add_inline_script( 'wp-theme-plugin-editor', sprintf( 'wp.themePluginEditor.nonce = "%s";', wp_create_nonce( 'dismiss-notice' ) ) );
 
 	$scripts->add( 'wp-playlist', "/wp-includes/js/mediaelement/wp-playlist$suffix.js", array( 'wp-util', 'backbone', 'mediaelement' ), false, 1 );
 
