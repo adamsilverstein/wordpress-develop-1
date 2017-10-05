@@ -50,6 +50,7 @@ wp.themePluginEditor = (function( $ ) {
 
 		if ( component.warning.length > 0 ) {
 			$( 'body' ).addClass( 'modal-open' );
+			component.warning.find( '.notice-dismiss' ).focus();
 			component.warning.on( 'click', '.notice-dismiss', component.dismissWarning );
 		};
 
@@ -88,7 +89,8 @@ wp.themePluginEditor = (function( $ ) {
 	component.warning.remove();
 	$( 'body' ).removeClass( 'modal-open' );
 
-	// return focus
+	// return focus - is this a trap?
+	component.instance.codemirror.focus();
 	}
 
 	/**
