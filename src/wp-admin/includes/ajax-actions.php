@@ -3998,6 +3998,6 @@ function wp_ajax_edit_theme_plugin_warning_dismissed() {
 	check_ajax_referer( 'dismiss-notice' );
 
 	$dismissed = isset( $_POST['dismissed'] ) ? sanitize_text_field( $_POST['dismissed'] ) : 'themes';
-	update_user_meta( get_current_user_id(), $dismissed . '_edit_warning_dismissed', true );
+	update_user_meta( get_current_user_id(), 'hide_' .  $dismissed . '_editor_notice', true );
 	wp_die( 1 );
 }
