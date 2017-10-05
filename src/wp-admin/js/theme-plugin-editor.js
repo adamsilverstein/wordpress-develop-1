@@ -78,7 +78,7 @@ wp.themePluginEditor = (function( $ ) {
 	 *
 	 * @param  {string} themesOrPlugins Which screen the modal is on - one of 'themes' or 'plugins'.
 	 */
-	component.dismissWarning = function( themesOrPlugins ) {
+	component.dismissWarning = function() {
 
 	// update user meta
 	var request
@@ -86,7 +86,7 @@ wp.themePluginEditor = (function( $ ) {
 
 	request = wp.ajax.post( 'edit-theme-plugin-warning-dismissed', {
 		nonce:     wp.themePluginEditor.nonce,
-		dismissed: themesOrPlugins
+		dismissed: wp.themePluginEditor.themesOrPlugins
 	} );
 
 	// hide modal
