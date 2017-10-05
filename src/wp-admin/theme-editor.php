@@ -125,9 +125,11 @@ if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 	$settings = array(
 		'codeEditor' => wp_enqueue_code_editor( compact( 'file' ) ),
 	);
+	$warning_dismissed = get_user_meta( get_current_user_id(), 'themes_edit_warning_dismissed' );
 	wp_enqueue_script( 'wp-theme-plugin-editor' );
 	wp_add_inline_script( 'wp-theme-plugin-editor', sprintf( 'jQuery( function( $ ) { wp.themePluginEditor.init( $( "#template" ), %s ); } )', wp_json_encode( $settings ) ) );
-	wp_add_inline_script( 'wp-theme-plugin-editor', sprintf( 'wp.themePluginEditor.themesOrPlugins = "themes";' ) );
+	wp_add_inline_script( 'wp-theme-plugin-editor', 'wp.themePluginEditor.themesOrPlugins = "themes";' );
+	wp_add_inline_script( 'wp-theme-plugin-editor', sprintf( 'wp.themePluginEditor.warningDismissed = "%s";', $warning_dismissed ) );
 
 	require_once( ABSPATH . 'wp-admin/admin-header.php' );
 
