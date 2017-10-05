@@ -81,10 +81,7 @@ wp.themePluginEditor = (function( $ ) {
 	component.dismissWarning = function() {
 
 	// update user meta
-	var request
-	themesOrPlugins = 'undefined' === typeof themesOrPlugins ? themesOrPlugins : 'themes'
-
-	request = wp.ajax.post( 'edit-theme-plugin-warning-dismissed', {
+	var request = wp.ajax.post( 'edit-theme-plugin-warning-dismissed', {
 		nonce:     wp.themePluginEditor.nonce,
 		dismissed: wp.themePluginEditor.themesOrPlugins
 	} );
