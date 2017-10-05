@@ -142,6 +142,7 @@ if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 	);
 	wp_enqueue_script( 'wp-theme-plugin-editor' );
 	wp_add_inline_script( 'wp-theme-plugin-editor', sprintf( 'jQuery( function( $ ) { wp.themePluginEditor.init( $( "#template" ), %s ); } )', wp_json_encode( $settings ) ) );
+	wp_add_inline_script( 'wp-theme-plugin-editor', sprintf( 'wp.themePluginEditor.themesOrPlugins = "plugins";' ) );
 
 	require_once(ABSPATH . 'wp-admin/admin-header.php');
 
@@ -280,7 +281,7 @@ if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 <br class="clear" />
 </div>
 <?php
-$hide_notice = get_user_meta( get_current_user_id(), 'hide_plugin_editor_notice', true ); 
+$hide_notice = get_user_meta( get_current_user_id(), 'hide_plugin_editor_notice', true );
 if ( empty( $hide_notice ) ) :
 ?>
 <div id="file-editor-warning" class="notification-dialog-wrap file-editor-warning hide-if-no-js">
