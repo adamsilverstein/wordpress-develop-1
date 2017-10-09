@@ -393,7 +393,7 @@ wpList = {
 			wpList.xhrs.clear();
 		};
 
-		$.ajax( settings );
+		wpList.xhrs.setXhrs( settings.element, $.ajax( settings ) );
 
 		return false;
 	},
@@ -485,8 +485,7 @@ wpList = {
 			}
 		};
 
-		wpList.xhrs = wpList.xhrs || {};
-		wpList.xhrs[ s.element ] = $.ajax( settings );
+		wpList.xhrs.setXhrs( settings.element, $.ajax( settings ) );
 
 		return false;
 	},
