@@ -190,7 +190,7 @@ wpList = {
 		 * Track XHR connections.
 		 * @type {Object}
 		 */
-		xhrs: {},
+		xhrs: {}
 	},
 
 	/**
