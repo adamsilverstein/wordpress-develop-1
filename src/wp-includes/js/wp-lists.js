@@ -184,7 +184,13 @@ wpList = {
 		 *                                  'timeout', 'abort', or 'parsererror'.
 		 * @param {object} settings.parsed  Parsed response object.
 		 */
-		dimAfter: null
+		dimAfter: null,
+
+		/**
+		 * Track XHR connections.
+		 * @type {Object}
+		 */
+		xhrs: {},
 	},
 
 	/**
@@ -404,11 +410,26 @@ wpList = {
 			data     = wpList.parseData( $element, 'delete' ),
 			$eventTarget, parsedResponse, returnedResponse;
 
+		// Clear all finished AJAX requests from xhrs object.
+		if ( 'undefined' !== typeof wpList.xhrs ) {
+			for ( var key in wpList.xhrs ) {
+				if ( 4 === wpList.xhrs[ key ].readyState ) {
+					delete wpList.xhrs[ key ];
+				}
+			}
+		}
+
+
 		settings = settings || {};
 		settings = wpList.pre.call( list, $element, settings, 'delete' );
 
 		settings.element  = data[2] || settings.element || null;
 		settings.delColor = data[3] ? '#' + data[3] : settings.delColor;
+
+		// Return if there is already an AJAX request in progress involving the same element.
+		if ( wpList.xhrs && 'undefined' !== typeof wpList.xhrs[ s.element ] && 4 !== wpList.xhrs[ s.element ].readyState ) {
+			return false;
+		}
 
 		if ( ! settings || ! settings.element ) {
 			return false;
@@ -473,7 +494,8 @@ wpList = {
 			}
 		};
 
-		$.ajax( settings );
+		wpList.xhrs = wpList.xhrs || {};
+		wpList.xhrs[ s.element ] = $.ajax( settings );
 
 		return false;
 	},
@@ -503,6 +525,12 @@ wpList = {
 		settings.dimClass    = data[3] || settings.dimClass || null;
 		settings.dimAddColor = data[4] ? '#' + data[4] : settings.dimAddColor;
 		settings.dimDelColor = data[5] ? '#' + data[5] : settings.dimDelColor;
+
+		// Return if there is already an AJAX request in progress involving the same element.
+		if ( wpList.xhrs && 'undefined' !== typeof wpList.xhrs[ s.element ] && 4 !== wpList.xhrs[ s.element ].readyState ) {
+			return false;
+		}
+
 
 		if ( ! settings || ! settings.element || ! settings.dimClass ) {
 			return true;
@@ -587,6 +615,16 @@ wpList = {
 		};
 
 		settings.complete = function( jqXHR, status ) {
+
+			// Clear all finished AJAX requests from xhrs object.
+			if ( 'undefined' !== typeof wpList.xhrs ) {
+				for ( var key in wpList.xhrs ) {
+					if ( 4 === wpList.xhrs[ key ].readyState ) {
+						delete wpList.xhrs[ key ];
+					}
+				}
+			}
+
 			if ( $.isFunction( settings.dimAfter ) ) {
 				$eventTarget.queue( function() {
 					settings.dimAfter( returnedResponse, $.extend( {
@@ -598,7 +636,8 @@ wpList = {
 			}
 		};
 
-		$.ajax( settings );
+		wpList.xhrs = wpList.xhrs || {};
+		wpList.xhrs[ s.element ] = $.ajax( settings );
 
 		return false;
 	},
@@ -836,7 +875,7 @@ wpList = {
 $.fn.wpList = function( settings ) {
 	this.each( function( index, list ) {
 		list.wpList = {
-			settings: $.extend( {}, wpList.settings, { what: wpList.parseData( list, 'list' )[1] || '' }, settings )
+			settings: $.extend( {}, wpList.settings, { what: wpList.parseData( list, 'list' )[1] || '' }, { xhrs: wpList.xhrs }, settings )
 		};
 
 		$.each( functions, function( func, callback ) {
