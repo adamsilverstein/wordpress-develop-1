@@ -184,14 +184,14 @@ wpList = {
 		 *                                  'timeout', 'abort', or 'parsererror'.
 		 * @param {object} settings.parsed  Parsed response object.
 		 */
-		dimAfter: null,
-
-		/**
-		 * Track XHR connections.
-		 * @type {Object}
-		 */
-		xhrs: wp.xhrs()
+		dimAfter: null
 	},
+
+	/**
+	 * Track XHR connections.
+	 * @type {Object}
+	 */
+	xhrs: wp.xhrs(),
 
 	/**
 	 * Finds a nonce.

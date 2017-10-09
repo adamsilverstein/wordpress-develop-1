@@ -290,7 +290,7 @@ setCommentsList = function() {
 			a.click(function( e ){
 
 				// Abort undo if there is an unfinished AJAX request involving the same comment.
-				if ( settings.xhrs && 'undefined' !== typeof settings.xhrs['comment-' + id] && 4 !== settings.xhrs['comment-' + id].readyState ) {
+				if ( wpList.xhrs.inProgress( 'comment-' + id ) ) {
 					return false;
 				}
 				e.preventDefault();
