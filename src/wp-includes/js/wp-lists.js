@@ -190,7 +190,7 @@ wpList = {
 		 * Track XHR connections.
 		 * @type {Object}
 		 */
-		xhrs: {}
+		xhrs: wp.xhrs()
 	},
 
 	/**
@@ -390,6 +390,7 @@ wpList = {
 					parsed: parsedResponse
 				}, settings ) );
 			}
+			wpList.xhrs.clear();
 		};
 
 		$.ajax( settings );
@@ -410,16 +411,6 @@ wpList = {
 			data     = wpList.parseData( $element, 'delete' ),
 			$eventTarget, parsedResponse, returnedResponse;
 
-		// Clear all finished AJAX requests from xhrs object.
-		if ( 'undefined' !== typeof wpList.xhrs ) {
-			for ( var key in wpList.xhrs ) {
-				if ( 4 === wpList.xhrs[ key ].readyState ) {
-					delete wpList.xhrs[ key ];
-				}
-			}
-		}
-
-
 		settings = settings || {};
 		settings = wpList.pre.call( list, $element, settings, 'delete' );
 
@@ -427,7 +418,7 @@ wpList = {
 		settings.delColor = data[3] ? '#' + data[3] : settings.delColor;
 
 		// Return if there is already an AJAX request in progress involving the same element.
-		if ( wpList.xhrs && 'undefined' !== typeof wpList.xhrs[ s.element ] && 4 !== wpList.xhrs[ s.element ].readyState ) {
+		if ( wpList.xhrs.inProgress( settings.element ) ) {
 			return false;
 		}
 
@@ -527,7 +518,7 @@ wpList = {
 		settings.dimDelColor = data[5] ? '#' + data[5] : settings.dimDelColor;
 
 		// Return if there is already an AJAX request in progress involving the same element.
-		if ( wpList.xhrs && 'undefined' !== typeof wpList.xhrs[ s.element ] && 4 !== wpList.xhrs[ s.element ].readyState ) {
+		if ( wpList.xhrs.inProgress( settings.element ) ) {
 			return false;
 		}
 
@@ -616,13 +607,7 @@ wpList = {
 		settings.complete = function( jqXHR, status ) {
 
 			// Clear all finished AJAX requests from xhrs object.
-			if ( 'undefined' !== typeof wpList.xhrs ) {
-				for ( var key in wpList.xhrs ) {
-					if ( 4 === wpList.xhrs[ key ].readyState ) {
-						delete wpList.xhrs[ key ];
-					}
-				}
-			}
+			wpList.xhrs.clear();
 
 			if ( $.isFunction( settings.dimAfter ) ) {
 				$eventTarget.queue( function() {
@@ -635,8 +620,7 @@ wpList = {
 			}
 		};
 
-		wpList.xhrs = wpList.xhrs || {};
-		wpList.xhrs[ s.element ] = $.ajax( settings );
+		wpList.xhrs.setXhrs( settings.element, $.ajax( settings ) );
 
 		return false;
 	},
