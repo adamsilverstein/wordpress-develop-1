@@ -531,7 +531,6 @@ wpList = {
 			return false;
 		}
 
-
 		if ( ! settings || ! settings.element || ! settings.dimClass ) {
 			return true;
 		}
