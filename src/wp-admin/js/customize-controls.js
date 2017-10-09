@@ -106,7 +106,7 @@
 		 *
 		 * @since 4.9.0
 		 *
-		 * @param {string|wp.customize.Notification} - Notification object to add. Alternatively code may be supplied, and in that case the second notificationObject argument must be supplied.
+		 * @param {string|wp.customize.Notification} notification - Notification object to add. Alternatively code may be supplied, and in that case the second notificationObject argument must be supplied.
 		 * @param {wp.customize.Notification} [notificationObject] - Notification to add when first argument is the code string.
 		 * @returns {wp.customize.Notification} Added notification (or existing instance if it was already added).
 		 */
@@ -1234,8 +1234,21 @@
 		 * @param {object}         [options.params] - Deprecated wrapper for the above properties.
 		 */
 		initialize: function ( id, options ) {
-			var section = this;
-			Container.prototype.initialize.call( section, id, options );
+			var section = this, params;
+			params = options.params || options;
+
+			// Look up the type if one was not supplied.
+			if ( ! params.type ) {
+				_.find( api.sectionConstructor, function( Constructor, type ) {
+					if ( Constructor === section.constructor ) {
+						params.type = type;
+						return true;
+					}
+					return false;
+				} );
+			}
+
+			Container.prototype.initialize.call( section, id, params );
 
 			section.id = id;
 			section.panel = new api.Value();
@@ -2507,8 +2520,22 @@
 		 * @param {object}         [options.params] - Deprecated wrapper for the above properties.
 		 */
 		initialize: function ( id, options ) {
-			var panel = this;
-			Container.prototype.initialize.call( panel, id, options );
+			var panel = this, params;
+			params = options.params || options;
+
+			// Look up the type if one was not supplied.
+			if ( ! params.type ) {
+				_.find( api.panelConstructor, function( Constructor, type ) {
+					if ( Constructor === panel.constructor ) {
+						params.type = type;
+						return true;
+					}
+					return false;
+				} );
+			}
+
+			Container.prototype.initialize.call( panel, id, params );
+
 			panel.embed();
 			panel.deferred.embedded.done( function () {
 				panel.ready();
@@ -2774,10 +2801,23 @@
 		 * @returns {void}
 		 */
 		attachEvents: function() {
-			var panel = this;
+			var panel = this, toggleDisabledNotification;
 
 			// Attach regular panel events.
 			api.Panel.prototype.attachEvents.apply( panel );
+
+			toggleDisabledNotification = function() {
+				if ( 'publish' === api.state( 'selectedChangesetStatus' ).get() ) {
+					panel.notifications.remove( 'theme_switch_unavailable' );
+				} else {
+					panel.notifications.add( new api.Notification( 'theme_switch_unavailable', {
+						message: api.l10n.themePreviewUnavailable,
+						type: 'warning'
+					} ) );
+				}
+			};
+			toggleDisabledNotification();
+			api.state( 'selectedChangesetStatus' ).bind( toggleDisabledNotification );
 
 			// Collapse panel to customize the current theme.
 			panel.contentContainer.on( 'click', '.customize-theme', function() {
@@ -2860,18 +2900,32 @@
 		 *
 		 * @since 4.9.0
 		 *
-		 * @returns {void}
+		 * @param {jQuery.Event} event - Event.
+		 * @returns {jQuery.promise} Promise.
 		 */
 		installTheme: function( event ) {
-			var panel = this, preview = false, slug = $( event.target ).data( 'slug' );
+			var panel = this, preview, onInstallSuccess, slug = $( event.target ).data( 'slug' ), deferred = $.Deferred(), request;
+			preview = $( event.target ).hasClass( 'preview' );
 
+			// Prevent loading a non-active theme preview when there is a drafted/scheduled changeset.
+			if ( 'publish' !== api.state( 'selectedChangesetStatus' ).get() && slug !== api.settings.theme.stylesheet ) {
+				deferred.reject({
+					errorCode: 'theme_switch_unavailable'
+				});
+				return deferred.promise();
+			}
+
+			// Theme is already being installed.
 			if ( _.contains( panel.installingThemes, slug ) ) {
-				return; // Theme is already being installed.
+				deferred.reject({
+					errorCode: 'theme_already_installing'
+				});
+				return deferred.promise();
 			}
 
 			wp.updates.maybeRequestFilesystemCredentials( event );
 
-			$( document ).one( 'wp-theme-install-success', function( event, response ) {
+			onInstallSuccess = function( response ) {
 				var theme = false, themeControl;
 				if ( preview ) {
 					api.notifications.remove( 'theme_installing' );
@@ -2888,6 +2942,7 @@
 
 					// Don't add the same theme more than once.
 					if ( ! theme || api.control.has( 'installed_theme_' + theme.id ) ) {
+						deferred.resolve( response );
 						return;
 					}
 
@@ -2912,23 +2967,29 @@
 						}
 					});
 				}
-			} );
+				deferred.resolve( response );
+			};
 
-			panel.installingThemes.push( $( event.target ).data( 'slug' ) ); // Note: we don't remove elements from installingThemes, since they shouldn't be installed again.
-			wp.updates.installTheme( {
+			panel.installingThemes.push( slug ); // Note: we don't remove elements from installingThemes, since they shouldn't be installed again.
+			request = wp.updates.installTheme( {
 				slug: slug
 			} );
 
 			// Also preview the theme as the event is triggered on Install & Preview.
-			if ( $( event.target ).hasClass( 'preview' ) ) {
-				preview = true;
-
+			if ( preview ) {
 				api.notifications.add( new api.OverlayNotification( 'theme_installing', {
 					message: api.l10n.themeDownloading,
 					type: 'info',
 					loading: true
 				} ) );
 			}
+
+			request.done( onInstallSuccess );
+			request.fail( function() {
+				api.notifications.remove( 'theme_installing' );
+			} );
+
+			return deferred.promise();
 		},
 
 		/**
@@ -2942,13 +3003,19 @@
 		loadThemePreview: function( themeId ) {
 			var deferred = $.Deferred(), onceProcessingComplete, urlParser, queryParams;
 
+			// Prevent loading a non-active theme preview when there is a drafted/scheduled changeset.
+			if ( 'publish' !== api.state( 'selectedChangesetStatus' ).get() && themeId !== api.settings.theme.stylesheet ) {
+				return deferred.reject().promise();
+			}
+
 			urlParser = document.createElement( 'a' );
 			urlParser.href = location.href;
 			queryParams = _.extend(
 				api.utils.parseQueryString( urlParser.search.substr( 1 ) ),
 				{
 					theme: themeId,
-					changeset_uuid: api.settings.changeset.uuid
+					changeset_uuid: api.settings.changeset.uuid,
+					'return': api.settings.url['return']
 				}
 			);
 
@@ -2978,7 +3045,7 @@
 				request.done( function() {
 					deferred.resolve();
 					$( window ).off( 'beforeunload.customize-confirm' );
-					window.location.href = urlParser.href; // @todo Use location.replace()?
+					location.replace( urlParser.href );
 				} );
 				request.fail( function() {
 
@@ -3095,7 +3162,7 @@
 	 * @param {string} [options.active=true]    - Whether the control is active.
 	 * @param {string} options.section          - The ID of the section the control belongs to.
 	 * @param {mixed}  [options.setting]        - The ID of the main setting or an instance of this setting.
-	 * @param {mixed}  options.settings         - An object with keys (e.g. default) that maps to setting IDs or Setting/Value objects, or an array of setting IDs or Setting/Value objects.    
+	 * @param {mixed}  options.settings         - An object with keys (e.g. default) that maps to setting IDs or Setting/Value objects, or an array of setting IDs or Setting/Value objects.
 	 * @param {mixed}  options.settings.default - The ID of the setting the control relates to.
 	 * @param {string} options.settings.data    - @todo Is this used?
 	 * @param {string} options.label            - Label.
@@ -3107,12 +3174,14 @@
 		defaultActiveArguments: { duration: 'fast', completeCallback: $.noop },
 
 		defaults: {
+			label: '',
+			description: '',
 			active: true,
 			priority: 10
 		},
 
 		initialize: function( id, options ) {
-			var control = this, deferredSettingIds = [], settings, gatherSettings;
+			var control = this, deferredSettingIds = [], settings, gatherSettings, standardTypes;
 
 			control.params = _.extend( {}, control.defaults );
 
@@ -3145,11 +3214,38 @@
 
 			control.id = id;
 			control.selector = '#customize-control-' + id.replace( /\]/g, '' ).replace( /\[/g, '-' ); // Deprecated, likely dead code from time before #28709.
-			control.templateSelector = control.params.templateId || 'customize-control-' + control.params.type + '-content';
 			if ( control.params.content ) {
 				control.container = $( control.params.content );
 			} else {
 				control.container = $( control.selector ); // Likely dead, per above. See #28709.
+			}
+
+			standardTypes = [
+				'button',
+				'checkbox',
+				'date',
+				'datetime-local',
+				'email',
+				'month',
+				'number',
+				'password',
+				'radio',
+				'range',
+				'search',
+				'select',
+				'tel',
+				'time',
+				'text',
+				'textarea',
+				'week',
+				'url'
+			];
+			if ( control.params.templateId ) {
+				control.templateSelector = control.params.templateId;
+			} else if ( _.contains( standardTypes, control.params.type ) && control.container.is( ':empty' ) ) {
+				control.templateSelector = 'customize-control-default-content';
+			} else {
+				control.templateSelector = 'customize-control-' + control.params.type + '-content';
 			}
 
 			control.deferred = {
@@ -4685,7 +4781,17 @@
 		 * @since 4.2.0
 		 */
 		ready: function() {
-			var control = this;
+			var control = this, disableSwitchButtons, updateButtons;
+
+			disableSwitchButtons = function() {
+				return 'publish' !== api.state( 'selectedChangesetStatus' ).get() && control.params.theme.id !== api.settings.theme.stylesheet;
+			};
+			updateButtons = function() {
+				control.container.find( 'button' ).toggleClass( 'disabled', disableSwitchButtons() );
+			};
+
+			api.state( 'selectedChangesetStatus' ).bind( updateButtons );
+			updateButtons();
 
 			control.container.on( 'touchmove', '.theme', function() {
 				control.touchDrag = true;
@@ -4693,6 +4799,7 @@
 
 			// Bind details view trigger.
 			control.container.on( 'click keydown touchend', '.theme', function( event ) {
+				var section;
 				if ( api.utils.isKeydownButNotEnterEvent( event ) ) {
 					return;
 				}
@@ -4708,7 +4815,10 @@
 				}
 
 				event.preventDefault(); // Keep this AFTER the key filter above
-				api.section( control.section() ).showDetails( control.params.theme );
+				section = api.section( control.section() );
+				section.showDetails( control.params.theme, function() {
+					section.overlay.find( '.theme-actions button' ).toggleClass( 'disabled', disableSwitchButtons() );
+				} );
 			});
 
 			control.container.on( 'render-screenshot', function() {
@@ -5474,12 +5584,167 @@
 	// Change objects contained within the main customize object to Settings.
 	api.defaultConstructor = api.Setting;
 
-	// Create the collections for Controls, Sections and Panels.
+	/**
+	 * Callback for resolved controls.
+	 *
+	 * @callback deferredControlsCallback
+	 * @param {wp.customize.Control[]} Resolved controls.
+	 */
+
+	/**
+	 * Collection of all registered controls.
+	 *
+	 * @since 3.4.0
+	 *
+	 * @type {Function}
+	 * @param {...string} ids - One or more ids for controls to obtain.
+	 * @param {deferredControlsCallback} [callback] - Function called when all supplied controls exist.
+	 * @returns {wp.customize.Control|undefined|jQuery.promise} Control instance or undefined (if function called with one id param), or promise resolving to requested controls.
+	 *
+	 * @example <caption>Loop over all registered controls.</caption>
+	 * wp.customize.control.each( function( control ) { ... } );
+	 *
+	 * @example <caption>Getting `background_color` control instance.</caption>
+	 * control = wp.customize.control( 'background_color' );
+	 *
+	 * @example <caption>Check if control exists.</caption>
+	 * hasControl = wp.customize.control.has( 'background_color' );
+	 *
+	 * @example <caption>Deferred getting of `background_color` control until it exists, using callback.</caption>
+	 * wp.customize.control( 'background_color', function( control ) { ... } );
+	 *
+	 * @example <caption>Get title and tagline controls when they both exist, using promise (only available when multiple IDs are present).</caption>
+	 * promise = wp.customize.control( 'blogname', 'blogdescription' );
+	 * promise.done( function( titleControl, taglineControl ) { ... } );
+	 *
+	 * @example <caption>Get title and tagline controls when they both exist, using callback.</caption>
+	 * wp.customize.control( 'blogname', 'blogdescription', function( titleControl, taglineControl ) { ... } );
+	 *
+	 * @example <caption>Getting setting value for `background_color` control.</caption>
+	 * value = wp.customize.control( 'background_color ').setting.get();
+	 * value = wp.customize( 'background_color' ).get(); // Same as above, since setting ID and control ID are the same.
+	 *
+	 * @example <caption>Add new control for site title.</caption>
+	 * wp.customize.control.add( new wp.customize.Control( 'other_blogname', {
+	 *     setting: 'blogname',
+	 *     type: 'text',
+	 *     label: 'Site title',
+	 *     section: 'other_site_identify'
+	 * } ) );
+	 *
+	 * @example <caption>Remove control.</caption>
+	 * wp.customize.control.remove( 'other_blogname' );
+	 *
+	 * @example <caption>Listen for control being added.</caption>
+	 * wp.customize.control.bind( 'add', function( addedControl ) { ... } )
+	 *
+	 * @example <caption>Listen for control being removed.</caption>
+	 * wp.customize.control.bind( 'removed', function( removedControl ) { ... } )
+	 */
 	api.control = new api.Values({ defaultConstructor: api.Control });
+
+	/**
+	 * Callback for resolved sections.
+	 *
+	 * @callback deferredSectionsCallback
+	 * @param {wp.customize.Section[]} Resolved sections.
+	 */
+
+	/**
+	 * Collection of all registered sections.
+	 *
+	 * @since 3.4.0
+	 *
+	 * @type {Function}
+	 * @param {...string} ids - One or more ids for sections to obtain.
+	 * @param {deferredSectionsCallback} [callback] - Function called when all supplied sections exist.
+	 * @returns {wp.customize.Section|undefined|jQuery.promise} Section instance or undefined (if function called with one id param), or promise resolving to requested sections.
+	 *
+	 * @example <caption>Loop over all registered sections.</caption>
+	 * wp.customize.section.each( function( section ) { ... } )
+	 *
+	 * @example <caption>Getting `title_tagline` section instance.</caption>
+	 * section = wp.customize.section( 'title_tagline' )
+	 *
+	 * @example <caption>Expand dynamically-created section when it exists.</caption>
+	 * wp.customize.section( 'dynamically_created', function( section ) {
+	 *     section.expand();
+	 * } );
+	 *
+	 * @see {@link wp.customize.control} for further examples of how to interact with {@link wp.customize.Values} instances.
+	 */
 	api.section = new api.Values({ defaultConstructor: api.Section });
+
+	/**
+	 * Callback for resolved panels.
+	 *
+	 * @callback deferredPanelsCallback
+	 * @param {wp.customize.Panel[]} Resolved panels.
+	 */
+
+	/**
+	 * Collection of all registered panels.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @type {Function}
+	 * @param {...string} ids - One or more ids for panels to obtain.
+	 * @param {deferredPanelsCallback} [callback] - Function called when all supplied panels exist.
+	 * @returns {wp.customize.Panel|undefined|jQuery.promise} Panel instance or undefined (if function called with one id param), or promise resolving to requested panels.
+	 *
+	 * @example <caption>Loop over all registered panels.</caption>
+	 * wp.customize.panel.each( function( panel ) { ... } )
+	 *
+	 * @example <caption>Getting nav_menus panel instance.</caption>
+	 * panel = wp.customize.panel( 'nav_menus' );
+	 *
+	 * @example <caption>Expand dynamically-created panel when it exists.</caption>
+	 * wp.customize.panel( 'dynamically_created', function( panel ) {
+	 *     panel.expand();
+	 * } );
+	 *
+	 * @see {@link wp.customize.control} for further examples of how to interact with {@link wp.customize.Values} instances.
+	 */
 	api.panel = new api.Values({ defaultConstructor: api.Panel });
 
-	// Create the collection for global Notifications.
+	/**
+	 * Callback for resolved notifications.
+	 *
+	 * @callback deferredNotificationsCallback
+	 * @param {wp.customize.Notification[]} Resolved notifications.
+	 */
+
+	/**
+	 * Collection of all global notifications.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @type {Function}
+	 * @param {...string} codes - One or more codes for notifications to obtain.
+	 * @param {deferredNotificationsCallback} [callback] - Function called when all supplied notifications exist.
+	 * @returns {wp.customize.Notification|undefined|jQuery.promise} notification instance or undefined (if function called with one code param), or promise resolving to requested notifications.
+	 *
+	 * @example <caption>Check if existing notification</caption>
+	 * exists = wp.customize.notifications.has( 'a_new_day_arrived' );
+	 *
+	 * @example <caption>Obtain existing notification</caption>
+	 * notification = wp.customize.notifications( 'a_new_day_arrived' );
+	 *
+	 * @example <caption>Obtain notification that may not exist yet.</caption>
+	 * wp.customize.notifications( 'a_new_day_arrived', function( notification ) { ... } );
+	 *
+	 * @example <caption>Add a warning notification.</caption>
+	 * wp.customize.notifications.add( new wp.customize.Notification( 'midnight_almost_here', {
+	 *     type: 'warning',
+	 *     message: 'Midnight has almost arrived!',
+	 *     dismissible: true
+	 * } ) );
+	 *
+	 * @example <caption>Remove a notification.</caption>
+	 * wp.customize.notifications.remove( 'a_new_day_arrived' );
+	 *
+	 * @see {@link wp.customize.control} for further examples of how to interact with {@link wp.customize.Values} instances.
+	 */
 	api.notifications = new api.Notifications();
 
 	/**
@@ -6417,11 +6682,14 @@
 				type: 'button',
 				section: section.id,
 				priority: 30,
-				templateId: 'customize-trash-changeset-control'
+				inputAttrs: {
+					'class': 'button-link button-link-delete',
+					value: api.l10n.discardChanges
+				}
 			} );
 			api.control.add( trashControl );
 			trashControl.deferred.embedded.done( function() {
-				trashControl.container.find( 'button' ).on( 'click', function() {
+				trashControl.container.find( '.button-link' ).on( 'click', function() {
 					if ( confirm( api.l10n.trashConfirm ) ) {
 						wp.customize.previewer.trash();
 					}
@@ -6846,7 +7114,9 @@
 						if ( 'changeset_already_published' === response.code && response.next_changeset_uuid ) {
 							api.settings.changeset.uuid = response.next_changeset_uuid;
 							api.state( 'changesetStatus' ).set( '' );
-							parent.send( 'changeset-uuid', api.settings.changeset.uuid );
+							if ( api.settings.changeset.branching ) {
+								parent.send( 'changeset-uuid', api.settings.changeset.uuid );
+							}
 							api.previewer.send( 'changeset-uuid', api.settings.changeset.uuid );
 						}
 					} );
@@ -6877,7 +7147,9 @@
 
 							api.state( 'changesetStatus' ).set( '' );
 							api.settings.changeset.uuid = response.next_changeset_uuid;
-							parent.send( 'changeset-uuid', api.settings.changeset.uuid );
+							if ( api.settings.changeset.branching ) {
+								parent.send( 'changeset-uuid', api.settings.changeset.uuid );
+							}
 						}
 
 						// Prevent subsequent requestChangesetUpdate() calls from including the settings that have been saved.
@@ -6953,6 +7225,7 @@
 					urlParser.href = location.href;
 					queryParams = api.utils.parseQueryString( urlParser.search.substr( 1 ) );
 					delete queryParams.changeset_uuid;
+					queryParams['return'] = api.settings.url['return'];
 					urlParser.search = $.param( queryParams );
 					location.replace( urlParser.href );
 				};
@@ -7280,24 +7553,6 @@
 				history.replaceState( {}, document.title, urlParser.href );
 			};
 
-			// Deactivate themes panel if changeset status is not auto-draft.
-			api.panel( 'themes', function( themesPanel ) {
-				var isPanelActive, updatePanelActive;
-
-				isPanelActive = function() {
-					return 'publish' === selectedChangesetStatus.get() && ( ! changesetStatus() || 'auto-draft' === changesetStatus() );
-				};
-				themesPanel.active.validate = isPanelActive;
-
-				updatePanelActive = function() {
-					themesPanel.active.set( isPanelActive() );
-				};
-
-				updatePanelActive();
-				changesetStatus.bind( updatePanelActive );
-				selectedChangesetStatus.bind( updatePanelActive );
-			} );
-
 			// Show changeset UUID in URL when in branching mode and there is a saved changeset.
 			if ( api.settings.changeset.branching ) {
 				changesetStatus.bind( function( newStatus ) {
@@ -7324,6 +7579,7 @@
 				} else {
 					queryParams.customize_autosaved = 'on';
 				}
+				queryParams['return'] = api.settings.url['return'];
 				urlParser.search = $.param( queryParams );
 				return urlParser.href;
 			}
@@ -7821,16 +8077,9 @@
 			}
 			api.bind( 'change', startPromptingBeforeUnload );
 
-			closeBtn.on( 'click.customize-controls-close', function( event ) {
+			function requestClose() {
 				var clearedToClose = $.Deferred();
-				event.preventDefault();
-
-				/*
-				 * The isInsideIframe condition is because Customizer is not able to use a confirm()
-				 * since customize-loader.js will also use one. So autosave restorations are disabled
-				 * when customize-loader.js is used.
-				 */
-				if ( isInsideIframe || isCleanState() ) {
+				if ( isCleanState() ) {
 					clearedToClose.resolve();
 				} else if ( confirm( api.l10n.saveAlert ) ) {
 
@@ -7860,15 +8109,27 @@
 				} else {
 					clearedToClose.reject();
 				}
+				return clearedToClose.promise();
+			}
 
-				clearedToClose.done( function() {
-					$( window ).off( 'beforeunload.customize-confirm' );
-					if ( isInsideIframe ) {
-						parent.send( 'close' );
-					} else {
-						window.location.href = closeBtn.prop( 'href' );
-					}
+			parent.bind( 'confirm-close', function() {
+				requestClose().done( function() {
+					parent.send( 'confirmed-close', true );
+				} ).fail( function() {
+					parent.send( 'confirmed-close', false );
 				} );
+			} );
+
+			closeBtn.on( 'click.customize-controls-close', function( event ) {
+				event.preventDefault();
+				if ( isInsideIframe ) {
+					parent.send( 'close' ); // See confirm-close logic above.
+				} else {
+					requestClose().done( function() {
+						$( window ).off( 'beforeunload.customize-confirm' );
+						window.location.href = closeBtn.prop( 'href' );
+					} );
+				}
 			});
 		})();
 
@@ -7884,7 +8145,9 @@
 			parent.send( 'title', newTitle );
 		});
 
-		parent.send( 'changeset-uuid', api.settings.changeset.uuid );
+		if ( api.settings.changeset.branching ) {
+			parent.send( 'changeset-uuid', api.settings.changeset.uuid );
+		}
 
 		// Initialize the connection with the parent frame.
 		parent.send( 'ready' );
