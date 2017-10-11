@@ -201,7 +201,7 @@ EditAttachments = MediaFrame.extend(/** @lends wp.media.view.MediaFrame.EditAtta
 	 */
 	previousMediaItem: function() {
 		if ( ! this.hasPrevious() ) {
-			this.$( '.left' ).blur();
+			this.$el.focus();
 			return;
 		}
 		this.trigger( 'refresh', this.library.at( this.getCurrentIndex() - 1 ) );
@@ -213,7 +213,7 @@ EditAttachments = MediaFrame.extend(/** @lends wp.media.view.MediaFrame.EditAtta
 	 */
 	nextMediaItem: function() {
 		if ( ! this.hasNext() ) {
-			this.$( '.right' ).blur();
+			this.$el.focus();
 			return;
 		}
 		this.trigger( 'refresh', this.library.at( this.getCurrentIndex() + 1 ) );
