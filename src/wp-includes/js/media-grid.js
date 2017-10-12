@@ -795,7 +795,6 @@ EditAttachments = MediaFrame.extend(/** @lends wp.media.view.MediaFrame.EditAtta
 	 */
 	previousMediaItem: function() {
 		if ( ! this.hasPrevious() ) {
-			this.$el.focus();
 			return;
 		}
 		this.trigger( 'refresh', this.library.at( this.getCurrentIndex() - 1 ) );
@@ -807,7 +806,6 @@ EditAttachments = MediaFrame.extend(/** @lends wp.media.view.MediaFrame.EditAtta
 	 */
 	nextMediaItem: function() {
 		if ( ! this.hasNext() ) {
-			this.$el.focus();
 			return;
 		}
 		this.trigger( 'refresh', this.library.at( this.getCurrentIndex() + 1 ) );
