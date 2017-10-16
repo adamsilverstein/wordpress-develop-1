@@ -26,12 +26,10 @@ module.exports = [
 	// Codemirror build.
 	{
 		cache: true,
-		watch: true,
 		entry: './src/wp-includes/js/codemirror/codemirror.manifest.js',
 		output: {
 			path: path.join( __dirname, 'src/wp-includes/js/codemirror' ),
 			filename: 'codemirror.js'
 		}
-
 	}
 ];
