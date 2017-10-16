@@ -127,9 +127,18 @@ body:not(.ready) #customize-save-button-wrapper .save {
 	margin: 0;
 }
 
-.outer-section-open .wp-full-overlay.expanded #customize-preview {
+.outer-section-open .wp-full-overlay.expanded .wp-full-overlay-main {
 	left: 300px;
 	opacity: 0.4;
+}
+
+.outer-section-open .wp-full-overlay.expanded.preview-tablet .wp-full-overlay-main,
+.outer-section-open .wp-full-overlay.expanded.preview-mobile .wp-full-overlay-main,
+.adding-menu-items .wp-full-overlay.expanded.preview-tablet .wp-full-overlay-main,
+.adding-menu-items .wp-full-overlay.expanded.preview-mobile .wp-full-overlay-main,
+.adding-widget .wp-full-overlay.expanded.preview-tablet .wp-full-overlay-main,
+.adding-widget .wp-full-overlay.expanded.preview-mobile .wp-full-overlay-main {
+	left: 64%;
 }
 
 #customize-outer-theme-controls li.notice {
@@ -379,7 +388,7 @@ body.trashing #publish-settings {
 	box-sizing: content-box;
 	width: 100%;
 	margin-left: -12px;
-	padding: 12px 12px 10px;
+	padding: 12px;
 	background: #ffffff;
 	border-bottom: 1px solid #ddd;
 	margin-bottom: 0;
@@ -506,8 +515,7 @@ body.trashing #publish-settings {
 	margin-bottom: 0;
 }
 
-#customize-controls .customize-info .customize-section-description,
-#customize-outer-theme-controls .customize-section-description {
+#customize-controls .customize-info .customize-section-description {
 	margin-bottom: 15px;
 }
 
@@ -562,9 +570,6 @@ body.trashing #publish-settings {
 #customize-controls .control-section:hover > .accordion-section-title,
 #customize-controls .control-section .accordion-section-title:hover,
 #customize-controls .control-section.open .accordion-section-title,
-#customize-outer-theme-controls .control-section .accordion-section-title:hover,
-#customize-outer-theme-controls .control-section.open .accordion-section-title,
-#customize-outer-theme-controls .control-section .accordion-section-title:focus,
 #customize-controls .control-section .accordion-section-title:focus {
 	color: #0073aa;
 	background: #f3f3f5;
@@ -1724,8 +1729,7 @@ p.customize-section-description {
 .control-panel-themes .accordion-section-title span.customize-action,
 #customize-controls .customize-section-title span.customize-action,
 #customize-controls .control-section-themes .accordion-section-title span.customize-action,
-#customize-controls .customize-section-title span.customize-action,
-#customize-outer-theme-controls .customize-section-title span.customize-action {
+#customize-controls .customize-section-title span.customize-action {
 	font-size: 13px;
 	display: block;
 	font-weight: 400;
@@ -1748,8 +1752,8 @@ p.customize-section-description {
 	top: 0;
 	left: 0;
 	transition: .18s left ease-in-out;
-	margin: 46px 0 0 300px;
-	padding: 25px 0;
+	margin: 0 0 0 300px;
+	padding: 71px 0 25px;
 	overflow-y: scroll;
 	width: calc(100% - 300px);
 	height: calc(100% - 96px);
@@ -1757,14 +1761,15 @@ p.customize-section-description {
 	z-index: 20;
 }
 
+.modal-open .control-panel-themes .customize-themes-full-container {
+	overflow-y: visible;
+}
+
 /* Animations for opening the themes panel */
-#customize-header-actions .save,
-#customize-header-actions #publish-settings,
+#customize-save-button-wrapper,
 #customize-header-actions .spinner,
 #customize-header-actions .customize-controls-preview-toggle {
-	position: relative;
-	top: 0;
-	transition: .18s top ease-in-out;
+	transition: .18s margin ease-in-out;
 }
 
 #customize-footer-actions,
@@ -1784,11 +1789,10 @@ p.customize-section-description {
 	background: #eee; /* Prevents a black flash when fading in the panel */
 }
 
-.in-themes-panel #customize-header-actions .save,
-.in-themes-panel #customize-header-actions #publish-settings,
+.in-themes-panel #customize-save-button-wrapper,
 .in-themes-panel #customize-header-actions .spinner,
 .in-themes-panel #customize-header-actions .customize-controls-preview-toggle {
-	top: -45px;
+	margin-top: -46px; /* Height of header actions bar */
 }
 
 .in-themes-panel #customize-footer-actions,
@@ -2193,7 +2197,7 @@ p.customize-section-description {
 	.control-panel-themes .customize-themes-full-container {
 		width: 100%;
 		margin: 0;
-		top: 46px;
+		padding-top: 46px;
 		height: calc(100% - 46px);
 		z-index: 1;
 		display: none;
@@ -2795,6 +2799,14 @@ body.adding-widget .add-new-widget:before,
 	}
 }
 
+@media screen and ( max-width: 1200px ) {
+	.outer-section-open .wp-full-overlay.expanded.preview-mobile .wp-full-overlay-main,
+	.adding-menu-items .wp-full-overlay.expanded.preview-mobile .wp-full-overlay-main,
+	.adding-widget .wp-full-overlay.expanded.preview-mobile .wp-full-overlay-main {
+		left: 67%;
+	}
+}
+
 @media screen and ( max-width: 640px ) {
 	#customize-controls {
 		width: 100%;
@@ -2839,6 +2851,10 @@ body.adding-widget .add-new-widget:before,
 	.preview-only .wp-full-overlay-sidebar-content,
 	.preview-only .customize-controls-preview-toggle .preview {
 		display: none;
+	}
+
+	.preview-only #customize-save-button-wrapper {
+		margin-top: -46px;
 	}
 
 	.customize-controls-preview-toggle .preview:before,
