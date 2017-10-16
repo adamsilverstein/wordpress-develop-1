@@ -487,6 +487,7 @@ module.exports = function(grunt) {
 					'wp-includes/js/mediaelement/wp-playlist.js',
 					'wp-includes/js/tinymce/plugins/wordpress/plugin.js',
 					'wp-includes/js/tinymce/plugins/wp*/plugin.js',
+					'wp-includes/js/codemirror/codemirror.js',
 
 					// Exceptions
 					'!wp-admin/js/custom-header.js', // Why? We should minify this.
