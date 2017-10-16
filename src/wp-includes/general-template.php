@@ -3448,48 +3448,6 @@ function wp_enqueue_code_editor( $args ) {
 	wp_enqueue_script( 'code-editor' );
 	wp_enqueue_style( 'code-editor' );
 
-	if ( isset( $settings['codemirror']['mode'] ) ) {
-		$mode = $settings['codemirror']['mode'];
-		if ( is_string( $mode ) ) {
-			$mode = array(
-				'name' => $mode,
-			);
-		}
-
-		if ( ! empty( $settings['codemirror']['lint'] ) ) {
-			switch ( $mode['name'] ) {
-				case 'css':
-				case 'text/css':
-				case 'text/x-scss':
-				case 'text/x-less':
-					wp_enqueue_script( 'csslint' );
-					break;
-				case 'htmlmixed':
-				case 'text/html':
-				case 'php':
-				case 'application/x-httpd-php':
-				case 'text/x-php':
-					wp_enqueue_script( 'htmlhint' );
-					wp_enqueue_script( 'csslint' );
-					wp_enqueue_script( 'jshint' );
-					if ( ! current_user_can( 'unfiltered_html' ) ) {
-						wp_enqueue_script( 'htmlhint-kses' );
-					}
-					break;
-				case 'javascript':
-				case 'application/ecmascript':
-				case 'application/json':
-				case 'application/javascript':
-				case 'application/ld+json':
-				case 'text/typescript':
-				case 'application/typescript':
-					wp_enqueue_script( 'jshint' );
-					wp_enqueue_script( 'jsonlint' );
-					break;
-			}
-		}
-	}
-
 	wp_add_inline_script( 'code-editor', sprintf( 'jQuery.extend( wp.codeEditor.defaultSettings, %s );', wp_json_encode( $settings ) ) );
 
 	/**

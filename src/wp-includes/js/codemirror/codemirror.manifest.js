@@ -1,7 +1,9 @@
 /* global require */
 
-var CodeMirror = require( '../../../../node_modules/codemirror/lib/codemirror' );
+import { CSSLint } from 'csslint';
+window.CSSLint = CSSLint;
 
+var CodeMirror = require( '../../../../node_modules/codemirror/lib/codemirror' );
 require( '../../../../node_modules/codemirror/lib/codemirror.js' );
 require( '../../../../node_modules/codemirror/keymap/emacs.js' );
 require( '../../../../node_modules/codemirror/keymap/sublime.js' );
