@@ -30,6 +30,9 @@ module.exports = [
 		output: {
 			path: path.join( __dirname, 'src/wp-includes/js/codemirror' ),
 			filename: 'codemirror.js'
+		},
+		node: {
+			fs: 'empty'
 		}
 	}
 ];
