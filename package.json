@@ -43,7 +43,11 @@
   "dependencies": {
     "codemirror": "^5.30.0",
     "csslint": "^1.0.5",
+    "file": "^0.2.2",
+    "fs": "0.0.1-security",
     "htmlhint": "^0.9.13",
-    "jsonlint": "^1.6.2"
+    "jslint": "^0.11.0",
+    "jsonlint": "^1.6.2",
+    "system": "^2.0.1"
   }
 }
