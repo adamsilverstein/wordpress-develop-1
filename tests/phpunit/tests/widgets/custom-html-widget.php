@@ -244,9 +244,6 @@ class Test_WP_Widget_Custom_HTML extends WP_UnitTestCase {
 		$this->assertTrue( wp_script_is( 'custom-html-widgets', 'enqueued' ) );
 		$this->assertTrue( wp_script_is( 'code-editor', 'enqueued' ) );
 		$this->assertTrue( wp_script_is( 'wp-codemirror', 'enqueued' ) );
-		$this->assertTrue( wp_script_is( 'csslint', 'enqueued' ) );
-		$this->assertTrue( wp_script_is( 'jshint', 'enqueued' ) );
-		$this->assertTrue( wp_script_is( 'htmlhint', 'enqueued' ) );
 	}
 
 	/**
@@ -265,9 +262,6 @@ class Test_WP_Widget_Custom_HTML extends WP_UnitTestCase {
 		$this->assertTrue( wp_script_is( 'custom-html-widgets', 'enqueued' ) );
 		$this->assertTrue( wp_script_is( 'code-editor', 'enqueued' ) );
 		$this->assertTrue( wp_script_is( 'wp-codemirror', 'enqueued' ) );
-		$this->assertFalse( wp_script_is( 'csslint', 'enqueued' ) );
-		$this->assertFalse( wp_script_is( 'jshint', 'enqueued' ) );
-		$this->assertFalse( wp_script_is( 'htmlhint', 'enqueued' ) );
 	}
 
 	/**
