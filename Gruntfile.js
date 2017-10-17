@@ -99,7 +99,8 @@ module.exports = function(grunt) {
 							'!wp-includes/js/jquery/jquery.masonry.js',
 							'!wp-includes/js/jquery/ui/*.js',
 							'!wp-includes/js/tinymce/tinymce.js',
-							'!wp-includes/version.php' // Exclude version.php
+							'!wp-includes/version.php', // Exclude version.php
+							'!wp-includes/js/codemirror/codemirror.manifest.js'
 						],
 						dest: BUILD_DIR
 					},
