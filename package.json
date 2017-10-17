@@ -13,6 +13,8 @@
   "license": "GPL-2.0+",
   "devDependencies": {
     "autoprefixer": "^6.5.1",
+    "file": "^0.2.2",
+    "fs": "0.0.1-security",
     "grunt": "~0.4.5",
     "grunt-banner": "^0.6.0",
     "grunt-contrib-clean": "~1.0.0",
@@ -37,17 +39,15 @@
     "ink-docstrap": "^1.3.0",
     "grunt-webpack": "^3.0.2",
     "matchdep": "~1.0.0",
+    "system": "^2.0.1",
     "webpack": "^3.6.0",
     "webpack-dev-server": "^2.9.1"
   },
   "dependencies": {
     "codemirror": "^5.30.0",
     "csslint": "^1.0.5",
-    "file": "^0.2.2",
-    "fs": "0.0.1-security",
     "htmlhint": "github:xwp/HTMLHint",
-    "jslint": "^0.11.0",
-    "jsonlint": "^1.6.2",
-    "system": "^2.0.1"
+    "jshint": "^2.9.5",
+    "jsonlint": "^1.6.2"
   }
 }
