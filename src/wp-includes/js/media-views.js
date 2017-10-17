@@ -6222,6 +6222,13 @@ Attachment = View.extend(/** @lends wp.media.view.Attachment.prototype */{
 		if ( ! ( controller.isModeActive( 'grid' ) && controller.isModeActive( 'select' ) ) ) {
 			this.$( '.check' ).attr( 'tabindex', '0' );
 		}
+
+		// If length of current selection is greater than 0,
+		// i.e. at least one element is selected
+		// button gets Enabled.
+		if(selection.length > 0) {
+			$('.delete-selected-button').removeAttr('disabled');
+		}
 	},
 	/**
 	 * @param {Backbone.Model} model
@@ -6235,6 +6242,10 @@ Attachment = View.extend(/** @lends wp.media.view.Attachment.prototype */{
 		// selection's event loop.
 		if ( ! selection || ( collection && collection !== selection ) ) {
 			return;
+		} else {
+			if (this.options.selection.length == 0) {
+				$('.delete-selected-button').attr('disabled', 'disabled');
+			}
 		}
 		this.$el.removeClass( 'selected' ).attr( 'aria-checked', false )
 			.find( '.check' ).attr( 'tabindex', '-1' );
