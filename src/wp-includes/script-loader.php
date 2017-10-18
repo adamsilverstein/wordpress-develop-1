@@ -355,8 +355,9 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'mediaelement', false, array( 'jquery', 'mediaelement-core', 'mediaelement-migrate' ), '4.2.6-78496d1' );
 	$scripts->add( 'mediaelement-core', "/wp-includes/js/mediaelement/mediaelement-and-player$suffix.js", array(), '4.2.6-78496d1', 1 );
 	$scripts->add( 'mediaelement-migrate', "/wp-includes/js/mediaelement/mediaelement-migrate$suffix.js", array(), false, 1);
-	did_action( 'init' ) && $scripts->localize( 'mediaelement', 'mejsL10n', array(
-		'language' => get_bloginfo( 'language' ),
+
+	did_action( 'init' ) && $scripts->add_inline_script( 'mediaelement-core', sprintf( 'var mejsL10n = %s;', wp_json_encode( array(
+		'language' => strtolower( str_replace( '_', '-', is_admin() ? get_user_locale() : get_locale() ) ),
 		'strings'  => array(
 			'mejs.install-flash'       => __( 'You are using a browser that does not have Flash player enabled or installed. Please turn on your Flash player plugin or download the latest version from https://get.adobe.com/flashplayer/' ),
 			'mejs.fullscreen-off'      => __( 'Turn off Fullscreen' ),
@@ -443,7 +444,7 @@ function wp_default_scripts( &$scripts ) {
 			'mejs.welsh'               => __( 'Welsh' ),
 			'mejs.yiddish'             => __( 'Yiddish' ),
 			),
-		) );
+		) ) ), 'before' );
 
 
 	$scripts->add( 'mediaelement-vimeo', "/wp-includes/js/mediaelement/renderers/vimeo.min.js", array('mediaelement'), '4.2.6-78496d1', 1 );
@@ -544,7 +545,7 @@ function wp_default_scripts( &$scripts ) {
 		'saveDraft'          => __( 'Save Draft' ),
 		'draftSaved'         => __( 'Draft Saved' ),
 		'updating'           => __( 'Updating' ),
-		'schedule'           => __( 'Schedule' ),
+		'schedule'           => _x( 'Schedule', 'customizer changeset action/button label' ),
 		'scheduled'          => __( 'Scheduled' ),
 		'invalid'            => __( 'Invalid' ),
 		'saveBeforeShare'    => __( 'Please save your changes in order to share the preview.' ),
@@ -670,7 +671,7 @@ function wp_default_scripts( &$scripts ) {
 			'showcomm' => __('Show more comments'),
 			'endcomm' => __('No more comments found.'),
 			'publish' => __('Publish'),
-			'schedule' => __('Schedule'),
+			'schedule' => _x('Schedule', 'post action/button label'),
 			'update' => __('Update'),
 			'savePending' => __('Save as Pending'),
 			'saveDraft' => __('Save Draft'),
