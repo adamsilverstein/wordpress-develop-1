@@ -1,762 +1,210 @@
-/*!
-CSSLint v1.0.4
-Copyright (c) 2016 Nicole Sullivan and Nicholas C. Zakas. All rights reserved.
+this["wp"] = this["wp"] || {}; this["wp"]["csslint"] =
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 41);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports) {
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the 'Software'), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+var g;
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
 
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
 
-*/
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
 
-var CSSLint = (function(){
-  var module = module || {},
-      exports = exports || {};
+module.exports = g;
 
-/*!
-Parser-Lib
-Copyright (c) 2009-2016 Nicholas C. Zakas. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-/* Version v1.1.0, Build time: 6-December-2016 10:31:29 */
-var parserlib = (function () {
-var require;
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 
-/* exported Colors */
 
-var Colors = module.exports = {
-    __proto__       :null,
-    aliceblue       :"#f0f8ff",
-    antiquewhite    :"#faebd7",
-    aqua            :"#00ffff",
-    aquamarine      :"#7fffd4",
-    azure           :"#f0ffff",
-    beige           :"#f5f5dc",
-    bisque          :"#ffe4c4",
-    black           :"#000000",
-    blanchedalmond  :"#ffebcd",
-    blue            :"#0000ff",
-    blueviolet      :"#8a2be2",
-    brown           :"#a52a2a",
-    burlywood       :"#deb887",
-    cadetblue       :"#5f9ea0",
-    chartreuse      :"#7fff00",
-    chocolate       :"#d2691e",
-    coral           :"#ff7f50",
-    cornflowerblue  :"#6495ed",
-    cornsilk        :"#fff8dc",
-    crimson         :"#dc143c",
-    cyan            :"#00ffff",
-    darkblue        :"#00008b",
-    darkcyan        :"#008b8b",
-    darkgoldenrod   :"#b8860b",
-    darkgray        :"#a9a9a9",
-    darkgrey        :"#a9a9a9",
-    darkgreen       :"#006400",
-    darkkhaki       :"#bdb76b",
-    darkmagenta     :"#8b008b",
-    darkolivegreen  :"#556b2f",
-    darkorange      :"#ff8c00",
-    darkorchid      :"#9932cc",
-    darkred         :"#8b0000",
-    darksalmon      :"#e9967a",
-    darkseagreen    :"#8fbc8f",
-    darkslateblue   :"#483d8b",
-    darkslategray   :"#2f4f4f",
-    darkslategrey   :"#2f4f4f",
-    darkturquoise   :"#00ced1",
-    darkviolet      :"#9400d3",
-    deeppink        :"#ff1493",
-    deepskyblue     :"#00bfff",
-    dimgray         :"#696969",
-    dimgrey         :"#696969",
-    dodgerblue      :"#1e90ff",
-    firebrick       :"#b22222",
-    floralwhite     :"#fffaf0",
-    forestgreen     :"#228b22",
-    fuchsia         :"#ff00ff",
-    gainsboro       :"#dcdcdc",
-    ghostwhite      :"#f8f8ff",
-    gold            :"#ffd700",
-    goldenrod       :"#daa520",
-    gray            :"#808080",
-    grey            :"#808080",
-    green           :"#008000",
-    greenyellow     :"#adff2f",
-    honeydew        :"#f0fff0",
-    hotpink         :"#ff69b4",
-    indianred       :"#cd5c5c",
-    indigo          :"#4b0082",
-    ivory           :"#fffff0",
-    khaki           :"#f0e68c",
-    lavender        :"#e6e6fa",
-    lavenderblush   :"#fff0f5",
-    lawngreen       :"#7cfc00",
-    lemonchiffon    :"#fffacd",
-    lightblue       :"#add8e6",
-    lightcoral      :"#f08080",
-    lightcyan       :"#e0ffff",
-    lightgoldenrodyellow  :"#fafad2",
-    lightgray       :"#d3d3d3",
-    lightgrey       :"#d3d3d3",
-    lightgreen      :"#90ee90",
-    lightpink       :"#ffb6c1",
-    lightsalmon     :"#ffa07a",
-    lightseagreen   :"#20b2aa",
-    lightskyblue    :"#87cefa",
-    lightslategray  :"#778899",
-    lightslategrey  :"#778899",
-    lightsteelblue  :"#b0c4de",
-    lightyellow     :"#ffffe0",
-    lime            :"#00ff00",
-    limegreen       :"#32cd32",
-    linen           :"#faf0e6",
-    magenta         :"#ff00ff",
-    maroon          :"#800000",
-    mediumaquamarine:"#66cdaa",
-    mediumblue      :"#0000cd",
-    mediumorchid    :"#ba55d3",
-    mediumpurple    :"#9370d8",
-    mediumseagreen  :"#3cb371",
-    mediumslateblue :"#7b68ee",
-    mediumspringgreen   :"#00fa9a",
-    mediumturquoise :"#48d1cc",
-    mediumvioletred :"#c71585",
-    midnightblue    :"#191970",
-    mintcream       :"#f5fffa",
-    mistyrose       :"#ffe4e1",
-    moccasin        :"#ffe4b5",
-    navajowhite     :"#ffdead",
-    navy            :"#000080",
-    oldlace         :"#fdf5e6",
-    olive           :"#808000",
-    olivedrab       :"#6b8e23",
-    orange          :"#ffa500",
-    orangered       :"#ff4500",
-    orchid          :"#da70d6",
-    palegoldenrod   :"#eee8aa",
-    palegreen       :"#98fb98",
-    paleturquoise   :"#afeeee",
-    palevioletred   :"#d87093",
-    papayawhip      :"#ffefd5",
-    peachpuff       :"#ffdab9",
-    peru            :"#cd853f",
-    pink            :"#ffc0cb",
-    plum            :"#dda0dd",
-    powderblue      :"#b0e0e6",
-    purple          :"#800080",
-    red             :"#ff0000",
-    rosybrown       :"#bc8f8f",
-    royalblue       :"#4169e1",
-    saddlebrown     :"#8b4513",
-    salmon          :"#fa8072",
-    sandybrown      :"#f4a460",
-    seagreen        :"#2e8b57",
-    seashell        :"#fff5ee",
-    sienna          :"#a0522d",
-    silver          :"#c0c0c0",
-    skyblue         :"#87ceeb",
-    slateblue       :"#6a5acd",
-    slategray       :"#708090",
-    slategrey       :"#708090",
-    snow            :"#fffafa",
-    springgreen     :"#00ff7f",
-    steelblue       :"#4682b4",
-    tan             :"#d2b48c",
-    teal            :"#008080",
-    thistle         :"#d8bfd8",
-    tomato          :"#ff6347",
-    turquoise       :"#40e0d0",
-    violet          :"#ee82ee",
-    wheat           :"#f5deb3",
-    white           :"#ffffff",
-    whitesmoke      :"#f5f5f5",
-    yellow          :"#ffff00",
-    yellowgreen     :"#9acd32",
-    //'currentColor' color keyword https://www.w3.org/TR/css3-color/#currentcolor
-    currentColor        :"The value of the 'color' property.",
-    //CSS2 system colors https://www.w3.org/TR/css3-color/#css2-system
-    activeBorder        :"Active window border.",
-    activecaption       :"Active window caption.",
-    appworkspace        :"Background color of multiple document interface.",
-    background          :"Desktop background.",
-    buttonface          :"The face background color for 3-D elements that appear 3-D due to one layer of surrounding border.",
-    buttonhighlight     :"The color of the border facing the light source for 3-D elements that appear 3-D due to one layer of surrounding border.",
-    buttonshadow        :"The color of the border away from the light source for 3-D elements that appear 3-D due to one layer of surrounding border.",
-    buttontext          :"Text on push buttons.",
-    captiontext         :"Text in caption, size box, and scrollbar arrow box.",
-    graytext            :"Grayed (disabled) text. This color is set to #000 if the current display driver does not support a solid gray color.",
-    greytext            :"Greyed (disabled) text. This color is set to #000 if the current display driver does not support a solid grey color.",
-    highlight           :"Item(s) selected in a control.",
-    highlighttext       :"Text of item(s) selected in a control.",
-    inactiveborder      :"Inactive window border.",
-    inactivecaption     :"Inactive window caption.",
-    inactivecaptiontext :"Color of text in an inactive caption.",
-    infobackground      :"Background color for tooltip controls.",
-    infotext            :"Text color for tooltip controls.",
-    menu                :"Menu background.",
-    menutext            :"Text in menus.",
-    scrollbar           :"Scroll bar gray area.",
-    threeddarkshadow    :"The color of the darker (generally outer) of the two borders away from the light source for 3-D elements that appear 3-D due to two concentric layers of surrounding border.",
-    threedface          :"The face background color for 3-D elements that appear 3-D due to two concentric layers of surrounding border.",
-    threedhighlight     :"The color of the lighter (generally outer) of the two borders facing the light source for 3-D elements that appear 3-D due to two concentric layers of surrounding border.",
-    threedlightshadow   :"The color of the darker (generally inner) of the two borders facing the light source for 3-D elements that appear 3-D due to two concentric layers of surrounding border.",
-    threedshadow        :"The color of the lighter (generally inner) of the two borders away from the light source for 3-D elements that appear 3-D due to two concentric layers of surrounding border.",
-    window              :"Window background.",
-    windowframe         :"Window frame.",
-    windowtext          :"Text in windows."
-};
-
-},{}],2:[function(require,module,exports){
-"use strict";
-
-module.exports = Combinator;
-
-var SyntaxUnit = require("../util/SyntaxUnit");
-
-var Parser = require("./Parser");
+module.exports = SyntaxUnit;
 
 /**
- * Represents a selector combinator (whitespace, +, >).
- * @namespace parserlib.css
- * @class Combinator
- * @extends parserlib.util.SyntaxUnit
+ * Base type to represent a single syntactic unit.
+ * @class SyntaxUnit
+ * @namespace parserlib.util
  * @constructor
- * @param {String} text The text representation of the unit.
+ * @param {String} text The text of the unit.
  * @param {int} line The line of text on which the unit resides.
  * @param {int} col The column of text on which the unit resides.
  */
-function Combinator(text, line, col) {
+function SyntaxUnit(text, line, col, type) {
 
-    SyntaxUnit.call(this, text, line, col, Parser.COMBINATOR_TYPE);
 
     /**
-     * The type of modifier.
+     * The column of text on which the unit resides.
+     * @type int
+     * @property col
+     */
+    this.col = col;
+
+    /**
+     * The line of text on which the unit resides.
+     * @type int
+     * @property line
+     */
+    this.line = line;
+
+    /**
+     * The text representation of the unit.
      * @type String
+     * @property text
+     */
+    this.text = text;
+
+    /**
+     * The type of syntax unit.
+     * @type int
      * @property type
      */
-    this.type = "unknown";
-
-    //pretty simple
-    if (/^\s+$/.test(text)) {
-        this.type = "descendant";
-    } else if (text === ">") {
-        this.type = "child";
-    } else if (text === "+") {
-        this.type = "adjacent-sibling";
-    } else if (text === "~") {
-        this.type = "sibling";
-    }
-
+    this.type = type;
 }
 
-Combinator.prototype = new SyntaxUnit();
-Combinator.prototype.constructor = Combinator;
-
-
-},{"../util/SyntaxUnit":26,"./Parser":6}],3:[function(require,module,exports){
-"use strict";
-
-module.exports = Matcher;
-
-var StringReader = require("../util/StringReader");
-var SyntaxError = require("../util/SyntaxError");
-
 /**
- * This class implements a combinator library for matcher functions.
- * The combinators are described at:
- * https://developer.mozilla.org/en-US/docs/Web/CSS/Value_definition_syntax#Component_value_combinators
+ * Create a new syntax unit based solely on the given token.
+ * Convenience method for creating a new syntax unit when
+ * it represents a single token instead of multiple.
+ * @param {Object} token The token object to represent.
+ * @return {parserlib.util.SyntaxUnit} The object representing the token.
+ * @static
+ * @method fromToken
  */
-function Matcher(matchFunc, toString) {
-    this.match = function(expression) {
-        // Save/restore marks to ensure that failed matches always restore
-        // the original location in the expression.
-        var result;
-        expression.mark();
-        result = matchFunc(expression);
-        if (result) {
-            expression.drop();
-        } else {
-            expression.restore();
-        }
-        return result;
-    };
-    this.toString = typeof toString === "function" ? toString : function() {
-        return toString;
-    };
-}
-
-/** Precedence table of combinators. */
-Matcher.prec = {
-    MOD:    5,
-    SEQ:    4,
-    ANDAND: 3,
-    OROR:   2,
-    ALT:    1
+SyntaxUnit.fromToken = function(token) {
+    return new SyntaxUnit(token.value, token.startLine, token.startCol);
 };
 
-/** Simple recursive-descent grammar to build matchers from strings. */
-Matcher.parse = function(str) {
-    var reader, eat, expr, oror, andand, seq, mod, term, result;
-    reader = new StringReader(str);
-    eat = function(matcher) {
-        var result = reader.readMatch(matcher);
-        if (result === null) {
-            throw new SyntaxError(
-                "Expected "+matcher, reader.getLine(), reader.getCol());
-        }
-        return result;
-    };
-    expr = function() {
-        // expr = oror (" | " oror)*
-        var m = [ oror() ];
-        while (reader.readMatch(" | ") !== null) {
-            m.push(oror());
-        }
-        return m.length === 1 ? m[0] : Matcher.alt.apply(Matcher, m);
-    };
-    oror = function() {
-        // oror = andand ( " || " andand)*
-        var m = [ andand() ];
-        while (reader.readMatch(" || ") !== null) {
-            m.push(andand());
-        }
-        return m.length === 1 ? m[0] : Matcher.oror.apply(Matcher, m);
-    };
-    andand = function() {
-        // andand = seq ( " && " seq)*
-        var m = [ seq() ];
-        while (reader.readMatch(" && ") !== null) {
-            m.push(seq());
-        }
-        return m.length === 1 ? m[0] : Matcher.andand.apply(Matcher, m);
-    };
-    seq = function() {
-        // seq = mod ( " " mod)*
-        var m = [ mod() ];
-        while (reader.readMatch(/^ (?![&|\]])/) !== null) {
-            m.push(mod());
-        }
-        return m.length === 1 ? m[0] : Matcher.seq.apply(Matcher, m);
-    };
-    mod = function() {
-        // mod = term ( "?" | "*" | "+" | "#" | "{<num>,<num>}" )?
-        var m = term();
-        if (reader.readMatch("?") !== null) {
-            return m.question();
-        } else if (reader.readMatch("*") !== null) {
-            return m.star();
-        } else if (reader.readMatch("+") !== null) {
-            return m.plus();
-        } else if (reader.readMatch("#") !== null) {
-            return m.hash();
-        } else if (reader.readMatch(/^\{\s*/) !== null) {
-            var min = eat(/^\d+/);
-            eat(/^\s*,\s*/);
-            var max = eat(/^\d+/);
-            eat(/^\s*\}/);
-            return m.braces(+min, +max);
-        }
-        return m;
-    };
-    term = function() {
-        // term = <nt> | literal | "[ " expression " ]"
-        if (reader.readMatch("[ ") !== null) {
-            var m = expr();
-            eat(" ]");
-            return m;
-        }
-        return Matcher.fromType(eat(/^[^ ?*+#{]+/));
-    };
-    result = expr();
-    if (!reader.eof()) {
-        throw new SyntaxError(
-            "Expected end of string", reader.getLine(), reader.getCol());
-    }
-    return result;
-};
+SyntaxUnit.prototype = {
 
-/**
- * Convert a string to a matcher (parsing simple alternations),
- * or do nothing if the argument is already a matcher.
- */
-Matcher.cast = function(m) {
-    if (m instanceof Matcher) {
-        return m;
-    }
-    return Matcher.parse(m);
-};
+    //restore constructor
+    constructor: SyntaxUnit,
 
-/**
- * Create a matcher for a single type.
- */
-Matcher.fromType = function(type) {
-    // Late require of ValidationTypes to break a dependency cycle.
-    var ValidationTypes = require("./ValidationTypes");
-    return new Matcher(function(expression) {
-        return expression.hasNext() && ValidationTypes.isType(expression, type);
-    }, type);
-};
-
-/**
- * Create a matcher for one or more juxtaposed words, which all must
- * occur, in the given order.
- */
-Matcher.seq = function() {
-    var ms = Array.prototype.slice.call(arguments).map(Matcher.cast);
-    if (ms.length === 1) {
-        return ms[0];
-    }
-    return new Matcher(function(expression) {
-        var i, result = true;
-        for (i = 0; result && i < ms.length; i++) {
-            result = ms[i].match(expression);
-        }
-        return result;
-    }, function(prec) {
-        var p = Matcher.prec.SEQ;
-        var s = ms.map(function(m) {
-            return m.toString(p);
-        }).join(" ");
-        if (prec > p) {
-            s = "[ " + s + " ]";
-        }
-        return s;
-    });
-};
-
-/**
- * Create a matcher for one or more alternatives, where exactly one
- * must occur.
- */
-Matcher.alt = function() {
-    var ms = Array.prototype.slice.call(arguments).map(Matcher.cast);
-    if (ms.length === 1) {
-        return ms[0];
-    }
-    return new Matcher(function(expression) {
-        var i, result = false;
-        for (i = 0; !result && i < ms.length; i++) {
-            result = ms[i].match(expression);
-        }
-        return result;
-    }, function(prec) {
-        var p = Matcher.prec.ALT;
-        var s = ms.map(function(m) {
-            return m.toString(p);
-        }).join(" | ");
-        if (prec > p) {
-            s = "[ " + s + " ]";
-        }
-        return s;
-    });
-};
-
-/**
- * Create a matcher for two or more options.  This implements the
- * double bar (||) and double ampersand (&&) operators, as well as
- * variants of && where some of the alternatives are optional.
- * This will backtrack through even successful matches to try to
- * maximize the number of items matched.
- */
-Matcher.many = function(required) {
-    var ms = Array.prototype.slice.call(arguments, 1).reduce(function(acc, v) {
-        if (v.expand) {
-            // Insert all of the options for the given complex rule as
-            // individual options.
-            var ValidationTypes = require("./ValidationTypes");
-            acc.push.apply(acc, ValidationTypes.complex[v.expand].options);
-        } else {
-            acc.push(Matcher.cast(v));
-        }
-        return acc;
-    }, []);
-
-    if (required === true) {
-        required = ms.map(function() {
-            return true;
-        });
-    }
-
-    var result = new Matcher(function(expression) {
-        var seen = [], max = 0, pass = 0;
-        var success = function(matchCount) {
-            if (pass === 0) {
-                max = Math.max(matchCount, max);
-                return matchCount === ms.length;
-            } else {
-                return matchCount === max;
-            }
-        };
-        var tryMatch = function(matchCount) {
-            for (var i = 0; i < ms.length; i++) {
-                if (seen[i]) {
-                    continue;
-                }
-                expression.mark();
-                if (ms[i].match(expression)) {
-                    seen[i] = true;
-                    // Increase matchCount iff this was a required element
-                    // (or if all the elements are optional)
-                    if (tryMatch(matchCount + ((required === false || required[i]) ? 1 : 0))) {
-                        expression.drop();
-                        return true;
-                    }
-                    // Backtrack: try *not* matching using this rule, and
-                    // let's see if it leads to a better overall match.
-                    expression.restore();
-                    seen[i] = false;
-                } else {
-                    expression.drop();
-                }
-            }
-            return success(matchCount);
-        };
-        if (!tryMatch(0)) {
-            // Couldn't get a complete match, retrace our steps to make the
-            // match with the maximum # of required elements.
-            pass++;
-            tryMatch(0);
-        }
-
-        if (required === false) {
-            return max > 0;
-        }
-        // Use finer-grained specification of which matchers are required.
-        for (var i = 0; i < ms.length; i++) {
-            if (required[i] && !seen[i]) {
-                return false;
-            }
-        }
-        return true;
-    }, function(prec) {
-        var p = required === false ? Matcher.prec.OROR : Matcher.prec.ANDAND;
-        var s = ms.map(function(m, i) {
-            if (required !== false && !required[i]) {
-                return m.toString(Matcher.prec.MOD) + "?";
-            }
-            return m.toString(p);
-        }).join(required === false ? " || " : " && ");
-        if (prec > p) {
-            s = "[ " + s + " ]";
-        }
-        return s;
-    });
-    result.options = ms;
-    return result;
-};
-
-/**
- * Create a matcher for two or more options, where all options are
- * mandatory but they may appear in any order.
- */
-Matcher.andand = function() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift(true);
-    return Matcher.many.apply(Matcher, args);
-};
-
-/**
- * Create a matcher for two or more options, where options are
- * optional and may appear in any order, but at least one must be
- * present.
- */
-Matcher.oror = function() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift(false);
-    return Matcher.many.apply(Matcher, args);
-};
-
-/** Instance methods on Matchers. */
-Matcher.prototype = {
-    constructor: Matcher,
-    // These are expected to be overridden in every instance.
-    match: function() { throw new Error("unimplemented"); },
-    toString: function() { throw new Error("unimplemented"); },
-    // This returns a standalone function to do the matching.
-    func: function() { return this.match.bind(this); },
-    // Basic combinators
-    then: function(m) { return Matcher.seq(this, m); },
-    or: function(m) { return Matcher.alt(this, m); },
-    andand: function(m) { return Matcher.many(true, this, m); },
-    oror: function(m) { return Matcher.many(false, this, m); },
-    // Component value multipliers
-    star: function() { return this.braces(0, Infinity, "*"); },
-    plus: function() { return this.braces(1, Infinity, "+"); },
-    question: function() { return this.braces(0, 1, "?"); },
-    hash: function() {
-        return this.braces(1, Infinity, "#", Matcher.cast(","));
+    /**
+     * Returns the text representation of the unit.
+     * @return {String} The text representation of the unit.
+     * @method valueOf
+     */
+    valueOf: function() {
+        return this.toString();
     },
-    braces: function(min, max, marker, optSep) {
-        var m1 = this, m2 = optSep ? optSep.then(this) : this;
-        if (!marker) {
-            marker = "{" + min + "," + max + "}";
-        }
-        return new Matcher(function(expression) {
-            var result = true, i;
-            for (i = 0; i < max; i++) {
-                if (i > 0 && optSep) {
-                    result = m2.match(expression);
-                } else {
-                    result = m1.match(expression);
-                }
-                if (!result) {
-                    break;
-                }
-            }
-            return i >= min;
-        }, function() {
-            return m1.toString(Matcher.prec.MOD) + marker;
-        });
+
+    /**
+     * Returns the text representation of the unit.
+     * @return {String} The text representation of the unit.
+     * @method toString
+     */
+    toString: function() {
+        return this.text;
     }
+
 };
 
-},{"../util/StringReader":24,"../util/SyntaxError":25,"./ValidationTypes":21}],4:[function(require,module,exports){
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 
-module.exports = MediaFeature;
-
-var SyntaxUnit = require("../util/SyntaxUnit");
-
-var Parser = require("./Parser");
-
-/**
- * Represents a media feature, such as max-width:500.
- * @namespace parserlib.css
- * @class MediaFeature
- * @extends parserlib.util.SyntaxUnit
- * @constructor
- * @param {SyntaxUnit} name The name of the feature.
- * @param {SyntaxUnit} value The value of the feature or null if none.
- */
-function MediaFeature(name, value) {
-
-    SyntaxUnit.call(this, "(" + name + (value !== null ? ":" + value : "") + ")", name.startLine, name.startCol, Parser.MEDIA_FEATURE_TYPE);
-
-    /**
-     * The name of the media feature
-     * @type String
-     * @property name
-     */
-    this.name = name;
-
-    /**
-     * The value for the feature or null if there is none.
-     * @type SyntaxUnit
-     * @property value
-     */
-    this.value = value;
-}
-
-MediaFeature.prototype = new SyntaxUnit();
-MediaFeature.prototype.constructor = MediaFeature;
-
-
-},{"../util/SyntaxUnit":26,"./Parser":6}],5:[function(require,module,exports){
-"use strict";
-
-module.exports = MediaQuery;
-
-var SyntaxUnit = require("../util/SyntaxUnit");
-
-var Parser = require("./Parser");
-
-/**
- * Represents an individual media query.
- * @namespace parserlib.css
- * @class MediaQuery
- * @extends parserlib.util.SyntaxUnit
- * @constructor
- * @param {String} modifier The modifier "not" or "only" (or null).
- * @param {String} mediaType The type of media (i.e., "print").
- * @param {Array} parts Array of selectors parts making up this selector.
- * @param {int} line The line of text on which the unit resides.
- * @param {int} col The column of text on which the unit resides.
- */
-function MediaQuery(modifier, mediaType, features, line, col) {
-
-    SyntaxUnit.call(this, (modifier ? modifier + " ": "") + (mediaType ? mediaType : "") + (mediaType && features.length > 0 ? " and " : "") + features.join(" and "), line, col, Parser.MEDIA_QUERY_TYPE);
-
-    /**
-     * The media modifier ("not" or "only")
-     * @type String
-     * @property modifier
-     */
-    this.modifier = modifier;
-
-    /**
-     * The mediaType (i.e., "print")
-     * @type String
-     * @property mediaType
-     */
-    this.mediaType = mediaType;
-
-    /**
-     * The parts that make up the selector.
-     * @type Array
-     * @property features
-     */
-    this.features = features;
-
-}
-
-MediaQuery.prototype = new SyntaxUnit();
-MediaQuery.prototype.constructor = MediaQuery;
-
-
-},{"../util/SyntaxUnit":26,"./Parser":6}],6:[function(require,module,exports){
-"use strict";
 
 module.exports = Parser;
 
-var EventTarget = require("../util/EventTarget");
-var SyntaxError = require("../util/SyntaxError");
-var SyntaxUnit = require("../util/SyntaxUnit");
+var EventTarget = __webpack_require__(23);
+var SyntaxError = __webpack_require__(10);
+var SyntaxUnit = __webpack_require__(1);
 
-var Combinator = require("./Combinator");
-var MediaFeature = require("./MediaFeature");
-var MediaQuery = require("./MediaQuery");
-var PropertyName = require("./PropertyName");
-var PropertyValue = require("./PropertyValue");
-var PropertyValuePart = require("./PropertyValuePart");
-var Selector = require("./Selector");
-var SelectorPart = require("./SelectorPart");
-var SelectorSubPart = require("./SelectorSubPart");
-var TokenStream = require("./TokenStream");
-var Tokens = require("./Tokens");
-var Validation = require("./Validation");
+var Combinator = __webpack_require__(22);
+var MediaFeature = __webpack_require__(24);
+var MediaQuery = __webpack_require__(25);
+var PropertyName = __webpack_require__(26);
+var PropertyValue = __webpack_require__(27);
+var PropertyValuePart = __webpack_require__(14);
+var Selector = __webpack_require__(28);
+var SelectorPart = __webpack_require__(15);
+var SelectorSubPart = __webpack_require__(30);
+var TokenStream = __webpack_require__(31);
+var Tokens = __webpack_require__(11);
+var Validation = __webpack_require__(51);
 
 /**
  * A CSS3 parser.
@@ -3290,725 +2738,296 @@ nth
   ;
 */
 
-},{"../util/EventTarget":23,"../util/SyntaxError":25,"../util/SyntaxUnit":26,"./Combinator":2,"./MediaFeature":4,"./MediaQuery":5,"./PropertyName":8,"./PropertyValue":9,"./PropertyValuePart":11,"./Selector":13,"./SelectorPart":14,"./SelectorSubPart":15,"./TokenStream":17,"./Tokens":18,"./Validation":19}],7:[function(require,module,exports){
+
+/***/ }),
+/* 3 */,
+/* 4 */,
+/* 5 */,
+/* 6 */,
+/* 7 */,
+/* 8 */,
+/* 9 */,
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 
-/* exported Properties */
 
-var Properties = module.exports = {
-    __proto__: null,
-
-    //A
-    "align-items"                   : "flex-start | flex-end | center | baseline | stretch",
-    "align-content"                 : "flex-start | flex-end | center | space-between | space-around | stretch",
-    "align-self"                    : "auto | flex-start | flex-end | center | baseline | stretch",
-    "all"                           : "initial | inherit | unset",
-    "-webkit-align-items"           : "flex-start | flex-end | center | baseline | stretch",
-    "-webkit-align-content"         : "flex-start | flex-end | center | space-between | space-around | stretch",
-    "-webkit-align-self"            : "auto | flex-start | flex-end | center | baseline | stretch",
-    "alignment-adjust"              : "auto | baseline | before-edge | text-before-edge | middle | central | after-edge | text-after-edge | ideographic | alphabetic | hanging | mathematical | <percentage> | <length>",
-    "alignment-baseline"            : "auto | baseline | use-script | before-edge | text-before-edge | after-edge | text-after-edge | central | middle | ideographic | alphabetic | hanging | mathematical",
-    "animation"                     : 1,
-    "animation-delay"               : "<time>#",
-    "animation-direction"           : "<single-animation-direction>#",
-    "animation-duration"            : "<time>#",
-    "animation-fill-mode"           : "[ none | forwards | backwards | both ]#",
-    "animation-iteration-count"     : "[ <number> | infinite ]#",
-    "animation-name"                : "[ none | <single-animation-name> ]#",
-    "animation-play-state"          : "[ running | paused ]#",
-    "animation-timing-function"     : 1,
-
-    //vendor prefixed
-    "-moz-animation-delay"               : "<time>#",
-    "-moz-animation-direction"           : "[ normal | alternate ]#",
-    "-moz-animation-duration"            : "<time>#",
-    "-moz-animation-iteration-count"     : "[ <number> | infinite ]#",
-    "-moz-animation-name"                : "[ none | <single-animation-name> ]#",
-    "-moz-animation-play-state"          : "[ running | paused ]#",
-
-    "-ms-animation-delay"               : "<time>#",
-    "-ms-animation-direction"           : "[ normal | alternate ]#",
-    "-ms-animation-duration"            : "<time>#",
-    "-ms-animation-iteration-count"     : "[ <number> | infinite ]#",
-    "-ms-animation-name"                : "[ none | <single-animation-name> ]#",
-    "-ms-animation-play-state"          : "[ running | paused ]#",
-
-    "-webkit-animation-delay"               : "<time>#",
-    "-webkit-animation-direction"           : "[ normal | alternate ]#",
-    "-webkit-animation-duration"            : "<time>#",
-    "-webkit-animation-fill-mode"           : "[ none | forwards | backwards | both ]#",
-    "-webkit-animation-iteration-count"     : "[ <number> | infinite ]#",
-    "-webkit-animation-name"                : "[ none | <single-animation-name> ]#",
-    "-webkit-animation-play-state"          : "[ running | paused ]#",
-
-    "-o-animation-delay"               : "<time>#",
-    "-o-animation-direction"           : "[ normal | alternate ]#",
-    "-o-animation-duration"            : "<time>#",
-    "-o-animation-iteration-count"     : "[ <number> | infinite ]#",
-    "-o-animation-name"                : "[ none | <single-animation-name> ]#",
-    "-o-animation-play-state"          : "[ running | paused ]#",
-
-    "appearance"                    : "none | auto",
-    "-moz-appearance"               : "none | button | button-arrow-down | button-arrow-next | button-arrow-previous | button-arrow-up | button-bevel | button-focus | caret | checkbox | checkbox-container | checkbox-label | checkmenuitem | dualbutton | groupbox | listbox | listitem | menuarrow | menubar | menucheckbox | menuimage | menuitem | menuitemtext | menulist | menulist-button | menulist-text | menulist-textfield | menupopup | menuradio | menuseparator | meterbar | meterchunk | progressbar | progressbar-vertical | progresschunk | progresschunk-vertical | radio | radio-container | radio-label | radiomenuitem | range | range-thumb | resizer | resizerpanel | scale-horizontal | scalethumbend | scalethumb-horizontal | scalethumbstart | scalethumbtick | scalethumb-vertical | scale-vertical | scrollbarbutton-down | scrollbarbutton-left | scrollbarbutton-right | scrollbarbutton-up | scrollbarthumb-horizontal | scrollbarthumb-vertical | scrollbartrack-horizontal | scrollbartrack-vertical | searchfield | separator | sheet | spinner | spinner-downbutton | spinner-textfield | spinner-upbutton | splitter | statusbar | statusbarpanel | tab | tabpanel | tabpanels | tab-scroll-arrow-back | tab-scroll-arrow-forward | textfield | textfield-multiline | toolbar | toolbarbutton | toolbarbutton-dropdown | toolbargripper | toolbox | tooltip | treeheader | treeheadercell | treeheadersortarrow | treeitem | treeline | treetwisty | treetwistyopen | treeview | -moz-mac-unified-toolbar | -moz-win-borderless-glass | -moz-win-browsertabbar-toolbox | -moz-win-communicationstext | -moz-win-communications-toolbox | -moz-win-exclude-glass | -moz-win-glass | -moz-win-mediatext | -moz-win-media-toolbox | -moz-window-button-box | -moz-window-button-box-maximized | -moz-window-button-close | -moz-window-button-maximize | -moz-window-button-minimize | -moz-window-button-restore | -moz-window-frame-bottom | -moz-window-frame-left | -moz-window-frame-right | -moz-window-titlebar | -moz-window-titlebar-maximized",
-    "-ms-appearance"                : "none | icon | window | desktop | workspace | document | tooltip | dialog | button | push-button | hyperlink | radio | radio-button | checkbox | menu-item | tab | menu | menubar | pull-down-menu | pop-up-menu | list-menu | radio-group | checkbox-group | outline-tree | range | field | combo-box | signature | password | normal",
-    "-webkit-appearance"            : "none | button | button-bevel | caps-lock-indicator | caret | checkbox | default-button | listbox	| listitem | media-fullscreen-button | media-mute-button | media-play-button | media-seek-back-button	| media-seek-forward-button	| media-slider | media-sliderthumb | menulist	| menulist-button	| menulist-text	| menulist-textfield | push-button	| radio	| searchfield	| searchfield-cancel-button	| searchfield-decoration | searchfield-results-button | searchfield-results-decoration | slider-horizontal | slider-vertical | sliderthumb-horizontal | sliderthumb-vertical	| square-button	| textarea	| textfield	| scrollbarbutton-down | scrollbarbutton-left | scrollbarbutton-right | scrollbarbutton-up | scrollbargripper-horizontal | scrollbargripper-vertical | scrollbarthumb-horizontal | scrollbarthumb-vertical | scrollbartrack-horizontal | scrollbartrack-vertical",
-    "-o-appearance"                 : "none | window | desktop | workspace | document | tooltip | dialog | button | push-button | hyperlink | radio | radio-button | checkbox | menu-item | tab | menu | menubar | pull-down-menu | pop-up-menu | list-menu | radio-group | checkbox-group | outline-tree | range | field | combo-box | signature | password | normal",
-
-    "azimuth"                       : "<azimuth>",
-
-    //B
-    "backface-visibility"           : "visible | hidden",
-    "background"                    : 1,
-    "background-attachment"         : "<attachment>#",
-    "background-clip"               : "<box>#",
-    "background-color"              : "<color>",
-    "background-image"              : "<bg-image>#",
-    "background-origin"             : "<box>#",
-    "background-position"           : "<bg-position>",
-    "background-repeat"             : "<repeat-style>#",
-    "background-size"               : "<bg-size>#",
-    "baseline-shift"                : "baseline | sub | super | <percentage> | <length>",
-    "behavior"                      : 1,
-    "binding"                       : 1,
-    "bleed"                         : "<length>",
-    "bookmark-label"                : "<content> | <attr> | <string>",
-    "bookmark-level"                : "none | <integer>",
-    "bookmark-state"                : "open | closed",
-    "bookmark-target"               : "none | <uri> | <attr>",
-    "border"                        : "<border-width> || <border-style> || <color>",
-    "border-bottom"                 : "<border-width> || <border-style> || <color>",
-    "border-bottom-color"           : "<color>",
-    "border-bottom-left-radius"     :  "<x-one-radius>",
-    "border-bottom-right-radius"    :  "<x-one-radius>",
-    "border-bottom-style"           : "<border-style>",
-    "border-bottom-width"           : "<border-width>",
-    "border-collapse"               : "collapse | separate",
-    "border-color"                  : "<color>{1,4}",
-    "border-image"                  : 1,
-    "border-image-outset"           : "[ <length> | <number> ]{1,4}",
-    "border-image-repeat"           : "[ stretch | repeat | round ]{1,2}",
-    "border-image-slice"            : "<border-image-slice>",
-    "border-image-source"           : "<image> | none",
-    "border-image-width"            : "[ <length> | <percentage> | <number> | auto ]{1,4}",
-    "border-left"                   : "<border-width> || <border-style> || <color>",
-    "border-left-color"             : "<color>",
-    "border-left-style"             : "<border-style>",
-    "border-left-width"             : "<border-width>",
-    "border-radius"                 : "<border-radius>",
-    "border-right"                  : "<border-width> || <border-style> || <color>",
-    "border-right-color"            : "<color>",
-    "border-right-style"            : "<border-style>",
-    "border-right-width"            : "<border-width>",
-    "border-spacing"                : "<length>{1,2}",
-    "border-style"                  : "<border-style>{1,4}",
-    "border-top"                    : "<border-width> || <border-style> || <color>",
-    "border-top-color"              : "<color>",
-    "border-top-left-radius"        : "<x-one-radius>",
-    "border-top-right-radius"       : "<x-one-radius>",
-    "border-top-style"              : "<border-style>",
-    "border-top-width"              : "<border-width>",
-    "border-width"                  : "<border-width>{1,4}",
-    "bottom"                        : "<margin-width>",
-    "-moz-box-align"                : "start | end | center | baseline | stretch",
-    "-moz-box-decoration-break"     : "slice | clone",
-    "-moz-box-direction"            : "normal | reverse",
-    "-moz-box-flex"                 : "<number>",
-    "-moz-box-flex-group"           : "<integer>",
-    "-moz-box-lines"                : "single | multiple",
-    "-moz-box-ordinal-group"        : "<integer>",
-    "-moz-box-orient"               : "horizontal | vertical | inline-axis | block-axis",
-    "-moz-box-pack"                 : "start | end | center | justify",
-    "-o-box-decoration-break"       : "slice | clone",
-    "-webkit-box-align"             : "start | end | center | baseline | stretch",
-    "-webkit-box-decoration-break"  : "slice | clone",
-    "-webkit-box-direction"         : "normal | reverse",
-    "-webkit-box-flex"              : "<number>",
-    "-webkit-box-flex-group"        : "<integer>",
-    "-webkit-box-lines"             : "single | multiple",
-    "-webkit-box-ordinal-group"     : "<integer>",
-    "-webkit-box-orient"            : "horizontal | vertical | inline-axis | block-axis",
-    "-webkit-box-pack"              : "start | end | center | justify",
-    "box-decoration-break"          : "slice | clone",
-    "box-shadow"                    : "<box-shadow>",
-    "box-sizing"                    : "content-box | border-box",
-    "break-after"                   : "auto | always | avoid | left | right | page | column | avoid-page | avoid-column",
-    "break-before"                  : "auto | always | avoid | left | right | page | column | avoid-page | avoid-column",
-    "break-inside"                  : "auto | avoid | avoid-page | avoid-column",
-
-    //C
-    "caption-side"                  : "top | bottom",
-    "clear"                         : "none | right | left | both",
-    "clip"                          : "<shape> | auto",
-    "-webkit-clip-path"             : "<clip-source> | <clip-path> | none",
-    "clip-path"                     : "<clip-source> | <clip-path> | none",
-    "clip-rule"                     : "nonzero | evenodd",
-    "color"                         : "<color>",
-    "color-interpolation"           : "auto | sRGB | linearRGB",
-    "color-interpolation-filters"   : "auto | sRGB | linearRGB",
-    "color-profile"                 : 1,
-    "color-rendering"               : "auto | optimizeSpeed | optimizeQuality",
-    "column-count"                  : "<integer> | auto",                      //https://www.w3.org/TR/css3-multicol/
-    "column-fill"                   : "auto | balance",
-    "column-gap"                    : "<length> | normal",
-    "column-rule"                   : "<border-width> || <border-style> || <color>",
-    "column-rule-color"             : "<color>",
-    "column-rule-style"             : "<border-style>",
-    "column-rule-width"             : "<border-width>",
-    "column-span"                   : "none | all",
-    "column-width"                  : "<length> | auto",
-    "columns"                       : 1,
-    "content"                       : 1,
-    "counter-increment"             : 1,
-    "counter-reset"                 : 1,
-    "crop"                          : "<shape> | auto",
-    "cue"                           : "cue-after | cue-before",
-    "cue-after"                     : 1,
-    "cue-before"                    : 1,
-    "cursor"                        : 1,
-
-    //D
-    "direction"                     : "ltr | rtl",
-    "display"                       : "inline | block | list-item | inline-block | table | inline-table | table-row-group | table-header-group | table-footer-group | table-row | table-column-group | table-column | table-cell | table-caption | grid | inline-grid | run-in | ruby | ruby-base | ruby-text | ruby-base-container | ruby-text-container | contents | none | -moz-box | -moz-inline-block | -moz-inline-box | -moz-inline-grid | -moz-inline-stack | -moz-inline-table | -moz-grid | -moz-grid-group | -moz-grid-line | -moz-groupbox | -moz-deck | -moz-popup | -moz-stack | -moz-marker | -webkit-box | -webkit-inline-box | -ms-flexbox | -ms-inline-flexbox | flex | -webkit-flex | inline-flex | -webkit-inline-flex",
-    "dominant-baseline"             : "auto | use-script | no-change | reset-size | ideographic | alphabetic | hanging | mathematical | central | middle | text-after-edge | text-before-edge",
-    "drop-initial-after-adjust"     : "central | middle | after-edge | text-after-edge | ideographic | alphabetic | mathematical | <percentage> | <length>",
-    "drop-initial-after-align"      : "baseline | use-script | before-edge | text-before-edge | after-edge | text-after-edge | central | middle | ideographic | alphabetic | hanging | mathematical",
-    "drop-initial-before-adjust"    : "before-edge | text-before-edge | central | middle | hanging | mathematical | <percentage> | <length>",
-    "drop-initial-before-align"     : "caps-height | baseline | use-script | before-edge | text-before-edge | after-edge | text-after-edge | central | middle | ideographic | alphabetic | hanging | mathematical",
-    "drop-initial-size"             : "auto | line | <length> | <percentage>",
-    "drop-initial-value"            : "<integer>",
-
-    //E
-    "elevation"                     : "<angle> | below | level | above | higher | lower",
-    "empty-cells"                   : "show | hide",
-    "enable-background"             : 1,
-
-    //F
-    "fill"                          : "<paint>",
-    "fill-opacity"                  : "<opacity-value>",
-    "fill-rule"                     : "nonzero | evenodd",
-    "filter"                        : "<filter-function-list> | none",
-    "fit"                           : "fill | hidden | meet | slice",
-    "fit-position"                  : 1,
-    "flex"                          : "<flex>",
-    "flex-basis"                    : "<width>",
-    "flex-direction"                : "row | row-reverse | column | column-reverse",
-    "flex-flow"                     : "<flex-direction> || <flex-wrap>",
-    "flex-grow"                     : "<number>",
-    "flex-shrink"                   : "<number>",
-    "flex-wrap"                     : "nowrap | wrap | wrap-reverse",
-    "-webkit-flex"                  : "<flex>",
-    "-webkit-flex-basis"            : "<width>",
-    "-webkit-flex-direction"        : "row | row-reverse | column | column-reverse",
-    "-webkit-flex-flow"             : "<flex-direction> || <flex-wrap>",
-    "-webkit-flex-grow"             : "<number>",
-    "-webkit-flex-shrink"           : "<number>",
-    "-webkit-flex-wrap"             : "nowrap | wrap | wrap-reverse",
-    "-ms-flex"                      : "<flex>",
-    "-ms-flex-align"                : "start | end | center | stretch | baseline",
-    "-ms-flex-direction"            : "row | row-reverse | column | column-reverse",
-    "-ms-flex-order"                : "<number>",
-    "-ms-flex-pack"                 : "start | end | center | justify",
-    "-ms-flex-wrap"                 : "nowrap | wrap | wrap-reverse",
-    "float"                         : "left | right | none",
-    "float-offset"                  : 1,
-    "flood-color"                   : 1,
-    "flood-opacity"                 : "<opacity-value>",
-    "font"                          : "<font-shorthand> | caption | icon | menu | message-box | small-caption | status-bar",
-    "font-family"                   : "<font-family>",
-    "font-feature-settings"         : "<feature-tag-value> | normal",
-    "font-kerning"                  : "auto | normal | none",
-    "font-size"                     : "<font-size>",
-    "font-size-adjust"              : "<number> | none",
-    "font-stretch"                  : "<font-stretch>",
-    "font-style"                    : "<font-style>",
-    "font-variant"                  : "<font-variant> | normal | none",
-    "font-variant-alternates"       : "<font-variant-alternates> | normal",
-    "font-variant-caps"             : "<font-variant-caps> | normal",
-    "font-variant-east-asian"       : "<font-variant-east-asian> | normal",
-    "font-variant-ligatures"        : "<font-variant-ligatures> | normal | none",
-    "font-variant-numeric"          : "<font-variant-numeric> | normal",
-    "font-variant-position"         : "normal | sub | super",
-    "font-weight"                   : "<font-weight>",
-
-    //G
-    "glyph-orientation-horizontal"  : "<glyph-angle>",
-    "glyph-orientation-vertical"    : "auto | <glyph-angle>",
-    "grid"                          : 1,
-    "grid-area"                     : 1,
-    "grid-auto-columns"             : 1,
-    "grid-auto-flow"                : 1,
-    "grid-auto-position"            : 1,
-    "grid-auto-rows"                : 1,
-    "grid-cell-stacking"            : "columns | rows | layer",
-    "grid-column"                   : 1,
-    "grid-columns"                  : 1,
-    "grid-column-align"             : "start | end | center | stretch",
-    "grid-column-sizing"            : 1,
-    "grid-column-start"             : 1,
-    "grid-column-end"               : 1,
-    "grid-column-span"              : "<integer>",
-    "grid-flow"                     : "none | rows | columns",
-    "grid-layer"                    : "<integer>",
-    "grid-row"                      : 1,
-    "grid-rows"                     : 1,
-    "grid-row-align"                : "start | end | center | stretch",
-    "grid-row-start"                : 1,
-    "grid-row-end"                  : 1,
-    "grid-row-span"                 : "<integer>",
-    "grid-row-sizing"               : 1,
-    "grid-template"                 : 1,
-    "grid-template-areas"           : 1,
-    "grid-template-columns"         : 1,
-    "grid-template-rows"            : 1,
-
-    //H
-    "hanging-punctuation"           : 1,
-    "height"                        : "<margin-width> | <content-sizing>",
-    "hyphenate-after"               : "<integer> | auto",
-    "hyphenate-before"              : "<integer> | auto",
-    "hyphenate-character"           : "<string> | auto",
-    "hyphenate-lines"               : "no-limit | <integer>",
-    "hyphenate-resource"            : 1,
-    "hyphens"                       : "none | manual | auto",
-
-    //I
-    "icon"                          : 1,
-    "image-orientation"             : "angle | auto",
-    "image-rendering"               : "auto | optimizeSpeed | optimizeQuality",
-    "image-resolution"              : 1,
-    "ime-mode"                      : "auto | normal | active | inactive | disabled",
-    "inline-box-align"              : "last | <integer>",
-
-    //J
-    "justify-content"               : "flex-start | flex-end | center | space-between | space-around",
-    "-webkit-justify-content"       : "flex-start | flex-end | center | space-between | space-around",
-
-    //K
-    "kerning"                       : "auto | <length>",
-
-    //L
-    "left"                          : "<margin-width>",
-    "letter-spacing"                : "<length> | normal",
-    "line-height"                   : "<line-height>",
-    "line-break"                    : "auto | loose | normal | strict",
-    "line-stacking"                 : 1,
-    "line-stacking-ruby"            : "exclude-ruby | include-ruby",
-    "line-stacking-shift"           : "consider-shifts | disregard-shifts",
-    "line-stacking-strategy"        : "inline-line-height | block-line-height | max-height | grid-height",
-    "list-style"                    : 1,
-    "list-style-image"              : "<uri> | none",
-    "list-style-position"           : "inside | outside",
-    "list-style-type"               : "disc | circle | square | decimal | decimal-leading-zero | lower-roman | upper-roman | lower-greek | lower-latin | upper-latin | armenian | georgian | lower-alpha | upper-alpha | none",
-
-    //M
-    "margin"                        : "<margin-width>{1,4}",
-    "margin-bottom"                 : "<margin-width>",
-    "margin-left"                   : "<margin-width>",
-    "margin-right"                  : "<margin-width>",
-    "margin-top"                    : "<margin-width>",
-    "mark"                          : 1,
-    "mark-after"                    : 1,
-    "mark-before"                   : 1,
-    "marker"                        : 1,
-    "marker-end"                    : 1,
-    "marker-mid"                    : 1,
-    "marker-start"                  : 1,
-    "marks"                         : 1,
-    "marquee-direction"             : 1,
-    "marquee-play-count"            : 1,
-    "marquee-speed"                 : 1,
-    "marquee-style"                 : 1,
-    "mask"                          : 1,
-    "max-height"                    : "<length> | <percentage> | <content-sizing> | none",
-    "max-width"                     : "<length> | <percentage> | <content-sizing> | none",
-    "min-height"                    : "<length> | <percentage> | <content-sizing> | contain-floats | -moz-contain-floats | -webkit-contain-floats",
-    "min-width"                     : "<length> | <percentage> | <content-sizing> | contain-floats | -moz-contain-floats | -webkit-contain-floats",
-    "move-to"                       : 1,
-
-    //N
-    "nav-down"                      : 1,
-    "nav-index"                     : 1,
-    "nav-left"                      : 1,
-    "nav-right"                     : 1,
-    "nav-up"                        : 1,
-
-    //O
-    "object-fit"                    : "fill | contain | cover | none | scale-down",
-    "object-position"               : "<position>",
-    "opacity"                       : "<opacity-value>",
-    "order"                         : "<integer>",
-    "-webkit-order"                 : "<integer>",
-    "orphans"                       : "<integer>",
-    "outline"                       : 1,
-    "outline-color"                 : "<color> | invert",
-    "outline-offset"                : 1,
-    "outline-style"                 : "<border-style>",
-    "outline-width"                 : "<border-width>",
-    "overflow"                      : "visible | hidden | scroll | auto",
-    "overflow-style"                : 1,
-    "overflow-wrap"                 : "normal | break-word",
-    "overflow-x"                    : 1,
-    "overflow-y"                    : 1,
-
-    //P
-    "padding"                       : "<padding-width>{1,4}",
-    "padding-bottom"                : "<padding-width>",
-    "padding-left"                  : "<padding-width>",
-    "padding-right"                 : "<padding-width>",
-    "padding-top"                   : "<padding-width>",
-    "page"                          : 1,
-    "page-break-after"              : "auto | always | avoid | left | right",
-    "page-break-before"             : "auto | always | avoid | left | right",
-    "page-break-inside"             : "auto | avoid",
-    "page-policy"                   : 1,
-    "pause"                         : 1,
-    "pause-after"                   : 1,
-    "pause-before"                  : 1,
-    "perspective"                   : 1,
-    "perspective-origin"            : 1,
-    "phonemes"                      : 1,
-    "pitch"                         : 1,
-    "pitch-range"                   : 1,
-    "play-during"                   : 1,
-    "pointer-events"                : "auto | none | visiblePainted | visibleFill | visibleStroke | visible | painted | fill | stroke | all",
-    "position"                      : "static | relative | absolute | fixed",
-    "presentation-level"            : 1,
-    "punctuation-trim"              : 1,
-
-    //Q
-    "quotes"                        : 1,
-
-    //R
-    "rendering-intent"              : 1,
-    "resize"                        : 1,
-    "rest"                          : 1,
-    "rest-after"                    : 1,
-    "rest-before"                   : 1,
-    "richness"                      : 1,
-    "right"                         : "<margin-width>",
-    "rotation"                      : 1,
-    "rotation-point"                : 1,
-    "ruby-align"                    : 1,
-    "ruby-overhang"                 : 1,
-    "ruby-position"                 : 1,
-    "ruby-span"                     : 1,
-
-    //S
-    "shape-rendering"               : "auto | optimizeSpeed | crispEdges | geometricPrecision",
-    "size"                          : 1,
-    "speak"                         : "normal | none | spell-out",
-    "speak-header"                  : "once | always",
-    "speak-numeral"                 : "digits | continuous",
-    "speak-punctuation"             : "code | none",
-    "speech-rate"                   : 1,
-    "src"                           : 1,
-    "stop-color"                    : 1,
-    "stop-opacity"                  : "<opacity-value>",
-    "stress"                        : 1,
-    "string-set"                    : 1,
-    "stroke"                        : "<paint>",
-    "stroke-dasharray"              : "none | <dasharray>",
-    "stroke-dashoffset"             : "<percentage> | <length>",
-    "stroke-linecap"                : "butt | round | square",
-    "stroke-linejoin"               : "miter | round | bevel",
-    "stroke-miterlimit"             : "<miterlimit>",
-    "stroke-opacity"                : "<opacity-value>",
-    "stroke-width"                  : "<percentage> | <length>",
-
-    "table-layout"                  : "auto | fixed",
-    "tab-size"                      : "<integer> | <length>",
-    "target"                        : 1,
-    "target-name"                   : 1,
-    "target-new"                    : 1,
-    "target-position"               : 1,
-    "text-align"                    : "left | right | center | justify | match-parent | start | end",
-    "text-align-last"               : 1,
-    "text-anchor"                   : "start | middle | end",
-    "text-decoration"               : "<text-decoration-line> || <text-decoration-style> || <text-decoration-color>",
-    "text-decoration-color"         : "<text-decoration-color>",
-    "text-decoration-line"          : "<text-decoration-line>",
-    "text-decoration-style"         : "<text-decoration-style>",
-    "text-emphasis"                 : 1,
-    "text-height"                   : 1,
-    "text-indent"                   : "<length> | <percentage>",
-    "text-justify"                  : "auto | none | inter-word | inter-ideograph | inter-cluster | distribute | kashida",
-    "text-outline"                  : 1,
-    "text-overflow"                 : 1,
-    "text-rendering"                : "auto | optimizeSpeed | optimizeLegibility | geometricPrecision",
-    "text-shadow"                   : 1,
-    "text-transform"                : "capitalize | uppercase | lowercase | none",
-    "text-wrap"                     : "normal | none | avoid",
-    "top"                           : "<margin-width>",
-    "-ms-touch-action"              : "auto | none | pan-x | pan-y | pan-left | pan-right | pan-up | pan-down | manipulation",
-    "touch-action"                  : "auto | none | pan-x | pan-y | pan-left | pan-right | pan-up | pan-down | manipulation",
-    "transform"                     : 1,
-    "transform-origin"              : 1,
-    "transform-style"               : 1,
-    "transition"                    : 1,
-    "transition-delay"              : 1,
-    "transition-duration"           : 1,
-    "transition-property"           : 1,
-    "transition-timing-function"    : 1,
-
-    //U
-    "unicode-bidi"                  : "normal | embed | isolate | bidi-override | isolate-override | plaintext",
-    "user-modify"                   : "read-only | read-write | write-only",
-    "user-select"                   : "none | text | toggle | element | elements | all",
-
-    //V
-    "vertical-align"                : "auto | use-script | baseline | sub | super | top | text-top | central | middle | bottom | text-bottom | <percentage> | <length>",
-    "visibility"                    : "visible | hidden | collapse",
-    "voice-balance"                 : 1,
-    "voice-duration"                : 1,
-    "voice-family"                  : 1,
-    "voice-pitch"                   : 1,
-    "voice-pitch-range"             : 1,
-    "voice-rate"                    : 1,
-    "voice-stress"                  : 1,
-    "voice-volume"                  : 1,
-    "volume"                        : 1,
-
-    //W
-    "white-space"                   : "normal | pre | nowrap | pre-wrap | pre-line | -pre-wrap | -o-pre-wrap | -moz-pre-wrap | -hp-pre-wrap",   // https://perishablepress.com/wrapping-content/
-    "white-space-collapse"          : 1,
-    "widows"                        : "<integer>",
-    "width"                         : "<length> | <percentage> | <content-sizing> | auto",
-    "will-change"                   : "<will-change>",
-    "word-break"                    : "normal | keep-all | break-all",
-    "word-spacing"                  : "<length> | normal",
-    "word-wrap"                     : "normal | break-word",
-    "writing-mode"                  : "horizontal-tb | vertical-rl | vertical-lr | lr-tb | rl-tb | tb-rl | bt-rl | tb-lr | bt-lr | lr-bt | rl-bt | lr | rl | tb",
-
-    //Z
-    "z-index"                       : "<integer> | auto",
-    "zoom"                          : "<number> | <percentage> | normal"
-};
-
-},{}],8:[function(require,module,exports){
-"use strict";
-
-module.exports = PropertyName;
-
-var SyntaxUnit = require("../util/SyntaxUnit");
-
-var Parser = require("./Parser");
+module.exports = SyntaxError;
 
 /**
- * Represents a selector combinator (whitespace, +, >).
- * @namespace parserlib.css
- * @class PropertyName
- * @extends parserlib.util.SyntaxUnit
+ * Type to use when a syntax error occurs.
+ * @class SyntaxError
+ * @namespace parserlib.util
  * @constructor
- * @param {String} text The text representation of the unit.
- * @param {String} hack The type of IE hack applied ("*", "_", or null).
- * @param {int} line The line of text on which the unit resides.
- * @param {int} col The column of text on which the unit resides.
+ * @param {String} message The error message.
+ * @param {int} line The line at which the error occurred.
+ * @param {int} col The column at which the error occurred.
  */
-function PropertyName(text, hack, line, col) {
-
-    SyntaxUnit.call(this, text, line, col, Parser.PROPERTY_NAME_TYPE);
+function SyntaxError(message, line, col) {
+    Error.call(this);
+    this.name = this.constructor.name;
 
     /**
-     * The type of IE hack applied ("*", "_", or null).
-     * @type String
-     * @property hack
-     */
-    this.hack = hack;
-
-}
-
-PropertyName.prototype = new SyntaxUnit();
-PropertyName.prototype.constructor = PropertyName;
-PropertyName.prototype.toString = function() {
-    return (this.hack ? this.hack : "") + this.text;
-};
-
-},{"../util/SyntaxUnit":26,"./Parser":6}],9:[function(require,module,exports){
-"use strict";
-
-module.exports = PropertyValue;
-
-var SyntaxUnit = require("../util/SyntaxUnit");
-
-var Parser = require("./Parser");
-
-/**
- * Represents a single part of a CSS property value, meaning that it represents
- * just everything single part between ":" and ";". If there are multiple values
- * separated by commas, this type represents just one of the values.
- * @param {String[]} parts An array of value parts making up this value.
- * @param {int} line The line of text on which the unit resides.
- * @param {int} col The column of text on which the unit resides.
- * @namespace parserlib.css
- * @class PropertyValue
- * @extends parserlib.util.SyntaxUnit
- * @constructor
- */
-function PropertyValue(parts, line, col) {
-
-    SyntaxUnit.call(this, parts.join(" "), line, col, Parser.PROPERTY_VALUE_TYPE);
-
-    /**
-     * The parts that make up the selector.
-     * @type Array
-     * @property parts
-     */
-    this.parts = parts;
-
-}
-
-PropertyValue.prototype = new SyntaxUnit();
-PropertyValue.prototype.constructor = PropertyValue;
-
-
-},{"../util/SyntaxUnit":26,"./Parser":6}],10:[function(require,module,exports){
-"use strict";
-
-module.exports = PropertyValueIterator;
-
-/**
- * A utility class that allows for easy iteration over the various parts of a
- * property value.
- * @param {parserlib.css.PropertyValue} value The property value to iterate over.
- * @namespace parserlib.css
- * @class PropertyValueIterator
- * @constructor
- */
-function PropertyValueIterator(value) {
-
-    /**
-     * Iterator value
+     * The column at which the error occurred.
      * @type int
-     * @property _i
-     * @private
+     * @property col
      */
-    this._i = 0;
+    this.col = col;
 
     /**
-     * The parts that make up the value.
-     * @type Array
-     * @property _parts
-     * @private
+     * The line at which the error occurred.
+     * @type int
+     * @property line
      */
-    this._parts = value.parts;
+    this.line = line;
 
     /**
-     * Keeps track of bookmarks along the way.
-     * @type Array
-     * @property _marks
-     * @private
+     * The text representation of the unit.
+     * @type String
+     * @property text
      */
-    this._marks = [];
-
-    /**
-     * Holds the original property value.
-     * @type parserlib.css.PropertyValue
-     * @property value
-     */
-    this.value = value;
+    this.message = message;
 
 }
 
-/**
- * Returns the total number of parts in the value.
- * @return {int} The total number of parts in the value.
- * @method count
- */
-PropertyValueIterator.prototype.count = function() {
-    return this._parts.length;
-};
+//inherit from Error
+SyntaxError.prototype = Object.create(Error.prototype); // jshint ignore:line
+SyntaxError.prototype.constructor = SyntaxError; // jshint ignore:line
 
-/**
- * Indicates if the iterator is positioned at the first item.
- * @return {Boolean} True if positioned at first item, false if not.
- * @method isFirst
- */
-PropertyValueIterator.prototype.isFirst = function() {
-    return this._i === 0;
-};
 
-/**
- * Indicates if there are more parts of the property value.
- * @return {Boolean} True if there are more parts, false if not.
- * @method hasNext
- */
-PropertyValueIterator.prototype.hasNext = function() {
-    return this._i < this._parts.length;
-};
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
 
-/**
- * Marks the current spot in the iteration so it can be restored to
- * later on.
- * @return {void}
- * @method mark
- */
-PropertyValueIterator.prototype.mark = function() {
-    this._marks.push(this._i);
-};
-
-/**
- * Returns the next part of the property value or null if there is no next
- * part. Does not move the internal counter forward.
- * @return {parserlib.css.PropertyValuePart} The next part of the property value or null if there is no next
- * part.
- * @method peek
- */
-PropertyValueIterator.prototype.peek = function(count) {
-    return this.hasNext() ? this._parts[this._i + (count || 0)] : null;
-};
-
-/**
- * Returns the next part of the property value or null if there is no next
- * part.
- * @return {parserlib.css.PropertyValuePart} The next part of the property value or null if there is no next
- * part.
- * @method next
- */
-PropertyValueIterator.prototype.next = function() {
-    return this.hasNext() ? this._parts[this._i++] : null;
-};
-
-/**
- * Returns the previous part of the property value or null if there is no
- * previous part.
- * @return {parserlib.css.PropertyValuePart} The previous part of the
- * property value or null if there is no previous part.
- * @method previous
- */
-PropertyValueIterator.prototype.previous = function() {
-    return this._i > 0 ? this._parts[--this._i] : null;
-};
-
-/**
- * Restores the last saved bookmark.
- * @return {void}
- * @method restore
- */
-PropertyValueIterator.prototype.restore = function() {
-    if (this._marks.length) {
-        this._i = this._marks.pop();
-    }
-};
-
-/**
- * Drops the last saved bookmark.
- * @return {void}
- * @method drop
- */
-PropertyValueIterator.prototype.drop = function() {
-    this._marks.pop();
-};
-
-},{}],11:[function(require,module,exports){
 "use strict";
+
+
+var Tokens = module.exports = [
+
+    /*
+     * The following token names are defined in CSS3 Grammar: https://www.w3.org/TR/css3-syntax/#lexical
+     */
+
+    // HTML-style comments
+    { name: "CDO" },
+    { name: "CDC" },
+
+    // ignorables
+    { name: "S", whitespace: true/*, channel: "ws"*/ },
+    { name: "COMMENT", comment: true, hide: true, channel: "comment" },
+
+    // attribute equality
+    { name: "INCLUDES", text: "~=" },
+    { name: "DASHMATCH", text: "|=" },
+    { name: "PREFIXMATCH", text: "^=" },
+    { name: "SUFFIXMATCH", text: "$=" },
+    { name: "SUBSTRINGMATCH", text: "*=" },
+
+    // identifier types
+    { name: "STRING" },
+    { name: "IDENT" },
+    { name: "HASH" },
+
+    // at-keywords
+    { name: "IMPORT_SYM", text: "@import" },
+    { name: "PAGE_SYM", text: "@page" },
+    { name: "MEDIA_SYM", text: "@media" },
+    { name: "FONT_FACE_SYM", text: "@font-face" },
+    { name: "CHARSET_SYM", text: "@charset" },
+    { name: "NAMESPACE_SYM", text: "@namespace" },
+    { name: "SUPPORTS_SYM", text: "@supports" },
+    { name: "VIEWPORT_SYM", text: ["@viewport", "@-ms-viewport", "@-o-viewport"] },
+    { name: "DOCUMENT_SYM", text: ["@document", "@-moz-document"] },
+    { name: "UNKNOWN_SYM" },
+    //{ name: "ATKEYWORD"},
+
+    // CSS3 animations
+    { name: "KEYFRAMES_SYM", text: [ "@keyframes", "@-webkit-keyframes", "@-moz-keyframes", "@-o-keyframes" ] },
+
+    // important symbol
+    { name: "IMPORTANT_SYM" },
+
+    // measurements
+    { name: "LENGTH" },
+    { name: "ANGLE" },
+    { name: "TIME" },
+    { name: "FREQ" },
+    { name: "DIMENSION" },
+    { name: "PERCENTAGE" },
+    { name: "NUMBER" },
+
+    // functions
+    { name: "URI" },
+    { name: "FUNCTION" },
+
+    // Unicode ranges
+    { name: "UNICODE_RANGE" },
+
+    /*
+     * The following token names are defined in CSS3 Selectors: https://www.w3.org/TR/css3-selectors/#selector-syntax
+     */
+
+    // invalid string
+    { name: "INVALID" },
+
+    // combinators
+    { name: "PLUS", text: "+" },
+    { name: "GREATER", text: ">" },
+    { name: "COMMA", text: "," },
+    { name: "TILDE", text: "~" },
+
+    // modifier
+    { name: "NOT" },
+
+    /*
+     * Defined in CSS3 Paged Media
+     */
+    { name: "TOPLEFTCORNER_SYM", text: "@top-left-corner" },
+    { name: "TOPLEFT_SYM", text: "@top-left" },
+    { name: "TOPCENTER_SYM", text: "@top-center" },
+    { name: "TOPRIGHT_SYM", text: "@top-right" },
+    { name: "TOPRIGHTCORNER_SYM", text: "@top-right-corner" },
+    { name: "BOTTOMLEFTCORNER_SYM", text: "@bottom-left-corner" },
+    { name: "BOTTOMLEFT_SYM", text: "@bottom-left" },
+    { name: "BOTTOMCENTER_SYM", text: "@bottom-center" },
+    { name: "BOTTOMRIGHT_SYM", text: "@bottom-right" },
+    { name: "BOTTOMRIGHTCORNER_SYM", text: "@bottom-right-corner" },
+    { name: "LEFTTOP_SYM", text: "@left-top" },
+    { name: "LEFTMIDDLE_SYM", text: "@left-middle" },
+    { name: "LEFTBOTTOM_SYM", text: "@left-bottom" },
+    { name: "RIGHTTOP_SYM", text: "@right-top" },
+    { name: "RIGHTMIDDLE_SYM", text: "@right-middle" },
+    { name: "RIGHTBOTTOM_SYM", text: "@right-bottom" },
+
+    /*
+     * The following token names are defined in CSS3 Media Queries: https://www.w3.org/TR/css3-mediaqueries/#syntax
+     */
+    /*{ name: "MEDIA_ONLY", state: "media"},
+    { name: "MEDIA_NOT", state: "media"},
+    { name: "MEDIA_AND", state: "media"},*/
+    { name: "RESOLUTION", state: "media" },
+
+    /*
+     * The following token names are not defined in any CSS specification but are used by the lexer.
+     */
+
+    // not a real token, but useful for stupid IE filters
+    { name: "IE_FUNCTION" },
+
+    // part of CSS3 grammar but not the Flex code
+    { name: "CHAR" },
+
+    // TODO: Needed?
+    // Not defined as tokens, but might as well be
+    {
+        name: "PIPE",
+        text: "|"
+    },
+    {
+        name: "SLASH",
+        text: "/"
+    },
+    {
+        name: "MINUS",
+        text: "-"
+    },
+    {
+        name: "STAR",
+        text: "*"
+    },
+
+    {
+        name: "LBRACE",
+        endChar: "}",
+        text: "{"
+    },
+    {
+        name: "RBRACE",
+        text: "}"
+    },
+    {
+        name: "LBRACKET",
+        endChar: "]",
+        text: "["
+    },
+    {
+        name: "RBRACKET",
+        text: "]"
+    },
+    {
+        name: "EQUALS",
+        text: "="
+    },
+    {
+        name: "COLON",
+        text: ":"
+    },
+    {
+        name: "SEMICOLON",
+        text: ";"
+    },
+    {
+        name: "LPAREN",
+        endChar: ")",
+        text: "("
+    },
+    {
+        name: "RPAREN",
+        text: ")"
+    },
+    {
+        name: "DOT",
+        text: "."
+    }
+];
+
+(function() {
+    var nameMap = [],
+        typeMap = Object.create(null);
+
+    Tokens.UNKNOWN = -1;
+    Tokens.unshift({ name:"EOF" });
+    for (var i=0, len = Tokens.length; i < len; i++) {
+        nameMap.push(Tokens[i].name);
+        Tokens[Tokens[i].name] = i;
+        if (Tokens[i].text) {
+            if (Tokens[i].text instanceof Array) {
+                for (var j=0; j < Tokens[i].text.length; j++) {
+                    typeMap[Tokens[i].text[j]] = i;
+                }
+            } else {
+                typeMap[Tokens[i].text] = i;
+            }
+        }
+    }
+
+    Tokens.name = function(tt) {
+        return nameMap[tt];
+    };
+
+    Tokens.type = function(c) {
+        return typeMap[c] || -1;
+    };
+})();
+
+
+/***/ }),
+/* 12 */,
+/* 13 */,
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 module.exports = PropertyValuePart;
 
-var SyntaxUnit = require("../util/SyntaxUnit");
+var SyntaxUnit = __webpack_require__(1);
 
-var Colors = require("./Colors");
-var Parser = require("./Parser");
-var Tokens = require("./Tokens");
+var Colors = __webpack_require__(21);
+var Parser = __webpack_require__(2);
+var Tokens = __webpack_require__(11);
 
 /**
  * Represents a single part of a CSS property value, meaning that it represents
@@ -4248,77 +3267,19 @@ PropertyValuePart.fromToken = function(token) {
     return part;
 };
 
-},{"../util/SyntaxUnit":26,"./Colors":1,"./Parser":6,"./Tokens":18}],12:[function(require,module,exports){
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 
-var Pseudos = module.exports = {
-    __proto__:       null,
-    ":first-letter": 1,
-    ":first-line":   1,
-    ":before":       1,
-    ":after":        1
-};
-
-Pseudos.ELEMENT = 1;
-Pseudos.CLASS = 2;
-
-Pseudos.isElement = function(pseudo) {
-    return pseudo.indexOf("::") === 0 || Pseudos[pseudo.toLowerCase()] === Pseudos.ELEMENT;
-};
-
-},{}],13:[function(require,module,exports){
-"use strict";
-
-module.exports = Selector;
-
-var SyntaxUnit = require("../util/SyntaxUnit");
-
-var Parser = require("./Parser");
-var Specificity = require("./Specificity");
-
-/**
- * Represents an entire single selector, including all parts but not
- * including multiple selectors (those separated by commas).
- * @namespace parserlib.css
- * @class Selector
- * @extends parserlib.util.SyntaxUnit
- * @constructor
- * @param {Array} parts Array of selectors parts making up this selector.
- * @param {int} line The line of text on which the unit resides.
- * @param {int} col The column of text on which the unit resides.
- */
-function Selector(parts, line, col) {
-
-    SyntaxUnit.call(this, parts.join(" "), line, col, Parser.SELECTOR_TYPE);
-
-    /**
-     * The parts that make up the selector.
-     * @type Array
-     * @property parts
-     */
-    this.parts = parts;
-
-    /**
-     * The specificity of the selector.
-     * @type parserlib.css.Specificity
-     * @property specificity
-     */
-    this.specificity = Specificity.calculate(this);
-
-}
-
-Selector.prototype = new SyntaxUnit();
-Selector.prototype.constructor = Selector;
-
-
-},{"../util/SyntaxUnit":26,"./Parser":6,"./Specificity":16}],14:[function(require,module,exports){
-"use strict";
 
 module.exports = SelectorPart;
 
-var SyntaxUnit = require("../util/SyntaxUnit");
+var SyntaxUnit = __webpack_require__(1);
 
-var Parser = require("./Parser");
+var Parser = __webpack_require__(2);
 
 /**
  * Represents a single part of a selector string, meaning a single set of
@@ -4362,58 +3323,1727 @@ SelectorPart.prototype = new SyntaxUnit();
 SelectorPart.prototype.constructor = SelectorPart;
 
 
-},{"../util/SyntaxUnit":26,"./Parser":6}],15:[function(require,module,exports){
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 
-module.exports = SelectorSubPart;
 
-var SyntaxUnit = require("../util/SyntaxUnit");
-
-var Parser = require("./Parser");
+module.exports = StringReader;
 
 /**
- * Represents a selector modifier string, meaning a class name, element name,
- * element ID, pseudo rule, etc.
+ * Convenient way to read through strings.
+ * @namespace parserlib.util
+ * @class StringReader
+ * @constructor
+ * @param {String} text The text to read.
+ */
+function StringReader(text) {
+
+    /**
+     * The input text with line endings normalized.
+     * @property _input
+     * @type String
+     * @private
+     */
+    this._input = text.replace(/(\r\n?|\n)/g, "\n");
+
+
+    /**
+     * The row for the character to be read next.
+     * @property _line
+     * @type int
+     * @private
+     */
+    this._line = 1;
+
+
+    /**
+     * The column for the character to be read next.
+     * @property _col
+     * @type int
+     * @private
+     */
+    this._col = 1;
+
+    /**
+     * The index of the character in the input to be read next.
+     * @property _cursor
+     * @type int
+     * @private
+     */
+    this._cursor = 0;
+}
+
+StringReader.prototype = {
+
+    // restore constructor
+    constructor: StringReader,
+
+    //-------------------------------------------------------------------------
+    // Position info
+    //-------------------------------------------------------------------------
+
+    /**
+     * Returns the column of the character to be read next.
+     * @return {int} The column of the character to be read next.
+     * @method getCol
+     */
+    getCol: function() {
+        return this._col;
+    },
+
+    /**
+     * Returns the row of the character to be read next.
+     * @return {int} The row of the character to be read next.
+     * @method getLine
+     */
+    getLine: function() {
+        return this._line;
+    },
+
+    /**
+     * Determines if you're at the end of the input.
+     * @return {Boolean} True if there's no more input, false otherwise.
+     * @method eof
+     */
+    eof: function() {
+        return this._cursor === this._input.length;
+    },
+
+    //-------------------------------------------------------------------------
+    // Basic reading
+    //-------------------------------------------------------------------------
+
+    /**
+     * Reads the next character without advancing the cursor.
+     * @param {int} count How many characters to look ahead (default is 1).
+     * @return {String} The next character or null if there is no next character.
+     * @method peek
+     */
+    peek: function(count) {
+        var c = null;
+        count = typeof count === "undefined" ? 1 : count;
+
+        // if we're not at the end of the input...
+        if (this._cursor < this._input.length) {
+
+            // get character and increment cursor and column
+            c = this._input.charAt(this._cursor + count - 1);
+        }
+
+        return c;
+    },
+
+    /**
+     * Reads the next character from the input and adjusts the row and column
+     * accordingly.
+     * @return {String} The next character or null if there is no next character.
+     * @method read
+     */
+    read: function() {
+        var c = null;
+
+        // if we're not at the end of the input...
+        if (this._cursor < this._input.length) {
+
+            // if the last character was a newline, increment row count
+            // and reset column count
+            if (this._input.charAt(this._cursor) === "\n") {
+                this._line++;
+                this._col=1;
+            } else {
+                this._col++;
+            }
+
+            // get character and increment cursor and column
+            c = this._input.charAt(this._cursor++);
+        }
+
+        return c;
+    },
+
+    //-------------------------------------------------------------------------
+    // Misc
+    //-------------------------------------------------------------------------
+
+    /**
+     * Saves the current location so it can be returned to later.
+     * @method mark
+     * @return {void}
+     */
+    mark: function() {
+        this._bookmark = {
+            cursor: this._cursor,
+            line:   this._line,
+            col:    this._col
+        };
+    },
+
+    reset: function() {
+        if (this._bookmark) {
+            this._cursor = this._bookmark.cursor;
+            this._line = this._bookmark.line;
+            this._col = this._bookmark.col;
+            delete this._bookmark;
+        }
+    },
+
+    //-------------------------------------------------------------------------
+    // Advanced reading
+    //-------------------------------------------------------------------------
+
+    /**
+     * Reads up to and including the given string. Throws an error if that
+     * string is not found.
+     * @param {String} pattern The string to read.
+     * @return {String} The string when it is found.
+     * @throws Error when the string pattern is not found.
+     * @method readTo
+     */
+    readTo: function(pattern) {
+
+        var buffer = "",
+            c;
+
+        /*
+         * First, buffer must be the same length as the pattern.
+         * Then, buffer must end with the pattern or else reach the
+         * end of the input.
+         */
+        while (buffer.length < pattern.length || buffer.lastIndexOf(pattern) !== buffer.length - pattern.length) {
+            c = this.read();
+            if (c) {
+                buffer += c;
+            } else {
+                throw new Error("Expected \"" + pattern + "\" at line " + this._line  + ", col " + this._col + ".");
+            }
+        }
+
+        return buffer;
+
+    },
+
+    /**
+     * Reads characters while each character causes the given
+     * filter function to return true. The function is passed
+     * in each character and either returns true to continue
+     * reading or false to stop.
+     * @param {Function} filter The function to read on each character.
+     * @return {String} The string made up of all characters that passed the
+     *      filter check.
+     * @method readWhile
+     */
+    readWhile: function(filter) {
+
+        var buffer = "",
+            c = this.peek();
+
+        while (c !== null && filter(c)) {
+            buffer += this.read();
+            c = this.peek();
+        }
+
+        return buffer;
+
+    },
+
+    /**
+     * Reads characters that match either text or a regular expression and
+     * returns those characters. If a match is found, the row and column
+     * are adjusted; if no match is found, the reader's state is unchanged.
+     * reading or false to stop.
+     * @param {String|RegExp} matcher If a string, then the literal string
+     *      value is searched for. If a regular expression, then any string
+     *      matching the pattern is search for.
+     * @return {String} The string made up of all characters that matched or
+     *      null if there was no match.
+     * @method readMatch
+     */
+    readMatch: function(matcher) {
+
+        var source = this._input.substring(this._cursor),
+            value = null;
+
+        // if it's a string, just do a straight match
+        if (typeof matcher === "string") {
+            if (source.slice(0, matcher.length) === matcher) {
+                value = this.readCount(matcher.length);
+            }
+        } else if (matcher instanceof RegExp) {
+            if (matcher.test(source)) {
+                value = this.readCount(RegExp.lastMatch.length);
+            }
+        }
+
+        return value;
+    },
+
+
+    /**
+     * Reads a given number of characters. If the end of the input is reached,
+     * it reads only the remaining characters and does not throw an error.
+     * @param {int} count The number of characters to read.
+     * @return {String} The string made up the read characters.
+     * @method readCount
+     */
+    readCount: function(count) {
+        var buffer = "";
+
+        while (count--) {
+            buffer += this.read();
+        }
+
+        return buffer;
+    }
+
+};
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = Matcher;
+
+var StringReader = __webpack_require__(16);
+var SyntaxError = __webpack_require__(10);
+
+/**
+ * This class implements a combinator library for matcher functions.
+ * The combinators are described at:
+ * https://developer.mozilla.org/en-US/docs/Web/CSS/Value_definition_syntax#Component_value_combinators
+ */
+function Matcher(matchFunc, toString) {
+    this.match = function(expression) {
+        // Save/restore marks to ensure that failed matches always restore
+        // the original location in the expression.
+        var result;
+        expression.mark();
+        result = matchFunc(expression);
+        if (result) {
+            expression.drop();
+        } else {
+            expression.restore();
+        }
+        return result;
+    };
+    this.toString = typeof toString === "function" ? toString : function() {
+        return toString;
+    };
+}
+
+/** Precedence table of combinators. */
+Matcher.prec = {
+    MOD:    5,
+    SEQ:    4,
+    ANDAND: 3,
+    OROR:   2,
+    ALT:    1
+};
+
+/** Simple recursive-descent grammar to build matchers from strings. */
+Matcher.parse = function(str) {
+    var reader, eat, expr, oror, andand, seq, mod, term, result;
+    reader = new StringReader(str);
+    eat = function(matcher) {
+        var result = reader.readMatch(matcher);
+        if (result === null) {
+            throw new SyntaxError(
+                "Expected "+matcher, reader.getLine(), reader.getCol());
+        }
+        return result;
+    };
+    expr = function() {
+        // expr = oror (" | " oror)*
+        var m = [ oror() ];
+        while (reader.readMatch(" | ") !== null) {
+            m.push(oror());
+        }
+        return m.length === 1 ? m[0] : Matcher.alt.apply(Matcher, m);
+    };
+    oror = function() {
+        // oror = andand ( " || " andand)*
+        var m = [ andand() ];
+        while (reader.readMatch(" || ") !== null) {
+            m.push(andand());
+        }
+        return m.length === 1 ? m[0] : Matcher.oror.apply(Matcher, m);
+    };
+    andand = function() {
+        // andand = seq ( " && " seq)*
+        var m = [ seq() ];
+        while (reader.readMatch(" && ") !== null) {
+            m.push(seq());
+        }
+        return m.length === 1 ? m[0] : Matcher.andand.apply(Matcher, m);
+    };
+    seq = function() {
+        // seq = mod ( " " mod)*
+        var m = [ mod() ];
+        while (reader.readMatch(/^ (?![&|\]])/) !== null) {
+            m.push(mod());
+        }
+        return m.length === 1 ? m[0] : Matcher.seq.apply(Matcher, m);
+    };
+    mod = function() {
+        // mod = term ( "?" | "*" | "+" | "#" | "{<num>,<num>}" )?
+        var m = term();
+        if (reader.readMatch("?") !== null) {
+            return m.question();
+        } else if (reader.readMatch("*") !== null) {
+            return m.star();
+        } else if (reader.readMatch("+") !== null) {
+            return m.plus();
+        } else if (reader.readMatch("#") !== null) {
+            return m.hash();
+        } else if (reader.readMatch(/^\{\s*/) !== null) {
+            var min = eat(/^\d+/);
+            eat(/^\s*,\s*/);
+            var max = eat(/^\d+/);
+            eat(/^\s*\}/);
+            return m.braces(+min, +max);
+        }
+        return m;
+    };
+    term = function() {
+        // term = <nt> | literal | "[ " expression " ]"
+        if (reader.readMatch("[ ") !== null) {
+            var m = expr();
+            eat(" ]");
+            return m;
+        }
+        return Matcher.fromType(eat(/^[^ ?*+#{]+/));
+    };
+    result = expr();
+    if (!reader.eof()) {
+        throw new SyntaxError(
+            "Expected end of string", reader.getLine(), reader.getCol());
+    }
+    return result;
+};
+
+/**
+ * Convert a string to a matcher (parsing simple alternations),
+ * or do nothing if the argument is already a matcher.
+ */
+Matcher.cast = function(m) {
+    if (m instanceof Matcher) {
+        return m;
+    }
+    return Matcher.parse(m);
+};
+
+/**
+ * Create a matcher for a single type.
+ */
+Matcher.fromType = function(type) {
+    // Late require of ValidationTypes to break a dependency cycle.
+    var ValidationTypes = __webpack_require__(18);
+    return new Matcher(function(expression) {
+        return expression.hasNext() && ValidationTypes.isType(expression, type);
+    }, type);
+};
+
+/**
+ * Create a matcher for one or more juxtaposed words, which all must
+ * occur, in the given order.
+ */
+Matcher.seq = function() {
+    var ms = Array.prototype.slice.call(arguments).map(Matcher.cast);
+    if (ms.length === 1) {
+        return ms[0];
+    }
+    return new Matcher(function(expression) {
+        var i, result = true;
+        for (i = 0; result && i < ms.length; i++) {
+            result = ms[i].match(expression);
+        }
+        return result;
+    }, function(prec) {
+        var p = Matcher.prec.SEQ;
+        var s = ms.map(function(m) {
+            return m.toString(p);
+        }).join(" ");
+        if (prec > p) {
+            s = "[ " + s + " ]";
+        }
+        return s;
+    });
+};
+
+/**
+ * Create a matcher for one or more alternatives, where exactly one
+ * must occur.
+ */
+Matcher.alt = function() {
+    var ms = Array.prototype.slice.call(arguments).map(Matcher.cast);
+    if (ms.length === 1) {
+        return ms[0];
+    }
+    return new Matcher(function(expression) {
+        var i, result = false;
+        for (i = 0; !result && i < ms.length; i++) {
+            result = ms[i].match(expression);
+        }
+        return result;
+    }, function(prec) {
+        var p = Matcher.prec.ALT;
+        var s = ms.map(function(m) {
+            return m.toString(p);
+        }).join(" | ");
+        if (prec > p) {
+            s = "[ " + s + " ]";
+        }
+        return s;
+    });
+};
+
+/**
+ * Create a matcher for two or more options.  This implements the
+ * double bar (||) and double ampersand (&&) operators, as well as
+ * variants of && where some of the alternatives are optional.
+ * This will backtrack through even successful matches to try to
+ * maximize the number of items matched.
+ */
+Matcher.many = function(required) {
+    var ms = Array.prototype.slice.call(arguments, 1).reduce(function(acc, v) {
+        if (v.expand) {
+            // Insert all of the options for the given complex rule as
+            // individual options.
+            var ValidationTypes = __webpack_require__(18);
+            acc.push.apply(acc, ValidationTypes.complex[v.expand].options);
+        } else {
+            acc.push(Matcher.cast(v));
+        }
+        return acc;
+    }, []);
+
+    if (required === true) {
+        required = ms.map(function() {
+            return true;
+        });
+    }
+
+    var result = new Matcher(function(expression) {
+        var seen = [], max = 0, pass = 0;
+        var success = function(matchCount) {
+            if (pass === 0) {
+                max = Math.max(matchCount, max);
+                return matchCount === ms.length;
+            } else {
+                return matchCount === max;
+            }
+        };
+        var tryMatch = function(matchCount) {
+            for (var i = 0; i < ms.length; i++) {
+                if (seen[i]) {
+                    continue;
+                }
+                expression.mark();
+                if (ms[i].match(expression)) {
+                    seen[i] = true;
+                    // Increase matchCount iff this was a required element
+                    // (or if all the elements are optional)
+                    if (tryMatch(matchCount + ((required === false || required[i]) ? 1 : 0))) {
+                        expression.drop();
+                        return true;
+                    }
+                    // Backtrack: try *not* matching using this rule, and
+                    // let's see if it leads to a better overall match.
+                    expression.restore();
+                    seen[i] = false;
+                } else {
+                    expression.drop();
+                }
+            }
+            return success(matchCount);
+        };
+        if (!tryMatch(0)) {
+            // Couldn't get a complete match, retrace our steps to make the
+            // match with the maximum # of required elements.
+            pass++;
+            tryMatch(0);
+        }
+
+        if (required === false) {
+            return max > 0;
+        }
+        // Use finer-grained specification of which matchers are required.
+        for (var i = 0; i < ms.length; i++) {
+            if (required[i] && !seen[i]) {
+                return false;
+            }
+        }
+        return true;
+    }, function(prec) {
+        var p = required === false ? Matcher.prec.OROR : Matcher.prec.ANDAND;
+        var s = ms.map(function(m, i) {
+            if (required !== false && !required[i]) {
+                return m.toString(Matcher.prec.MOD) + "?";
+            }
+            return m.toString(p);
+        }).join(required === false ? " || " : " && ");
+        if (prec > p) {
+            s = "[ " + s + " ]";
+        }
+        return s;
+    });
+    result.options = ms;
+    return result;
+};
+
+/**
+ * Create a matcher for two or more options, where all options are
+ * mandatory but they may appear in any order.
+ */
+Matcher.andand = function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift(true);
+    return Matcher.many.apply(Matcher, args);
+};
+
+/**
+ * Create a matcher for two or more options, where options are
+ * optional and may appear in any order, but at least one must be
+ * present.
+ */
+Matcher.oror = function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift(false);
+    return Matcher.many.apply(Matcher, args);
+};
+
+/** Instance methods on Matchers. */
+Matcher.prototype = {
+    constructor: Matcher,
+    // These are expected to be overridden in every instance.
+    match: function() { throw new Error("unimplemented"); },
+    toString: function() { throw new Error("unimplemented"); },
+    // This returns a standalone function to do the matching.
+    func: function() { return this.match.bind(this); },
+    // Basic combinators
+    then: function(m) { return Matcher.seq(this, m); },
+    or: function(m) { return Matcher.alt(this, m); },
+    andand: function(m) { return Matcher.many(true, this, m); },
+    oror: function(m) { return Matcher.many(false, this, m); },
+    // Component value multipliers
+    star: function() { return this.braces(0, Infinity, "*"); },
+    plus: function() { return this.braces(1, Infinity, "+"); },
+    question: function() { return this.braces(0, 1, "?"); },
+    hash: function() {
+        return this.braces(1, Infinity, "#", Matcher.cast(","));
+    },
+    braces: function(min, max, marker, optSep) {
+        var m1 = this, m2 = optSep ? optSep.then(this) : this;
+        if (!marker) {
+            marker = "{" + min + "," + max + "}";
+        }
+        return new Matcher(function(expression) {
+            var result = true, i;
+            for (i = 0; i < max; i++) {
+                if (i > 0 && optSep) {
+                    result = m2.match(expression);
+                } else {
+                    result = m1.match(expression);
+                }
+                if (!result) {
+                    break;
+                }
+            }
+            return i >= min;
+        }, function() {
+            return m1.toString(Matcher.prec.MOD) + marker;
+        });
+    }
+};
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var ValidationTypes = module.exports;
+
+var Matcher = __webpack_require__(17);
+
+function copy(to, from) {
+    Object.keys(from).forEach(function(prop) {
+        to[prop] = from[prop];
+    });
+}
+copy(ValidationTypes, {
+
+    isLiteral: function (part, literals) {
+        var text = part.text.toString().toLowerCase(),
+            args = literals.split(" | "),
+            i, len, found = false;
+
+        for (i=0, len=args.length; i < len && !found; i++) {
+            if (args[i].charAt(0) === "<") {
+                found = this.simple[args[i]](part);
+            } else if (args[i].slice(-2) === "()") {
+                found = (part.type === "function" &&
+                         part.name === args[i].slice(0, -2));
+            } else if (text === args[i].toLowerCase()) {
+                found = true;
+            }
+        }
+
+        return found;
+    },
+
+    isSimple: function(type) {
+        return Boolean(this.simple[type]);
+    },
+
+    isComplex: function(type) {
+        return Boolean(this.complex[type]);
+    },
+
+    describe: function(type) {
+        if (this.complex[type] instanceof Matcher) {
+            return this.complex[type].toString(0);
+        }
+        return type;
+    },
+
+    /**
+     * Determines if the next part(s) of the given expression
+     * are any of the given types.
+     */
+    isAny: function (expression, types) {
+        var args = types.split(" | "),
+            i, len, found = false;
+
+        for (i=0, len=args.length; i < len && !found && expression.hasNext(); i++) {
+            found = this.isType(expression, args[i]);
+        }
+
+        return found;
+    },
+
+    /**
+     * Determines if the next part(s) of the given expression
+     * are one of a group.
+     */
+    isAnyOfGroup: function(expression, types) {
+        var args = types.split(" || "),
+            i, len, found = false;
+
+        for (i=0, len=args.length; i < len && !found; i++) {
+            found = this.isType(expression, args[i]);
+        }
+
+        return found ? args[i-1] : false;
+    },
+
+    /**
+     * Determines if the next part(s) of the given expression
+     * are of a given type.
+     */
+    isType: function (expression, type) {
+        var part = expression.peek(),
+            result = false;
+
+        if (type.charAt(0) !== "<") {
+            result = this.isLiteral(part, type);
+            if (result) {
+                expression.next();
+            }
+        } else if (this.simple[type]) {
+            result = this.simple[type](part);
+            if (result) {
+                expression.next();
+            }
+        } else if (this.complex[type] instanceof Matcher) {
+            result = this.complex[type].match(expression);
+        } else {
+            result = this.complex[type](expression);
+        }
+
+        return result;
+    },
+
+
+    simple: {
+        __proto__: null,
+
+        "<absolute-size>":
+            "xx-small | x-small | small | medium | large | x-large | xx-large",
+
+        "<animateable-feature>":
+            "scroll-position | contents | <animateable-feature-name>",
+
+        "<animateable-feature-name>": function(part) {
+            return this["<ident>"](part) &&
+                !/^(unset|initial|inherit|will-change|auto|scroll-position|contents)$/i.test(part);
+        },
+
+        "<angle>": function(part) {
+            return part.type === "angle";
+        },
+
+        "<attachment>": "scroll | fixed | local",
+
+        "<attr>": "attr()",
+
+        // inset() = inset( <shape-arg>{1,4} [round <border-radius>]? )
+        // circle() = circle( [<shape-radius>]? [at <position>]? )
+        // ellipse() = ellipse( [<shape-radius>{2}]? [at <position>]? )
+        // polygon() = polygon( [<fill-rule>,]? [<shape-arg> <shape-arg>]# )
+        "<basic-shape>": "inset() | circle() | ellipse() | polygon()",
+
+        "<bg-image>": "<image> | <gradient> | none",
+
+        "<border-style>":
+            "none | hidden | dotted | dashed | solid | double | groove | " +
+            "ridge | inset | outset",
+
+        "<border-width>": "<length> | thin | medium | thick",
+
+        "<box>": "padding-box | border-box | content-box",
+
+        "<clip-source>": "<uri>",
+
+        "<color>": function(part) {
+            return part.type === "color" || String(part) === "transparent" || String(part) === "currentColor";
+        },
+
+        // The SVG <color> spec doesn't include "currentColor" or "transparent" as a color.
+        "<color-svg>": function(part) {
+            return part.type === "color";
+        },
+
+        "<content>": "content()",
+
+        // https://www.w3.org/TR/css3-sizing/#width-height-keywords
+        "<content-sizing>":
+            "fill-available | -moz-available | -webkit-fill-available | " +
+            "max-content | -moz-max-content | -webkit-max-content | " +
+            "min-content | -moz-min-content | -webkit-min-content | " +
+            "fit-content | -moz-fit-content | -webkit-fit-content",
+
+        "<feature-tag-value>": function(part) {
+            return part.type === "function" && /^[A-Z0-9]{4}$/i.test(part);
+        },
+
+        // custom() isn't actually in the spec
+        "<filter-function>":
+            "blur() | brightness() | contrast() | custom() | " +
+            "drop-shadow() | grayscale() | hue-rotate() | invert() | " +
+            "opacity() | saturate() | sepia()",
+
+        "<flex-basis>": "<width>",
+
+        "<flex-direction>": "row | row-reverse | column | column-reverse",
+
+        "<flex-grow>": "<number>",
+
+        "<flex-shrink>": "<number>",
+
+        "<flex-wrap>": "nowrap | wrap | wrap-reverse",
+
+        "<font-size>":
+            "<absolute-size> | <relative-size> | <length> | <percentage>",
+
+        "<font-stretch>":
+            "normal | ultra-condensed | extra-condensed | condensed | " +
+            "semi-condensed | semi-expanded | expanded | extra-expanded | " +
+            "ultra-expanded",
+
+        "<font-style>": "normal | italic | oblique",
+
+        "<font-variant-caps>":
+            "small-caps | all-small-caps | petite-caps | all-petite-caps | " +
+            "unicase | titling-caps",
+
+        "<font-variant-css21>": "normal | small-caps",
+
+        "<font-weight>":
+            "normal | bold | bolder | lighter | " +
+            "100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900",
+
+        "<generic-family>":
+            "serif | sans-serif | cursive | fantasy | monospace",
+
+        "<geometry-box>": "<shape-box> | fill-box | stroke-box | view-box",
+
+        "<glyph-angle>": function(part) {
+            return part.type === "angle" && part.units === "deg";
+        },
+
+        "<gradient>": function(part) {
+            return part.type === "function" && /^(?:\-(?:ms|moz|o|webkit)\-)?(?:repeating\-)?(?:radial\-|linear\-)?gradient/i.test(part);
+        },
+
+        "<icccolor>":
+            "cielab() | cielch() | cielchab() | " +
+            "icc-color() | icc-named-color()",
+
+        //any identifier
+        "<ident>": function(part) {
+            return part.type === "identifier" || part.wasIdent;
+        },
+
+        "<ident-not-generic-family>": function(part) {
+            return this["<ident>"](part) && !this["<generic-family>"](part);
+        },
+
+        "<image>": "<uri>",
+
+        "<integer>": function(part) {
+            return part.type === "integer";
+        },
+
+        "<length>": function(part) {
+            if (part.type === "function" && /^(?:\-(?:ms|moz|o|webkit)\-)?calc/i.test(part)) {
+                return true;
+            } else {
+                return part.type === "length" || part.type === "number" || part.type === "integer" || String(part) === "0";
+            }
+        },
+
+        "<line>": function(part) {
+            return part.type === "integer";
+        },
+
+        "<line-height>": "<number> | <length> | <percentage> | normal",
+
+        "<margin-width>": "<length> | <percentage> | auto",
+
+        "<miterlimit>": function(part) {
+            return this["<number>"](part) && part.value >= 1;
+        },
+
+        "<nonnegative-length-or-percentage>": function(part) {
+            return (this["<length>"](part) || this["<percentage>"](part)) &&
+                (String(part) === "0" || part.type === "function" || (part.value) >= 0);
+        },
+
+        "<nonnegative-number-or-percentage>": function(part) {
+            return (this["<number>"](part) || this["<percentage>"](part)) &&
+                (String(part) === "0" || part.type === "function" || (part.value) >= 0);
+        },
+
+        "<number>": function(part) {
+            return part.type === "number" || this["<integer>"](part);
+        },
+
+        "<opacity-value>": function(part) {
+            return this["<number>"](part) && part.value >= 0 && part.value <= 1;
+        },
+
+        "<padding-width>": "<nonnegative-length-or-percentage>",
+
+        "<percentage>": function(part) {
+            return part.type === "percentage" || String(part) === "0";
+        },
+
+        "<relative-size>": "smaller | larger",
+
+        "<shape>": "rect() | inset-rect()",
+
+        "<shape-box>": "<box> | margin-box",
+
+        "<single-animation-direction>":
+            "normal | reverse | alternate | alternate-reverse",
+
+        "<single-animation-name>": function(part) {
+            return this["<ident>"](part) &&
+                /^-?[a-z_][-a-z0-9_]+$/i.test(part) &&
+                !/^(none|unset|initial|inherit)$/i.test(part);
+        },
+
+        "<string>": function(part) {
+            return part.type === "string";
+        },
+
+        "<time>": function(part) {
+            return part.type === "time";
+        },
+
+        "<uri>": function(part) {
+            return part.type === "uri";
+        },
+
+        "<width>": "<margin-width>"
+    },
+
+    complex: {
+        __proto__: null,
+
+        "<azimuth>":
+            "<angle>" +
+            " | " +
+            "[ [ left-side | far-left | left | center-left | center | " +
+            "center-right | right | far-right | right-side ] || behind ]" +
+            " | "+
+            "leftwards | rightwards",
+
+        "<bg-position>": "<position>#",
+
+        "<bg-size>":
+            "[ <length> | <percentage> | auto ]{1,2} | cover | contain",
+
+        "<border-image-slice>":
+        // [<number> | <percentage>]{1,4} && fill?
+        // *but* fill can appear between any of the numbers
+        Matcher.many([true /* first element is required */],
+                     Matcher.cast("<nonnegative-number-or-percentage>"),
+                     Matcher.cast("<nonnegative-number-or-percentage>"),
+                     Matcher.cast("<nonnegative-number-or-percentage>"),
+                     Matcher.cast("<nonnegative-number-or-percentage>"),
+                     "fill"),
+
+        "<border-radius>":
+            "<nonnegative-length-or-percentage>{1,4} " +
+            "[ / <nonnegative-length-or-percentage>{1,4} ]?",
+
+        "<box-shadow>": "none | <shadow>#",
+
+        "<clip-path>": "<basic-shape> || <geometry-box>",
+
+        "<dasharray>":
+        // "list of comma and/or white space separated <length>s and
+        // <percentage>s".  There is a non-negative constraint.
+        Matcher.cast("<nonnegative-length-or-percentage>")
+            .braces(1, Infinity, "#", Matcher.cast(",").question()),
+
+        "<family-name>":
+            // <string> | <IDENT>+
+            "<string> | <ident-not-generic-family> <ident>*",
+
+        "<filter-function-list>": "[ <filter-function> | <uri> ]+",
+
+        // https://www.w3.org/TR/2014/WD-css-flexbox-1-20140325/#flex-property
+        "<flex>":
+            "none | [ <flex-grow> <flex-shrink>? || <flex-basis> ]",
+
+        "<font-family>": "[ <generic-family> | <family-name> ]#",
+
+        "<font-shorthand>":
+            "[ <font-style> || <font-variant-css21> || " +
+            "<font-weight> || <font-stretch> ]? <font-size> " +
+            "[ / <line-height> ]? <font-family>",
+
+        "<font-variant-alternates>":
+            // stylistic(<feature-value-name>)
+            "stylistic() || " +
+            "historical-forms || " +
+            // styleset(<feature-value-name> #)
+            "styleset() || " +
+            // character-variant(<feature-value-name> #)
+            "character-variant() || " +
+            // swash(<feature-value-name>)
+            "swash() || " +
+            // ornaments(<feature-value-name>)
+            "ornaments() || " +
+            // annotation(<feature-value-name>)
+            "annotation()",
+
+        "<font-variant-ligatures>":
+            // <common-lig-values>
+            "[ common-ligatures | no-common-ligatures ] || " +
+            // <discretionary-lig-values>
+            "[ discretionary-ligatures | no-discretionary-ligatures ] || " +
+            // <historical-lig-values>
+            "[ historical-ligatures | no-historical-ligatures ] || " +
+            // <contextual-alt-values>
+            "[ contextual | no-contextual ]",
+
+        "<font-variant-numeric>":
+            // <numeric-figure-values>
+            "[ lining-nums | oldstyle-nums ] || " +
+            // <numeric-spacing-values>
+            "[ proportional-nums | tabular-nums ] || " +
+            // <numeric-fraction-values>
+            "[ diagonal-fractions | stacked-fractions ] || " +
+            "ordinal || slashed-zero",
+
+        "<font-variant-east-asian>":
+            // <east-asian-variant-values>
+            "[ jis78 | jis83 | jis90 | jis04 | simplified | traditional ] || " +
+            // <east-asian-width-values>
+            "[ full-width | proportional-width ] || " +
+            "ruby",
+
+        // Note that <color> here is "as defined in the SVG spec", which
+        // is more restrictive that the <color> defined in the CSS spec.
+        // none | currentColor | <color> [<icccolor>]? |
+        // <funciri> [ none | currentColor | <color> [<icccolor>]? ]?
+        "<paint>": "<paint-basic> | <uri> <paint-basic>?",
+
+        // Helper definition for <paint> above.
+        "<paint-basic>": "none | currentColor | <color-svg> <icccolor>?",
+
+        "<position>":
+            // Because our `alt` combinator is ordered, we need to test these
+            // in order from longest possible match to shortest.
+            "[ center | [ left | right ] [ <percentage> | <length> ]? ] && " +
+            "[ center | [ top | bottom ] [ <percentage> | <length> ]? ]" +
+            " | " +
+            "[ left | center | right | <percentage> | <length> ] " +
+            "[ top | center | bottom | <percentage> | <length> ]" +
+            " | " +
+            "[ left | center | right | top | bottom | <percentage> | <length> ]",
+
+        "<repeat-style>":
+            "repeat-x | repeat-y | [ repeat | space | round | no-repeat ]{1,2}",
+
+        "<shadow>":
+        //inset? && [ <length>{2,4} && <color>? ]
+        Matcher.many([true /* length is required */],
+                     Matcher.cast("<length>").braces(2, 4), "inset", "<color>"),
+
+        "<text-decoration-color>":
+           "<color>",
+
+        "<text-decoration-line>":
+            "none | [ underline || overline || line-through || blink ]",
+
+        "<text-decoration-style>":
+            "solid | double | dotted | dashed | wavy",
+
+        "<will-change>":
+            "auto | <animateable-feature>#",
+
+        "<x-one-radius>":
+            //[ <length> | <percentage> ] [ <length> | <percentage> ]?
+            "[ <length> | <percentage> ]{1,2}"
+    }
+});
+
+Object.keys(ValidationTypes.simple).forEach(function(nt) {
+    var rule = ValidationTypes.simple[nt];
+    if (typeof rule === "string") {
+        ValidationTypes.simple[nt] = function(part) {
+            return ValidationTypes.isLiteral(part, rule);
+        };
+    }
+});
+
+Object.keys(ValidationTypes.complex).forEach(function(nt) {
+    var rule = ValidationTypes.complex[nt];
+    if (typeof rule === "string") {
+        ValidationTypes.complex[nt] = Matcher.parse(rule);
+    }
+});
+
+// Because this is defined relative to other complex validation types,
+// we need to define it *after* the rest of the types are initialized.
+ValidationTypes.complex["<font-variant>"] =
+    Matcher.oror({ expand: "<font-variant-ligatures>" },
+                 { expand: "<font-variant-alternates>" },
+                 "<font-variant-caps>",
+                 { expand: "<font-variant-numeric>" },
+                 { expand: "<font-variant-east-asian>" });
+
+
+/***/ }),
+/* 19 */,
+/* 20 */,
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/* exported Colors */
+
+var Colors = module.exports = {
+    __proto__       :null,
+    aliceblue       :"#f0f8ff",
+    antiquewhite    :"#faebd7",
+    aqua            :"#00ffff",
+    aquamarine      :"#7fffd4",
+    azure           :"#f0ffff",
+    beige           :"#f5f5dc",
+    bisque          :"#ffe4c4",
+    black           :"#000000",
+    blanchedalmond  :"#ffebcd",
+    blue            :"#0000ff",
+    blueviolet      :"#8a2be2",
+    brown           :"#a52a2a",
+    burlywood       :"#deb887",
+    cadetblue       :"#5f9ea0",
+    chartreuse      :"#7fff00",
+    chocolate       :"#d2691e",
+    coral           :"#ff7f50",
+    cornflowerblue  :"#6495ed",
+    cornsilk        :"#fff8dc",
+    crimson         :"#dc143c",
+    cyan            :"#00ffff",
+    darkblue        :"#00008b",
+    darkcyan        :"#008b8b",
+    darkgoldenrod   :"#b8860b",
+    darkgray        :"#a9a9a9",
+    darkgrey        :"#a9a9a9",
+    darkgreen       :"#006400",
+    darkkhaki       :"#bdb76b",
+    darkmagenta     :"#8b008b",
+    darkolivegreen  :"#556b2f",
+    darkorange      :"#ff8c00",
+    darkorchid      :"#9932cc",
+    darkred         :"#8b0000",
+    darksalmon      :"#e9967a",
+    darkseagreen    :"#8fbc8f",
+    darkslateblue   :"#483d8b",
+    darkslategray   :"#2f4f4f",
+    darkslategrey   :"#2f4f4f",
+    darkturquoise   :"#00ced1",
+    darkviolet      :"#9400d3",
+    deeppink        :"#ff1493",
+    deepskyblue     :"#00bfff",
+    dimgray         :"#696969",
+    dimgrey         :"#696969",
+    dodgerblue      :"#1e90ff",
+    firebrick       :"#b22222",
+    floralwhite     :"#fffaf0",
+    forestgreen     :"#228b22",
+    fuchsia         :"#ff00ff",
+    gainsboro       :"#dcdcdc",
+    ghostwhite      :"#f8f8ff",
+    gold            :"#ffd700",
+    goldenrod       :"#daa520",
+    gray            :"#808080",
+    grey            :"#808080",
+    green           :"#008000",
+    greenyellow     :"#adff2f",
+    honeydew        :"#f0fff0",
+    hotpink         :"#ff69b4",
+    indianred       :"#cd5c5c",
+    indigo          :"#4b0082",
+    ivory           :"#fffff0",
+    khaki           :"#f0e68c",
+    lavender        :"#e6e6fa",
+    lavenderblush   :"#fff0f5",
+    lawngreen       :"#7cfc00",
+    lemonchiffon    :"#fffacd",
+    lightblue       :"#add8e6",
+    lightcoral      :"#f08080",
+    lightcyan       :"#e0ffff",
+    lightgoldenrodyellow  :"#fafad2",
+    lightgray       :"#d3d3d3",
+    lightgrey       :"#d3d3d3",
+    lightgreen      :"#90ee90",
+    lightpink       :"#ffb6c1",
+    lightsalmon     :"#ffa07a",
+    lightseagreen   :"#20b2aa",
+    lightskyblue    :"#87cefa",
+    lightslategray  :"#778899",
+    lightslategrey  :"#778899",
+    lightsteelblue  :"#b0c4de",
+    lightyellow     :"#ffffe0",
+    lime            :"#00ff00",
+    limegreen       :"#32cd32",
+    linen           :"#faf0e6",
+    magenta         :"#ff00ff",
+    maroon          :"#800000",
+    mediumaquamarine:"#66cdaa",
+    mediumblue      :"#0000cd",
+    mediumorchid    :"#ba55d3",
+    mediumpurple    :"#9370d8",
+    mediumseagreen  :"#3cb371",
+    mediumslateblue :"#7b68ee",
+    mediumspringgreen   :"#00fa9a",
+    mediumturquoise :"#48d1cc",
+    mediumvioletred :"#c71585",
+    midnightblue    :"#191970",
+    mintcream       :"#f5fffa",
+    mistyrose       :"#ffe4e1",
+    moccasin        :"#ffe4b5",
+    navajowhite     :"#ffdead",
+    navy            :"#000080",
+    oldlace         :"#fdf5e6",
+    olive           :"#808000",
+    olivedrab       :"#6b8e23",
+    orange          :"#ffa500",
+    orangered       :"#ff4500",
+    orchid          :"#da70d6",
+    palegoldenrod   :"#eee8aa",
+    palegreen       :"#98fb98",
+    paleturquoise   :"#afeeee",
+    palevioletred   :"#d87093",
+    papayawhip      :"#ffefd5",
+    peachpuff       :"#ffdab9",
+    peru            :"#cd853f",
+    pink            :"#ffc0cb",
+    plum            :"#dda0dd",
+    powderblue      :"#b0e0e6",
+    purple          :"#800080",
+    red             :"#ff0000",
+    rosybrown       :"#bc8f8f",
+    royalblue       :"#4169e1",
+    saddlebrown     :"#8b4513",
+    salmon          :"#fa8072",
+    sandybrown      :"#f4a460",
+    seagreen        :"#2e8b57",
+    seashell        :"#fff5ee",
+    sienna          :"#a0522d",
+    silver          :"#c0c0c0",
+    skyblue         :"#87ceeb",
+    slateblue       :"#6a5acd",
+    slategray       :"#708090",
+    slategrey       :"#708090",
+    snow            :"#fffafa",
+    springgreen     :"#00ff7f",
+    steelblue       :"#4682b4",
+    tan             :"#d2b48c",
+    teal            :"#008080",
+    thistle         :"#d8bfd8",
+    tomato          :"#ff6347",
+    turquoise       :"#40e0d0",
+    violet          :"#ee82ee",
+    wheat           :"#f5deb3",
+    white           :"#ffffff",
+    whitesmoke      :"#f5f5f5",
+    yellow          :"#ffff00",
+    yellowgreen     :"#9acd32",
+    //'currentColor' color keyword https://www.w3.org/TR/css3-color/#currentcolor
+    currentColor        :"The value of the 'color' property.",
+    //CSS2 system colors https://www.w3.org/TR/css3-color/#css2-system
+    activeBorder        :"Active window border.",
+    activecaption       :"Active window caption.",
+    appworkspace        :"Background color of multiple document interface.",
+    background          :"Desktop background.",
+    buttonface          :"The face background color for 3-D elements that appear 3-D due to one layer of surrounding border.",
+    buttonhighlight     :"The color of the border facing the light source for 3-D elements that appear 3-D due to one layer of surrounding border.",
+    buttonshadow        :"The color of the border away from the light source for 3-D elements that appear 3-D due to one layer of surrounding border.",
+    buttontext          :"Text on push buttons.",
+    captiontext         :"Text in caption, size box, and scrollbar arrow box.",
+    graytext            :"Grayed (disabled) text. This color is set to #000 if the current display driver does not support a solid gray color.",
+    greytext            :"Greyed (disabled) text. This color is set to #000 if the current display driver does not support a solid grey color.",
+    highlight           :"Item(s) selected in a control.",
+    highlighttext       :"Text of item(s) selected in a control.",
+    inactiveborder      :"Inactive window border.",
+    inactivecaption     :"Inactive window caption.",
+    inactivecaptiontext :"Color of text in an inactive caption.",
+    infobackground      :"Background color for tooltip controls.",
+    infotext            :"Text color for tooltip controls.",
+    menu                :"Menu background.",
+    menutext            :"Text in menus.",
+    scrollbar           :"Scroll bar gray area.",
+    threeddarkshadow    :"The color of the darker (generally outer) of the two borders away from the light source for 3-D elements that appear 3-D due to two concentric layers of surrounding border.",
+    threedface          :"The face background color for 3-D elements that appear 3-D due to two concentric layers of surrounding border.",
+    threedhighlight     :"The color of the lighter (generally outer) of the two borders facing the light source for 3-D elements that appear 3-D due to two concentric layers of surrounding border.",
+    threedlightshadow   :"The color of the darker (generally inner) of the two borders facing the light source for 3-D elements that appear 3-D due to two concentric layers of surrounding border.",
+    threedshadow        :"The color of the lighter (generally inner) of the two borders away from the light source for 3-D elements that appear 3-D due to two concentric layers of surrounding border.",
+    window              :"Window background.",
+    windowframe         :"Window frame.",
+    windowtext          :"Text in windows."
+};
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = Combinator;
+
+var SyntaxUnit = __webpack_require__(1);
+
+var Parser = __webpack_require__(2);
+
+/**
+ * Represents a selector combinator (whitespace, +, >).
  * @namespace parserlib.css
- * @class SelectorSubPart
+ * @class Combinator
  * @extends parserlib.util.SyntaxUnit
  * @constructor
  * @param {String} text The text representation of the unit.
- * @param {String} type The type of selector modifier.
  * @param {int} line The line of text on which the unit resides.
  * @param {int} col The column of text on which the unit resides.
  */
-function SelectorSubPart(text, type, line, col) {
+function Combinator(text, line, col) {
 
-    SyntaxUnit.call(this, text, line, col, Parser.SELECTOR_SUB_PART_TYPE);
+    SyntaxUnit.call(this, text, line, col, Parser.COMBINATOR_TYPE);
 
     /**
      * The type of modifier.
      * @type String
      * @property type
      */
-    this.type = type;
+    this.type = "unknown";
 
-    /**
-     * Some subparts have arguments, this represents them.
-     * @type Array
-     * @property args
-     */
-    this.args = [];
+    //pretty simple
+    if (/^\s+$/.test(text)) {
+        this.type = "descendant";
+    } else if (text === ">") {
+        this.type = "child";
+    } else if (text === "+") {
+        this.type = "adjacent-sibling";
+    } else if (text === "~") {
+        this.type = "sibling";
+    }
 
 }
 
-SelectorSubPart.prototype = new SyntaxUnit();
-SelectorSubPart.prototype.constructor = SelectorSubPart;
+Combinator.prototype = new SyntaxUnit();
+Combinator.prototype.constructor = Combinator;
 
 
-},{"../util/SyntaxUnit":26,"./Parser":6}],16:[function(require,module,exports){
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
+
+
+module.exports = EventTarget;
+
+/**
+ * A generic base to inherit from for any object
+ * that needs event handling.
+ * @class EventTarget
+ * @constructor
+ */
+function EventTarget() {
+
+    /**
+     * The array of listeners for various events.
+     * @type Object
+     * @property _listeners
+     * @private
+     */
+    this._listeners = Object.create(null);
+}
+
+EventTarget.prototype = {
+
+    //restore constructor
+    constructor: EventTarget,
+
+    /**
+     * Adds a listener for a given event type.
+     * @param {String} type The type of event to add a listener for.
+     * @param {Function} listener The function to call when the event occurs.
+     * @return {void}
+     * @method addListener
+     */
+    addListener: function(type, listener) {
+        if (!this._listeners[type]) {
+            this._listeners[type] = [];
+        }
+
+        this._listeners[type].push(listener);
+    },
+
+    /**
+     * Fires an event based on the passed-in object.
+     * @param {Object|String} event An object with at least a 'type' attribute
+     *      or a string indicating the event name.
+     * @return {void}
+     * @method fire
+     */
+    fire: function(event) {
+        if (typeof event === "string") {
+            event = { type: event };
+        }
+        if (typeof event.target !== "undefined") {
+            event.target = this;
+        }
+
+        if (typeof event.type === "undefined") {
+            throw new Error("Event object missing 'type' property.");
+        }
+
+        if (this._listeners[event.type]) {
+
+            //create a copy of the array and use that so listeners can't chane
+            var listeners = this._listeners[event.type].concat();
+            for (var i=0, len=listeners.length; i < len; i++) {
+                listeners[i].call(this, event);
+            }
+        }
+    },
+
+    /**
+     * Removes a listener for a given event type.
+     * @param {String} type The type of event to remove a listener from.
+     * @param {Function} listener The function to remove from the event.
+     * @return {void}
+     * @method removeListener
+     */
+    removeListener: function(type, listener) {
+        if (this._listeners[type]) {
+            var listeners = this._listeners[type];
+            for (var i=0, len=listeners.length; i < len; i++) {
+                if (listeners[i] === listener) {
+                    listeners.splice(i, 1);
+                    break;
+                }
+            }
+
+
+        }
+    }
+};
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = MediaFeature;
+
+var SyntaxUnit = __webpack_require__(1);
+
+var Parser = __webpack_require__(2);
+
+/**
+ * Represents a media feature, such as max-width:500.
+ * @namespace parserlib.css
+ * @class MediaFeature
+ * @extends parserlib.util.SyntaxUnit
+ * @constructor
+ * @param {SyntaxUnit} name The name of the feature.
+ * @param {SyntaxUnit} value The value of the feature or null if none.
+ */
+function MediaFeature(name, value) {
+
+    SyntaxUnit.call(this, "(" + name + (value !== null ? ":" + value : "") + ")", name.startLine, name.startCol, Parser.MEDIA_FEATURE_TYPE);
+
+    /**
+     * The name of the media feature
+     * @type String
+     * @property name
+     */
+    this.name = name;
+
+    /**
+     * The value for the feature or null if there is none.
+     * @type SyntaxUnit
+     * @property value
+     */
+    this.value = value;
+}
+
+MediaFeature.prototype = new SyntaxUnit();
+MediaFeature.prototype.constructor = MediaFeature;
+
+
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = MediaQuery;
+
+var SyntaxUnit = __webpack_require__(1);
+
+var Parser = __webpack_require__(2);
+
+/**
+ * Represents an individual media query.
+ * @namespace parserlib.css
+ * @class MediaQuery
+ * @extends parserlib.util.SyntaxUnit
+ * @constructor
+ * @param {String} modifier The modifier "not" or "only" (or null).
+ * @param {String} mediaType The type of media (i.e., "print").
+ * @param {Array} parts Array of selectors parts making up this selector.
+ * @param {int} line The line of text on which the unit resides.
+ * @param {int} col The column of text on which the unit resides.
+ */
+function MediaQuery(modifier, mediaType, features, line, col) {
+
+    SyntaxUnit.call(this, (modifier ? modifier + " ": "") + (mediaType ? mediaType : "") + (mediaType && features.length > 0 ? " and " : "") + features.join(" and "), line, col, Parser.MEDIA_QUERY_TYPE);
+
+    /**
+     * The media modifier ("not" or "only")
+     * @type String
+     * @property modifier
+     */
+    this.modifier = modifier;
+
+    /**
+     * The mediaType (i.e., "print")
+     * @type String
+     * @property mediaType
+     */
+    this.mediaType = mediaType;
+
+    /**
+     * The parts that make up the selector.
+     * @type Array
+     * @property features
+     */
+    this.features = features;
+
+}
+
+MediaQuery.prototype = new SyntaxUnit();
+MediaQuery.prototype.constructor = MediaQuery;
+
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = PropertyName;
+
+var SyntaxUnit = __webpack_require__(1);
+
+var Parser = __webpack_require__(2);
+
+/**
+ * Represents a selector combinator (whitespace, +, >).
+ * @namespace parserlib.css
+ * @class PropertyName
+ * @extends parserlib.util.SyntaxUnit
+ * @constructor
+ * @param {String} text The text representation of the unit.
+ * @param {String} hack The type of IE hack applied ("*", "_", or null).
+ * @param {int} line The line of text on which the unit resides.
+ * @param {int} col The column of text on which the unit resides.
+ */
+function PropertyName(text, hack, line, col) {
+
+    SyntaxUnit.call(this, text, line, col, Parser.PROPERTY_NAME_TYPE);
+
+    /**
+     * The type of IE hack applied ("*", "_", or null).
+     * @type String
+     * @property hack
+     */
+    this.hack = hack;
+
+}
+
+PropertyName.prototype = new SyntaxUnit();
+PropertyName.prototype.constructor = PropertyName;
+PropertyName.prototype.toString = function() {
+    return (this.hack ? this.hack : "") + this.text;
+};
+
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = PropertyValue;
+
+var SyntaxUnit = __webpack_require__(1);
+
+var Parser = __webpack_require__(2);
+
+/**
+ * Represents a single part of a CSS property value, meaning that it represents
+ * just everything single part between ":" and ";". If there are multiple values
+ * separated by commas, this type represents just one of the values.
+ * @param {String[]} parts An array of value parts making up this value.
+ * @param {int} line The line of text on which the unit resides.
+ * @param {int} col The column of text on which the unit resides.
+ * @namespace parserlib.css
+ * @class PropertyValue
+ * @extends parserlib.util.SyntaxUnit
+ * @constructor
+ */
+function PropertyValue(parts, line, col) {
+
+    SyntaxUnit.call(this, parts.join(" "), line, col, Parser.PROPERTY_VALUE_TYPE);
+
+    /**
+     * The parts that make up the selector.
+     * @type Array
+     * @property parts
+     */
+    this.parts = parts;
+
+}
+
+PropertyValue.prototype = new SyntaxUnit();
+PropertyValue.prototype.constructor = PropertyValue;
+
+
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = Selector;
+
+var SyntaxUnit = __webpack_require__(1);
+
+var Parser = __webpack_require__(2);
+var Specificity = __webpack_require__(29);
+
+/**
+ * Represents an entire single selector, including all parts but not
+ * including multiple selectors (those separated by commas).
+ * @namespace parserlib.css
+ * @class Selector
+ * @extends parserlib.util.SyntaxUnit
+ * @constructor
+ * @param {Array} parts Array of selectors parts making up this selector.
+ * @param {int} line The line of text on which the unit resides.
+ * @param {int} col The column of text on which the unit resides.
+ */
+function Selector(parts, line, col) {
+
+    SyntaxUnit.call(this, parts.join(" "), line, col, Parser.SELECTOR_TYPE);
+
+    /**
+     * The parts that make up the selector.
+     * @type Array
+     * @property parts
+     */
+    this.parts = parts;
+
+    /**
+     * The specificity of the selector.
+     * @type parserlib.css.Specificity
+     * @property specificity
+     */
+    this.specificity = Specificity.calculate(this);
+
+}
+
+Selector.prototype = new SyntaxUnit();
+Selector.prototype.constructor = Selector;
+
+
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 module.exports = Specificity;
 
-var Pseudos = require("./Pseudos");
-var SelectorPart = require("./SelectorPart");
+var Pseudos = __webpack_require__(50);
+var SelectorPart = __webpack_require__(15);
 
 /**
  * Represents a selector's specificity.
@@ -4538,15 +5168,70 @@ Specificity.calculate = function(selector) {
     return new Specificity(0, b, c, d);
 };
 
-},{"./Pseudos":12,"./SelectorPart":14}],17:[function(require,module,exports){
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
+
+
+module.exports = SelectorSubPart;
+
+var SyntaxUnit = __webpack_require__(1);
+
+var Parser = __webpack_require__(2);
+
+/**
+ * Represents a selector modifier string, meaning a class name, element name,
+ * element ID, pseudo rule, etc.
+ * @namespace parserlib.css
+ * @class SelectorSubPart
+ * @extends parserlib.util.SyntaxUnit
+ * @constructor
+ * @param {String} text The text representation of the unit.
+ * @param {String} type The type of selector modifier.
+ * @param {int} line The line of text on which the unit resides.
+ * @param {int} col The column of text on which the unit resides.
+ */
+function SelectorSubPart(text, type, line, col) {
+
+    SyntaxUnit.call(this, text, line, col, Parser.SELECTOR_SUB_PART_TYPE);
+
+    /**
+     * The type of modifier.
+     * @type String
+     * @property type
+     */
+    this.type = type;
+
+    /**
+     * Some subparts have arguments, this represents them.
+     * @type Array
+     * @property args
+     */
+    this.args = [];
+
+}
+
+SelectorSubPart.prototype = new SyntaxUnit();
+SelectorSubPart.prototype.constructor = SelectorSubPart;
+
+
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 module.exports = TokenStream;
 
-var TokenStreamBase = require("../util/TokenStreamBase");
+var TokenStreamBase = __webpack_require__(32);
 
-var PropertyValuePart = require("./PropertyValuePart");
-var Tokens = require("./Tokens");
+var PropertyValuePart = __webpack_require__(14);
+var Tokens = __webpack_require__(11);
 
 var h = /^[0-9a-fA-F]$/,
     nonascii = /^[\u00A0-\uFFFF]$/,
@@ -5587,1330 +6272,18 @@ TokenStream.prototype = mix(new TokenStreamBase(), {
     }
 });
 
-},{"../util/TokenStreamBase":27,"./PropertyValuePart":11,"./Tokens":18}],18:[function(require,module,exports){
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 
-var Tokens = module.exports = [
-
-    /*
-     * The following token names are defined in CSS3 Grammar: https://www.w3.org/TR/css3-syntax/#lexical
-     */
-
-    // HTML-style comments
-    { name: "CDO" },
-    { name: "CDC" },
-
-    // ignorables
-    { name: "S", whitespace: true/*, channel: "ws"*/ },
-    { name: "COMMENT", comment: true, hide: true, channel: "comment" },
-
-    // attribute equality
-    { name: "INCLUDES", text: "~=" },
-    { name: "DASHMATCH", text: "|=" },
-    { name: "PREFIXMATCH", text: "^=" },
-    { name: "SUFFIXMATCH", text: "$=" },
-    { name: "SUBSTRINGMATCH", text: "*=" },
-
-    // identifier types
-    { name: "STRING" },
-    { name: "IDENT" },
-    { name: "HASH" },
-
-    // at-keywords
-    { name: "IMPORT_SYM", text: "@import" },
-    { name: "PAGE_SYM", text: "@page" },
-    { name: "MEDIA_SYM", text: "@media" },
-    { name: "FONT_FACE_SYM", text: "@font-face" },
-    { name: "CHARSET_SYM", text: "@charset" },
-    { name: "NAMESPACE_SYM", text: "@namespace" },
-    { name: "SUPPORTS_SYM", text: "@supports" },
-    { name: "VIEWPORT_SYM", text: ["@viewport", "@-ms-viewport", "@-o-viewport"] },
-    { name: "DOCUMENT_SYM", text: ["@document", "@-moz-document"] },
-    { name: "UNKNOWN_SYM" },
-    //{ name: "ATKEYWORD"},
-
-    // CSS3 animations
-    { name: "KEYFRAMES_SYM", text: [ "@keyframes", "@-webkit-keyframes", "@-moz-keyframes", "@-o-keyframes" ] },
-
-    // important symbol
-    { name: "IMPORTANT_SYM" },
-
-    // measurements
-    { name: "LENGTH" },
-    { name: "ANGLE" },
-    { name: "TIME" },
-    { name: "FREQ" },
-    { name: "DIMENSION" },
-    { name: "PERCENTAGE" },
-    { name: "NUMBER" },
-
-    // functions
-    { name: "URI" },
-    { name: "FUNCTION" },
-
-    // Unicode ranges
-    { name: "UNICODE_RANGE" },
-
-    /*
-     * The following token names are defined in CSS3 Selectors: https://www.w3.org/TR/css3-selectors/#selector-syntax
-     */
-
-    // invalid string
-    { name: "INVALID" },
-
-    // combinators
-    { name: "PLUS", text: "+" },
-    { name: "GREATER", text: ">" },
-    { name: "COMMA", text: "," },
-    { name: "TILDE", text: "~" },
-
-    // modifier
-    { name: "NOT" },
-
-    /*
-     * Defined in CSS3 Paged Media
-     */
-    { name: "TOPLEFTCORNER_SYM", text: "@top-left-corner" },
-    { name: "TOPLEFT_SYM", text: "@top-left" },
-    { name: "TOPCENTER_SYM", text: "@top-center" },
-    { name: "TOPRIGHT_SYM", text: "@top-right" },
-    { name: "TOPRIGHTCORNER_SYM", text: "@top-right-corner" },
-    { name: "BOTTOMLEFTCORNER_SYM", text: "@bottom-left-corner" },
-    { name: "BOTTOMLEFT_SYM", text: "@bottom-left" },
-    { name: "BOTTOMCENTER_SYM", text: "@bottom-center" },
-    { name: "BOTTOMRIGHT_SYM", text: "@bottom-right" },
-    { name: "BOTTOMRIGHTCORNER_SYM", text: "@bottom-right-corner" },
-    { name: "LEFTTOP_SYM", text: "@left-top" },
-    { name: "LEFTMIDDLE_SYM", text: "@left-middle" },
-    { name: "LEFTBOTTOM_SYM", text: "@left-bottom" },
-    { name: "RIGHTTOP_SYM", text: "@right-top" },
-    { name: "RIGHTMIDDLE_SYM", text: "@right-middle" },
-    { name: "RIGHTBOTTOM_SYM", text: "@right-bottom" },
-
-    /*
-     * The following token names are defined in CSS3 Media Queries: https://www.w3.org/TR/css3-mediaqueries/#syntax
-     */
-    /*{ name: "MEDIA_ONLY", state: "media"},
-    { name: "MEDIA_NOT", state: "media"},
-    { name: "MEDIA_AND", state: "media"},*/
-    { name: "RESOLUTION", state: "media" },
-
-    /*
-     * The following token names are not defined in any CSS specification but are used by the lexer.
-     */
-
-    // not a real token, but useful for stupid IE filters
-    { name: "IE_FUNCTION" },
-
-    // part of CSS3 grammar but not the Flex code
-    { name: "CHAR" },
-
-    // TODO: Needed?
-    // Not defined as tokens, but might as well be
-    {
-        name: "PIPE",
-        text: "|"
-    },
-    {
-        name: "SLASH",
-        text: "/"
-    },
-    {
-        name: "MINUS",
-        text: "-"
-    },
-    {
-        name: "STAR",
-        text: "*"
-    },
-
-    {
-        name: "LBRACE",
-        endChar: "}",
-        text: "{"
-    },
-    {
-        name: "RBRACE",
-        text: "}"
-    },
-    {
-        name: "LBRACKET",
-        endChar: "]",
-        text: "["
-    },
-    {
-        name: "RBRACKET",
-        text: "]"
-    },
-    {
-        name: "EQUALS",
-        text: "="
-    },
-    {
-        name: "COLON",
-        text: ":"
-    },
-    {
-        name: "SEMICOLON",
-        text: ";"
-    },
-    {
-        name: "LPAREN",
-        endChar: ")",
-        text: "("
-    },
-    {
-        name: "RPAREN",
-        text: ")"
-    },
-    {
-        name: "DOT",
-        text: "."
-    }
-];
-
-(function() {
-    var nameMap = [],
-        typeMap = Object.create(null);
-
-    Tokens.UNKNOWN = -1;
-    Tokens.unshift({ name:"EOF" });
-    for (var i=0, len = Tokens.length; i < len; i++) {
-        nameMap.push(Tokens[i].name);
-        Tokens[Tokens[i].name] = i;
-        if (Tokens[i].text) {
-            if (Tokens[i].text instanceof Array) {
-                for (var j=0; j < Tokens[i].text.length; j++) {
-                    typeMap[Tokens[i].text[j]] = i;
-                }
-            } else {
-                typeMap[Tokens[i].text] = i;
-            }
-        }
-    }
-
-    Tokens.name = function(tt) {
-        return nameMap[tt];
-    };
-
-    Tokens.type = function(c) {
-        return typeMap[c] || -1;
-    };
-})();
-
-},{}],19:[function(require,module,exports){
-"use strict";
-
-/* exported Validation */
-
-var Matcher = require("./Matcher");
-var Properties = require("./Properties");
-var ValidationTypes = require("./ValidationTypes");
-var ValidationError = require("./ValidationError");
-var PropertyValueIterator = require("./PropertyValueIterator");
-
-var Validation = module.exports = {
-
-    validate: function(property, value) {
-
-        //normalize name
-        var name        = property.toString().toLowerCase(),
-            expression  = new PropertyValueIterator(value),
-            spec        = Properties[name],
-            part;
-
-        if (!spec) {
-            if (name.indexOf("-") !== 0) {    //vendor prefixed are ok
-                throw new ValidationError("Unknown property '" + property + "'.", property.line, property.col);
-            }
-        } else if (typeof spec !== "number") {
-
-            // All properties accept some CSS-wide values.
-            // https://drafts.csswg.org/css-values-3/#common-keywords
-            if (ValidationTypes.isAny(expression, "inherit | initial | unset")) {
-                if (expression.hasNext()) {
-                    part = expression.next();
-                    throw new ValidationError("Expected end of value but found '" + part + "'.", part.line, part.col);
-                }
-                return;
-            }
-
-            // Property-specific validation.
-            this.singleProperty(spec, expression);
-
-        }
-
-    },
-
-    singleProperty: function(types, expression) {
-
-        var result      = false,
-            value       = expression.value,
-            part;
-
-        result = Matcher.parse(types).match(expression);
-
-        if (!result) {
-            if (expression.hasNext() && !expression.isFirst()) {
-                part = expression.peek();
-                throw new ValidationError("Expected end of value but found '" + part + "'.", part.line, part.col);
-            } else {
-                throw new ValidationError("Expected (" + ValidationTypes.describe(types) + ") but found '" + value + "'.", value.line, value.col);
-            }
-        } else if (expression.hasNext()) {
-            part = expression.next();
-            throw new ValidationError("Expected end of value but found '" + part + "'.", part.line, part.col);
-        }
-
-    }
-
-};
-
-},{"./Matcher":3,"./Properties":7,"./PropertyValueIterator":10,"./ValidationError":20,"./ValidationTypes":21}],20:[function(require,module,exports){
-"use strict";
-
-module.exports = ValidationError;
-
-/**
- * Type to use when a validation error occurs.
- * @class ValidationError
- * @namespace parserlib.util
- * @constructor
- * @param {String} message The error message.
- * @param {int} line The line at which the error occurred.
- * @param {int} col The column at which the error occurred.
- */
-function ValidationError(message, line, col) {
-
-    /**
-     * The column at which the error occurred.
-     * @type int
-     * @property col
-     */
-    this.col = col;
-
-    /**
-     * The line at which the error occurred.
-     * @type int
-     * @property line
-     */
-    this.line = line;
-
-    /**
-     * The text representation of the unit.
-     * @type String
-     * @property text
-     */
-    this.message = message;
-
-}
-
-//inherit from Error
-ValidationError.prototype = new Error();
-
-},{}],21:[function(require,module,exports){
-"use strict";
-
-var ValidationTypes = module.exports;
-
-var Matcher = require("./Matcher");
-
-function copy(to, from) {
-    Object.keys(from).forEach(function(prop) {
-        to[prop] = from[prop];
-    });
-}
-copy(ValidationTypes, {
-
-    isLiteral: function (part, literals) {
-        var text = part.text.toString().toLowerCase(),
-            args = literals.split(" | "),
-            i, len, found = false;
-
-        for (i=0, len=args.length; i < len && !found; i++) {
-            if (args[i].charAt(0) === "<") {
-                found = this.simple[args[i]](part);
-            } else if (args[i].slice(-2) === "()") {
-                found = (part.type === "function" &&
-                         part.name === args[i].slice(0, -2));
-            } else if (text === args[i].toLowerCase()) {
-                found = true;
-            }
-        }
-
-        return found;
-    },
-
-    isSimple: function(type) {
-        return Boolean(this.simple[type]);
-    },
-
-    isComplex: function(type) {
-        return Boolean(this.complex[type]);
-    },
-
-    describe: function(type) {
-        if (this.complex[type] instanceof Matcher) {
-            return this.complex[type].toString(0);
-        }
-        return type;
-    },
-
-    /**
-     * Determines if the next part(s) of the given expression
-     * are any of the given types.
-     */
-    isAny: function (expression, types) {
-        var args = types.split(" | "),
-            i, len, found = false;
-
-        for (i=0, len=args.length; i < len && !found && expression.hasNext(); i++) {
-            found = this.isType(expression, args[i]);
-        }
-
-        return found;
-    },
-
-    /**
-     * Determines if the next part(s) of the given expression
-     * are one of a group.
-     */
-    isAnyOfGroup: function(expression, types) {
-        var args = types.split(" || "),
-            i, len, found = false;
-
-        for (i=0, len=args.length; i < len && !found; i++) {
-            found = this.isType(expression, args[i]);
-        }
-
-        return found ? args[i-1] : false;
-    },
-
-    /**
-     * Determines if the next part(s) of the given expression
-     * are of a given type.
-     */
-    isType: function (expression, type) {
-        var part = expression.peek(),
-            result = false;
-
-        if (type.charAt(0) !== "<") {
-            result = this.isLiteral(part, type);
-            if (result) {
-                expression.next();
-            }
-        } else if (this.simple[type]) {
-            result = this.simple[type](part);
-            if (result) {
-                expression.next();
-            }
-        } else if (this.complex[type] instanceof Matcher) {
-            result = this.complex[type].match(expression);
-        } else {
-            result = this.complex[type](expression);
-        }
-
-        return result;
-    },
-
-
-    simple: {
-        __proto__: null,
-
-        "<absolute-size>":
-            "xx-small | x-small | small | medium | large | x-large | xx-large",
-
-        "<animateable-feature>":
-            "scroll-position | contents | <animateable-feature-name>",
-
-        "<animateable-feature-name>": function(part) {
-            return this["<ident>"](part) &&
-                !/^(unset|initial|inherit|will-change|auto|scroll-position|contents)$/i.test(part);
-        },
-
-        "<angle>": function(part) {
-            return part.type === "angle";
-        },
-
-        "<attachment>": "scroll | fixed | local",
-
-        "<attr>": "attr()",
-
-        // inset() = inset( <shape-arg>{1,4} [round <border-radius>]? )
-        // circle() = circle( [<shape-radius>]? [at <position>]? )
-        // ellipse() = ellipse( [<shape-radius>{2}]? [at <position>]? )
-        // polygon() = polygon( [<fill-rule>,]? [<shape-arg> <shape-arg>]# )
-        "<basic-shape>": "inset() | circle() | ellipse() | polygon()",
-
-        "<bg-image>": "<image> | <gradient> | none",
-
-        "<border-style>":
-            "none | hidden | dotted | dashed | solid | double | groove | " +
-            "ridge | inset | outset",
-
-        "<border-width>": "<length> | thin | medium | thick",
-
-        "<box>": "padding-box | border-box | content-box",
-
-        "<clip-source>": "<uri>",
-
-        "<color>": function(part) {
-            return part.type === "color" || String(part) === "transparent" || String(part) === "currentColor";
-        },
-
-        // The SVG <color> spec doesn't include "currentColor" or "transparent" as a color.
-        "<color-svg>": function(part) {
-            return part.type === "color";
-        },
-
-        "<content>": "content()",
-
-        // https://www.w3.org/TR/css3-sizing/#width-height-keywords
-        "<content-sizing>":
-            "fill-available | -moz-available | -webkit-fill-available | " +
-            "max-content | -moz-max-content | -webkit-max-content | " +
-            "min-content | -moz-min-content | -webkit-min-content | " +
-            "fit-content | -moz-fit-content | -webkit-fit-content",
-
-        "<feature-tag-value>": function(part) {
-            return part.type === "function" && /^[A-Z0-9]{4}$/i.test(part);
-        },
-
-        // custom() isn't actually in the spec
-        "<filter-function>":
-            "blur() | brightness() | contrast() | custom() | " +
-            "drop-shadow() | grayscale() | hue-rotate() | invert() | " +
-            "opacity() | saturate() | sepia()",
-
-        "<flex-basis>": "<width>",
-
-        "<flex-direction>": "row | row-reverse | column | column-reverse",
-
-        "<flex-grow>": "<number>",
-
-        "<flex-shrink>": "<number>",
-
-        "<flex-wrap>": "nowrap | wrap | wrap-reverse",
-
-        "<font-size>":
-            "<absolute-size> | <relative-size> | <length> | <percentage>",
-
-        "<font-stretch>":
-            "normal | ultra-condensed | extra-condensed | condensed | " +
-            "semi-condensed | semi-expanded | expanded | extra-expanded | " +
-            "ultra-expanded",
-
-        "<font-style>": "normal | italic | oblique",
-
-        "<font-variant-caps>":
-            "small-caps | all-small-caps | petite-caps | all-petite-caps | " +
-            "unicase | titling-caps",
-
-        "<font-variant-css21>": "normal | small-caps",
-
-        "<font-weight>":
-            "normal | bold | bolder | lighter | " +
-            "100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900",
-
-        "<generic-family>":
-            "serif | sans-serif | cursive | fantasy | monospace",
-
-        "<geometry-box>": "<shape-box> | fill-box | stroke-box | view-box",
-
-        "<glyph-angle>": function(part) {
-            return part.type === "angle" && part.units === "deg";
-        },
-
-        "<gradient>": function(part) {
-            return part.type === "function" && /^(?:\-(?:ms|moz|o|webkit)\-)?(?:repeating\-)?(?:radial\-|linear\-)?gradient/i.test(part);
-        },
-
-        "<icccolor>":
-            "cielab() | cielch() | cielchab() | " +
-            "icc-color() | icc-named-color()",
-
-        //any identifier
-        "<ident>": function(part) {
-            return part.type === "identifier" || part.wasIdent;
-        },
-
-        "<ident-not-generic-family>": function(part) {
-            return this["<ident>"](part) && !this["<generic-family>"](part);
-        },
-
-        "<image>": "<uri>",
-
-        "<integer>": function(part) {
-            return part.type === "integer";
-        },
-
-        "<length>": function(part) {
-            if (part.type === "function" && /^(?:\-(?:ms|moz|o|webkit)\-)?calc/i.test(part)) {
-                return true;
-            } else {
-                return part.type === "length" || part.type === "number" || part.type === "integer" || String(part) === "0";
-            }
-        },
-
-        "<line>": function(part) {
-            return part.type === "integer";
-        },
-
-        "<line-height>": "<number> | <length> | <percentage> | normal",
-
-        "<margin-width>": "<length> | <percentage> | auto",
-
-        "<miterlimit>": function(part) {
-            return this["<number>"](part) && part.value >= 1;
-        },
-
-        "<nonnegative-length-or-percentage>": function(part) {
-            return (this["<length>"](part) || this["<percentage>"](part)) &&
-                (String(part) === "0" || part.type === "function" || (part.value) >= 0);
-        },
-
-        "<nonnegative-number-or-percentage>": function(part) {
-            return (this["<number>"](part) || this["<percentage>"](part)) &&
-                (String(part) === "0" || part.type === "function" || (part.value) >= 0);
-        },
-
-        "<number>": function(part) {
-            return part.type === "number" || this["<integer>"](part);
-        },
-
-        "<opacity-value>": function(part) {
-            return this["<number>"](part) && part.value >= 0 && part.value <= 1;
-        },
-
-        "<padding-width>": "<nonnegative-length-or-percentage>",
-
-        "<percentage>": function(part) {
-            return part.type === "percentage" || String(part) === "0";
-        },
-
-        "<relative-size>": "smaller | larger",
-
-        "<shape>": "rect() | inset-rect()",
-
-        "<shape-box>": "<box> | margin-box",
-
-        "<single-animation-direction>":
-            "normal | reverse | alternate | alternate-reverse",
-
-        "<single-animation-name>": function(part) {
-            return this["<ident>"](part) &&
-                /^-?[a-z_][-a-z0-9_]+$/i.test(part) &&
-                !/^(none|unset|initial|inherit)$/i.test(part);
-        },
-
-        "<string>": function(part) {
-            return part.type === "string";
-        },
-
-        "<time>": function(part) {
-            return part.type === "time";
-        },
-
-        "<uri>": function(part) {
-            return part.type === "uri";
-        },
-
-        "<width>": "<margin-width>"
-    },
-
-    complex: {
-        __proto__: null,
-
-        "<azimuth>":
-            "<angle>" +
-            " | " +
-            "[ [ left-side | far-left | left | center-left | center | " +
-            "center-right | right | far-right | right-side ] || behind ]" +
-            " | "+
-            "leftwards | rightwards",
-
-        "<bg-position>": "<position>#",
-
-        "<bg-size>":
-            "[ <length> | <percentage> | auto ]{1,2} | cover | contain",
-
-        "<border-image-slice>":
-        // [<number> | <percentage>]{1,4} && fill?
-        // *but* fill can appear between any of the numbers
-        Matcher.many([true /* first element is required */],
-                     Matcher.cast("<nonnegative-number-or-percentage>"),
-                     Matcher.cast("<nonnegative-number-or-percentage>"),
-                     Matcher.cast("<nonnegative-number-or-percentage>"),
-                     Matcher.cast("<nonnegative-number-or-percentage>"),
-                     "fill"),
-
-        "<border-radius>":
-            "<nonnegative-length-or-percentage>{1,4} " +
-            "[ / <nonnegative-length-or-percentage>{1,4} ]?",
-
-        "<box-shadow>": "none | <shadow>#",
-
-        "<clip-path>": "<basic-shape> || <geometry-box>",
-
-        "<dasharray>":
-        // "list of comma and/or white space separated <length>s and
-        // <percentage>s".  There is a non-negative constraint.
-        Matcher.cast("<nonnegative-length-or-percentage>")
-            .braces(1, Infinity, "#", Matcher.cast(",").question()),
-
-        "<family-name>":
-            // <string> | <IDENT>+
-            "<string> | <ident-not-generic-family> <ident>*",
-
-        "<filter-function-list>": "[ <filter-function> | <uri> ]+",
-
-        // https://www.w3.org/TR/2014/WD-css-flexbox-1-20140325/#flex-property
-        "<flex>":
-            "none | [ <flex-grow> <flex-shrink>? || <flex-basis> ]",
-
-        "<font-family>": "[ <generic-family> | <family-name> ]#",
-
-        "<font-shorthand>":
-            "[ <font-style> || <font-variant-css21> || " +
-            "<font-weight> || <font-stretch> ]? <font-size> " +
-            "[ / <line-height> ]? <font-family>",
-
-        "<font-variant-alternates>":
-            // stylistic(<feature-value-name>)
-            "stylistic() || " +
-            "historical-forms || " +
-            // styleset(<feature-value-name> #)
-            "styleset() || " +
-            // character-variant(<feature-value-name> #)
-            "character-variant() || " +
-            // swash(<feature-value-name>)
-            "swash() || " +
-            // ornaments(<feature-value-name>)
-            "ornaments() || " +
-            // annotation(<feature-value-name>)
-            "annotation()",
-
-        "<font-variant-ligatures>":
-            // <common-lig-values>
-            "[ common-ligatures | no-common-ligatures ] || " +
-            // <discretionary-lig-values>
-            "[ discretionary-ligatures | no-discretionary-ligatures ] || " +
-            // <historical-lig-values>
-            "[ historical-ligatures | no-historical-ligatures ] || " +
-            // <contextual-alt-values>
-            "[ contextual | no-contextual ]",
-
-        "<font-variant-numeric>":
-            // <numeric-figure-values>
-            "[ lining-nums | oldstyle-nums ] || " +
-            // <numeric-spacing-values>
-            "[ proportional-nums | tabular-nums ] || " +
-            // <numeric-fraction-values>
-            "[ diagonal-fractions | stacked-fractions ] || " +
-            "ordinal || slashed-zero",
-
-        "<font-variant-east-asian>":
-            // <east-asian-variant-values>
-            "[ jis78 | jis83 | jis90 | jis04 | simplified | traditional ] || " +
-            // <east-asian-width-values>
-            "[ full-width | proportional-width ] || " +
-            "ruby",
-
-        // Note that <color> here is "as defined in the SVG spec", which
-        // is more restrictive that the <color> defined in the CSS spec.
-        // none | currentColor | <color> [<icccolor>]? |
-        // <funciri> [ none | currentColor | <color> [<icccolor>]? ]?
-        "<paint>": "<paint-basic> | <uri> <paint-basic>?",
-
-        // Helper definition for <paint> above.
-        "<paint-basic>": "none | currentColor | <color-svg> <icccolor>?",
-
-        "<position>":
-            // Because our `alt` combinator is ordered, we need to test these
-            // in order from longest possible match to shortest.
-            "[ center | [ left | right ] [ <percentage> | <length> ]? ] && " +
-            "[ center | [ top | bottom ] [ <percentage> | <length> ]? ]" +
-            " | " +
-            "[ left | center | right | <percentage> | <length> ] " +
-            "[ top | center | bottom | <percentage> | <length> ]" +
-            " | " +
-            "[ left | center | right | top | bottom | <percentage> | <length> ]",
-
-        "<repeat-style>":
-            "repeat-x | repeat-y | [ repeat | space | round | no-repeat ]{1,2}",
-
-        "<shadow>":
-        //inset? && [ <length>{2,4} && <color>? ]
-        Matcher.many([true /* length is required */],
-                     Matcher.cast("<length>").braces(2, 4), "inset", "<color>"),
-
-        "<text-decoration-color>":
-           "<color>",
-
-        "<text-decoration-line>":
-            "none | [ underline || overline || line-through || blink ]",
-
-        "<text-decoration-style>":
-            "solid | double | dotted | dashed | wavy",
-
-        "<will-change>":
-            "auto | <animateable-feature>#",
-
-        "<x-one-radius>":
-            //[ <length> | <percentage> ] [ <length> | <percentage> ]?
-            "[ <length> | <percentage> ]{1,2}"
-    }
-});
-
-Object.keys(ValidationTypes.simple).forEach(function(nt) {
-    var rule = ValidationTypes.simple[nt];
-    if (typeof rule === "string") {
-        ValidationTypes.simple[nt] = function(part) {
-            return ValidationTypes.isLiteral(part, rule);
-        };
-    }
-});
-
-Object.keys(ValidationTypes.complex).forEach(function(nt) {
-    var rule = ValidationTypes.complex[nt];
-    if (typeof rule === "string") {
-        ValidationTypes.complex[nt] = Matcher.parse(rule);
-    }
-});
-
-// Because this is defined relative to other complex validation types,
-// we need to define it *after* the rest of the types are initialized.
-ValidationTypes.complex["<font-variant>"] =
-    Matcher.oror({ expand: "<font-variant-ligatures>" },
-                 { expand: "<font-variant-alternates>" },
-                 "<font-variant-caps>",
-                 { expand: "<font-variant-numeric>" },
-                 { expand: "<font-variant-east-asian>" });
-
-},{"./Matcher":3}],22:[function(require,module,exports){
-"use strict";
-
-module.exports = {
-    Colors            : require("./Colors"),
-    Combinator        : require("./Combinator"),
-    Parser            : require("./Parser"),
-    PropertyName      : require("./PropertyName"),
-    PropertyValue     : require("./PropertyValue"),
-    PropertyValuePart : require("./PropertyValuePart"),
-    Matcher           : require("./Matcher"),
-    MediaFeature      : require("./MediaFeature"),
-    MediaQuery        : require("./MediaQuery"),
-    Selector          : require("./Selector"),
-    SelectorPart      : require("./SelectorPart"),
-    SelectorSubPart   : require("./SelectorSubPart"),
-    Specificity       : require("./Specificity"),
-    TokenStream       : require("./TokenStream"),
-    Tokens            : require("./Tokens"),
-    ValidationError   : require("./ValidationError")
-};
-
-},{"./Colors":1,"./Combinator":2,"./Matcher":3,"./MediaFeature":4,"./MediaQuery":5,"./Parser":6,"./PropertyName":8,"./PropertyValue":9,"./PropertyValuePart":11,"./Selector":13,"./SelectorPart":14,"./SelectorSubPart":15,"./Specificity":16,"./TokenStream":17,"./Tokens":18,"./ValidationError":20}],23:[function(require,module,exports){
-"use strict";
-
-module.exports = EventTarget;
-
-/**
- * A generic base to inherit from for any object
- * that needs event handling.
- * @class EventTarget
- * @constructor
- */
-function EventTarget() {
-
-    /**
-     * The array of listeners for various events.
-     * @type Object
-     * @property _listeners
-     * @private
-     */
-    this._listeners = Object.create(null);
-}
-
-EventTarget.prototype = {
-
-    //restore constructor
-    constructor: EventTarget,
-
-    /**
-     * Adds a listener for a given event type.
-     * @param {String} type The type of event to add a listener for.
-     * @param {Function} listener The function to call when the event occurs.
-     * @return {void}
-     * @method addListener
-     */
-    addListener: function(type, listener) {
-        if (!this._listeners[type]) {
-            this._listeners[type] = [];
-        }
-
-        this._listeners[type].push(listener);
-    },
-
-    /**
-     * Fires an event based on the passed-in object.
-     * @param {Object|String} event An object with at least a 'type' attribute
-     *      or a string indicating the event name.
-     * @return {void}
-     * @method fire
-     */
-    fire: function(event) {
-        if (typeof event === "string") {
-            event = { type: event };
-        }
-        if (typeof event.target !== "undefined") {
-            event.target = this;
-        }
-
-        if (typeof event.type === "undefined") {
-            throw new Error("Event object missing 'type' property.");
-        }
-
-        if (this._listeners[event.type]) {
-
-            //create a copy of the array and use that so listeners can't chane
-            var listeners = this._listeners[event.type].concat();
-            for (var i=0, len=listeners.length; i < len; i++) {
-                listeners[i].call(this, event);
-            }
-        }
-    },
-
-    /**
-     * Removes a listener for a given event type.
-     * @param {String} type The type of event to remove a listener from.
-     * @param {Function} listener The function to remove from the event.
-     * @return {void}
-     * @method removeListener
-     */
-    removeListener: function(type, listener) {
-        if (this._listeners[type]) {
-            var listeners = this._listeners[type];
-            for (var i=0, len=listeners.length; i < len; i++) {
-                if (listeners[i] === listener) {
-                    listeners.splice(i, 1);
-                    break;
-                }
-            }
-
-
-        }
-    }
-};
-
-},{}],24:[function(require,module,exports){
-"use strict";
-
-module.exports = StringReader;
-
-/**
- * Convenient way to read through strings.
- * @namespace parserlib.util
- * @class StringReader
- * @constructor
- * @param {String} text The text to read.
- */
-function StringReader(text) {
-
-    /**
-     * The input text with line endings normalized.
-     * @property _input
-     * @type String
-     * @private
-     */
-    this._input = text.replace(/(\r\n?|\n)/g, "\n");
-
-
-    /**
-     * The row for the character to be read next.
-     * @property _line
-     * @type int
-     * @private
-     */
-    this._line = 1;
-
-
-    /**
-     * The column for the character to be read next.
-     * @property _col
-     * @type int
-     * @private
-     */
-    this._col = 1;
-
-    /**
-     * The index of the character in the input to be read next.
-     * @property _cursor
-     * @type int
-     * @private
-     */
-    this._cursor = 0;
-}
-
-StringReader.prototype = {
-
-    // restore constructor
-    constructor: StringReader,
-
-    //-------------------------------------------------------------------------
-    // Position info
-    //-------------------------------------------------------------------------
-
-    /**
-     * Returns the column of the character to be read next.
-     * @return {int} The column of the character to be read next.
-     * @method getCol
-     */
-    getCol: function() {
-        return this._col;
-    },
-
-    /**
-     * Returns the row of the character to be read next.
-     * @return {int} The row of the character to be read next.
-     * @method getLine
-     */
-    getLine: function() {
-        return this._line;
-    },
-
-    /**
-     * Determines if you're at the end of the input.
-     * @return {Boolean} True if there's no more input, false otherwise.
-     * @method eof
-     */
-    eof: function() {
-        return this._cursor === this._input.length;
-    },
-
-    //-------------------------------------------------------------------------
-    // Basic reading
-    //-------------------------------------------------------------------------
-
-    /**
-     * Reads the next character without advancing the cursor.
-     * @param {int} count How many characters to look ahead (default is 1).
-     * @return {String} The next character or null if there is no next character.
-     * @method peek
-     */
-    peek: function(count) {
-        var c = null;
-        count = typeof count === "undefined" ? 1 : count;
-
-        // if we're not at the end of the input...
-        if (this._cursor < this._input.length) {
-
-            // get character and increment cursor and column
-            c = this._input.charAt(this._cursor + count - 1);
-        }
-
-        return c;
-    },
-
-    /**
-     * Reads the next character from the input and adjusts the row and column
-     * accordingly.
-     * @return {String} The next character or null if there is no next character.
-     * @method read
-     */
-    read: function() {
-        var c = null;
-
-        // if we're not at the end of the input...
-        if (this._cursor < this._input.length) {
-
-            // if the last character was a newline, increment row count
-            // and reset column count
-            if (this._input.charAt(this._cursor) === "\n") {
-                this._line++;
-                this._col=1;
-            } else {
-                this._col++;
-            }
-
-            // get character and increment cursor and column
-            c = this._input.charAt(this._cursor++);
-        }
-
-        return c;
-    },
-
-    //-------------------------------------------------------------------------
-    // Misc
-    //-------------------------------------------------------------------------
-
-    /**
-     * Saves the current location so it can be returned to later.
-     * @method mark
-     * @return {void}
-     */
-    mark: function() {
-        this._bookmark = {
-            cursor: this._cursor,
-            line:   this._line,
-            col:    this._col
-        };
-    },
-
-    reset: function() {
-        if (this._bookmark) {
-            this._cursor = this._bookmark.cursor;
-            this._line = this._bookmark.line;
-            this._col = this._bookmark.col;
-            delete this._bookmark;
-        }
-    },
-
-    //-------------------------------------------------------------------------
-    // Advanced reading
-    //-------------------------------------------------------------------------
-
-    /**
-     * Reads up to and including the given string. Throws an error if that
-     * string is not found.
-     * @param {String} pattern The string to read.
-     * @return {String} The string when it is found.
-     * @throws Error when the string pattern is not found.
-     * @method readTo
-     */
-    readTo: function(pattern) {
-
-        var buffer = "",
-            c;
-
-        /*
-         * First, buffer must be the same length as the pattern.
-         * Then, buffer must end with the pattern or else reach the
-         * end of the input.
-         */
-        while (buffer.length < pattern.length || buffer.lastIndexOf(pattern) !== buffer.length - pattern.length) {
-            c = this.read();
-            if (c) {
-                buffer += c;
-            } else {
-                throw new Error("Expected \"" + pattern + "\" at line " + this._line  + ", col " + this._col + ".");
-            }
-        }
-
-        return buffer;
-
-    },
-
-    /**
-     * Reads characters while each character causes the given
-     * filter function to return true. The function is passed
-     * in each character and either returns true to continue
-     * reading or false to stop.
-     * @param {Function} filter The function to read on each character.
-     * @return {String} The string made up of all characters that passed the
-     *      filter check.
-     * @method readWhile
-     */
-    readWhile: function(filter) {
-
-        var buffer = "",
-            c = this.peek();
-
-        while (c !== null && filter(c)) {
-            buffer += this.read();
-            c = this.peek();
-        }
-
-        return buffer;
-
-    },
-
-    /**
-     * Reads characters that match either text or a regular expression and
-     * returns those characters. If a match is found, the row and column
-     * are adjusted; if no match is found, the reader's state is unchanged.
-     * reading or false to stop.
-     * @param {String|RegExp} matcher If a string, then the literal string
-     *      value is searched for. If a regular expression, then any string
-     *      matching the pattern is search for.
-     * @return {String} The string made up of all characters that matched or
-     *      null if there was no match.
-     * @method readMatch
-     */
-    readMatch: function(matcher) {
-
-        var source = this._input.substring(this._cursor),
-            value = null;
-
-        // if it's a string, just do a straight match
-        if (typeof matcher === "string") {
-            if (source.slice(0, matcher.length) === matcher) {
-                value = this.readCount(matcher.length);
-            }
-        } else if (matcher instanceof RegExp) {
-            if (matcher.test(source)) {
-                value = this.readCount(RegExp.lastMatch.length);
-            }
-        }
-
-        return value;
-    },
-
-
-    /**
-     * Reads a given number of characters. If the end of the input is reached,
-     * it reads only the remaining characters and does not throw an error.
-     * @param {int} count The number of characters to read.
-     * @return {String} The string made up the read characters.
-     * @method readCount
-     */
-    readCount: function(count) {
-        var buffer = "";
-
-        while (count--) {
-            buffer += this.read();
-        }
-
-        return buffer;
-    }
-
-};
-
-},{}],25:[function(require,module,exports){
-"use strict";
-
-module.exports = SyntaxError;
-
-/**
- * Type to use when a syntax error occurs.
- * @class SyntaxError
- * @namespace parserlib.util
- * @constructor
- * @param {String} message The error message.
- * @param {int} line The line at which the error occurred.
- * @param {int} col The column at which the error occurred.
- */
-function SyntaxError(message, line, col) {
-    Error.call(this);
-    this.name = this.constructor.name;
-
-    /**
-     * The column at which the error occurred.
-     * @type int
-     * @property col
-     */
-    this.col = col;
-
-    /**
-     * The line at which the error occurred.
-     * @type int
-     * @property line
-     */
-    this.line = line;
-
-    /**
-     * The text representation of the unit.
-     * @type String
-     * @property text
-     */
-    this.message = message;
-
-}
-
-//inherit from Error
-SyntaxError.prototype = Object.create(Error.prototype); // jshint ignore:line
-SyntaxError.prototype.constructor = SyntaxError; // jshint ignore:line
-
-},{}],26:[function(require,module,exports){
-"use strict";
-
-module.exports = SyntaxUnit;
-
-/**
- * Base type to represent a single syntactic unit.
- * @class SyntaxUnit
- * @namespace parserlib.util
- * @constructor
- * @param {String} text The text of the unit.
- * @param {int} line The line of text on which the unit resides.
- * @param {int} col The column of text on which the unit resides.
- */
-function SyntaxUnit(text, line, col, type) {
-
-
-    /**
-     * The column of text on which the unit resides.
-     * @type int
-     * @property col
-     */
-    this.col = col;
-
-    /**
-     * The line of text on which the unit resides.
-     * @type int
-     * @property line
-     */
-    this.line = line;
-
-    /**
-     * The text representation of the unit.
-     * @type String
-     * @property text
-     */
-    this.text = text;
-
-    /**
-     * The type of syntax unit.
-     * @type int
-     * @property type
-     */
-    this.type = type;
-}
-
-/**
- * Create a new syntax unit based solely on the given token.
- * Convenience method for creating a new syntax unit when
- * it represents a single token instead of multiple.
- * @param {Object} token The token object to represent.
- * @return {parserlib.util.SyntaxUnit} The object representing the token.
- * @static
- * @method fromToken
- */
-SyntaxUnit.fromToken = function(token) {
-    return new SyntaxUnit(token.value, token.startLine, token.startCol);
-};
-
-SyntaxUnit.prototype = {
-
-    //restore constructor
-    constructor: SyntaxUnit,
-
-    /**
-     * Returns the text representation of the unit.
-     * @return {String} The text representation of the unit.
-     * @method valueOf
-     */
-    valueOf: function() {
-        return this.toString();
-    },
-
-    /**
-     * Returns the text representation of the unit.
-     * @return {String} The text representation of the unit.
-     * @method toString
-     */
-    toString: function() {
-        return this.text;
-    }
-
-};
-
-},{}],27:[function(require,module,exports){
-"use strict";
 
 module.exports = TokenStreamBase;
 
-var StringReader = require("./StringReader");
-var SyntaxError = require("./SyntaxError");
+var StringReader = __webpack_require__(16);
+var SyntaxError = __webpack_require__(10);
 
 /**
  * Generic TokenStream providing base functionality.
@@ -7306,287 +6679,99 @@ TokenStreamBase.prototype = {
 };
 
 
-},{"./StringReader":24,"./SyntaxError":25}],28:[function(require,module,exports){
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 
-module.exports = {
-    StringReader    : require("./StringReader"),
-    SyntaxError     : require("./SyntaxError"),
-    SyntaxUnit      : require("./SyntaxUnit"),
-    EventTarget     : require("./EventTarget"),
-    TokenStreamBase : require("./TokenStreamBase")
-};
 
-},{"./EventTarget":23,"./StringReader":24,"./SyntaxError":25,"./SyntaxUnit":26,"./TokenStreamBase":27}],"parserlib":[function(require,module,exports){
-"use strict";
-
-module.exports = {
-    css  : require("./css"),
-    util : require("./util")
-};
-
-},{"./css":22,"./util":28}]},{},[]);
-
-return require('parserlib');
-})();
-var clone = (function() {
-'use strict';
-
-var nativeMap;
-try {
-  nativeMap = Map;
-} catch(_) {
-  // maybe a reference error because no `Map`. Give it a dummy value that no
-  // value will ever be an instanceof.
-  nativeMap = function() {};
-}
-
-var nativeSet;
-try {
-  nativeSet = Set;
-} catch(_) {
-  nativeSet = function() {};
-}
-
-var nativePromise;
-try {
-  nativePromise = Promise;
-} catch(_) {
-  nativePromise = function() {};
-}
+module.exports = ValidationError;
 
 /**
- * Clones (copies) an Object using deep copying.
- *
- * This function supports circular references by default, but if you are certain
- * there are no circular references in your object, you can save some CPU time
- * by calling clone(obj, false).
- *
- * Caution: if `circular` is false and `parent` contains circular references,
- * your program may enter an infinite loop and crash.
- *
- * @param `parent` - the object to be cloned
- * @param `circular` - set to true if the object to be cloned may contain
- *    circular references. (optional - true by default)
- * @param `depth` - set to a number if the object is only to be cloned to
- *    a particular depth. (optional - defaults to Infinity)
- * @param `prototype` - sets the prototype to be used when cloning an object.
- *    (optional - defaults to parent prototype).
- * @param `includeNonEnumerable` - set to true if the non-enumerable properties
- *    should be cloned as well. Non-enumerable properties on the prototype
- *    chain will be ignored. (optional - false by default)
-*/
-function clone(parent, circular, depth, prototype, includeNonEnumerable) {
-  if (typeof circular === 'object') {
-    depth = circular.depth;
-    prototype = circular.prototype;
-    includeNonEnumerable = circular.includeNonEnumerable;
-    circular = circular.circular;
-  }
-  // maintain two arrays for circular references, where corresponding parents
-  // and children have the same index
-  var allParents = [];
-  var allChildren = [];
-
-  var useBuffer = typeof Buffer != 'undefined';
-
-  if (typeof circular == 'undefined')
-    circular = true;
-
-  if (typeof depth == 'undefined')
-    depth = Infinity;
-
-  // recurse this function so we don't reset allParents and allChildren
-  function _clone(parent, depth) {
-    // cloning null always returns null
-    if (parent === null)
-      return null;
-
-    if (depth === 0)
-      return parent;
-
-    var child;
-    var proto;
-    if (typeof parent != 'object') {
-      return parent;
-    }
-
-    if (parent instanceof nativeMap) {
-      child = new nativeMap();
-    } else if (parent instanceof nativeSet) {
-      child = new nativeSet();
-    } else if (parent instanceof nativePromise) {
-      child = new nativePromise(function (resolve, reject) {
-        parent.then(function(value) {
-          resolve(_clone(value, depth - 1));
-        }, function(err) {
-          reject(_clone(err, depth - 1));
-        });
-      });
-    } else if (clone.__isArray(parent)) {
-      child = [];
-    } else if (clone.__isRegExp(parent)) {
-      child = new RegExp(parent.source, __getRegExpFlags(parent));
-      if (parent.lastIndex) child.lastIndex = parent.lastIndex;
-    } else if (clone.__isDate(parent)) {
-      child = new Date(parent.getTime());
-    } else if (useBuffer && Buffer.isBuffer(parent)) {
-      child = new Buffer(parent.length);
-      parent.copy(child);
-      return child;
-    } else if (parent instanceof Error) {
-      child = Object.create(parent);
-    } else {
-      if (typeof prototype == 'undefined') {
-        proto = Object.getPrototypeOf(parent);
-        child = Object.create(proto);
-      }
-      else {
-        child = Object.create(prototype);
-        proto = prototype;
-      }
-    }
-
-    if (circular) {
-      var index = allParents.indexOf(parent);
-
-      if (index != -1) {
-        return allChildren[index];
-      }
-      allParents.push(parent);
-      allChildren.push(child);
-    }
-
-    if (parent instanceof nativeMap) {
-      var keyIterator = parent.keys();
-      while(true) {
-        var next = keyIterator.next();
-        if (next.done) {
-          break;
-        }
-        var keyChild = _clone(next.value, depth - 1);
-        var valueChild = _clone(parent.get(next.value), depth - 1);
-        child.set(keyChild, valueChild);
-      }
-    }
-    if (parent instanceof nativeSet) {
-      var iterator = parent.keys();
-      while(true) {
-        var next = iterator.next();
-        if (next.done) {
-          break;
-        }
-        var entryChild = _clone(next.value, depth - 1);
-        child.add(entryChild);
-      }
-    }
-
-    for (var i in parent) {
-      var attrs;
-      if (proto) {
-        attrs = Object.getOwnPropertyDescriptor(proto, i);
-      }
-
-      if (attrs && attrs.set == null) {
-        continue;
-      }
-      child[i] = _clone(parent[i], depth - 1);
-    }
-
-    if (Object.getOwnPropertySymbols) {
-      var symbols = Object.getOwnPropertySymbols(parent);
-      for (var i = 0; i < symbols.length; i++) {
-        // Don't need to worry about cloning a symbol because it is a primitive,
-        // like a number or string.
-        var symbol = symbols[i];
-        var descriptor = Object.getOwnPropertyDescriptor(parent, symbol);
-        if (descriptor && !descriptor.enumerable && !includeNonEnumerable) {
-          continue;
-        }
-        child[symbol] = _clone(parent[symbol], depth - 1);
-        if (!descriptor.enumerable) {
-          Object.defineProperty(child, symbol, {
-            enumerable: false
-          });
-        }
-      }
-    }
-
-    if (includeNonEnumerable) {
-      var allPropertyNames = Object.getOwnPropertyNames(parent);
-      for (var i = 0; i < allPropertyNames.length; i++) {
-        var propertyName = allPropertyNames[i];
-        var descriptor = Object.getOwnPropertyDescriptor(parent, propertyName);
-        if (descriptor && descriptor.enumerable) {
-          continue;
-        }
-        child[propertyName] = _clone(parent[propertyName], depth - 1);
-        Object.defineProperty(child, propertyName, {
-          enumerable: false
-        });
-      }
-    }
-
-    return child;
-  }
-
-  return _clone(parent, depth);
-}
-
-/**
- * Simple flat clone using prototype, accepts only objects, usefull for property
- * override on FLAT configuration object (no nested props).
- *
- * USE WITH CAUTION! This may not behave as you wish if you do not know how this
- * works.
+ * Type to use when a validation error occurs.
+ * @class ValidationError
+ * @namespace parserlib.util
+ * @constructor
+ * @param {String} message The error message.
+ * @param {int} line The line at which the error occurred.
+ * @param {int} col The column at which the error occurred.
  */
-clone.clonePrototype = function clonePrototype(parent) {
-  if (parent === null)
-    return null;
+function ValidationError(message, line, col) {
 
-  var c = function () {};
-  c.prototype = parent;
-  return new c();
-};
+    /**
+     * The column at which the error occurred.
+     * @type int
+     * @property col
+     */
+    this.col = col;
 
-// private utility functions
+    /**
+     * The line at which the error occurred.
+     * @type int
+     * @property line
+     */
+    this.line = line;
 
-function __objToStr(o) {
-  return Object.prototype.toString.call(o);
-}
-clone.__objToStr = __objToStr;
+    /**
+     * The text representation of the unit.
+     * @type String
+     * @property text
+     */
+    this.message = message;
 
-function __isDate(o) {
-  return typeof o === 'object' && __objToStr(o) === '[object Date]';
-}
-clone.__isDate = __isDate;
-
-function __isArray(o) {
-  return typeof o === 'object' && __objToStr(o) === '[object Array]';
-}
-clone.__isArray = __isArray;
-
-function __isRegExp(o) {
-  return typeof o === 'object' && __objToStr(o) === '[object RegExp]';
-}
-clone.__isRegExp = __isRegExp;
-
-function __getRegExpFlags(re) {
-  var flags = '';
-  if (re.global) flags += 'g';
-  if (re.ignoreCase) flags += 'i';
-  if (re.multiline) flags += 'm';
-  return flags;
-}
-clone.__getRegExpFlags = __getRegExpFlags;
-
-return clone;
-})();
-
-if (typeof module === 'object' && module.exports) {
-  module.exports = clone;
 }
 
+//inherit from Error
+ValidationError.prototype = new Error();
+
+
+/***/ }),
+/* 34 */,
+/* 35 */,
+/* 36 */,
+/* 37 */,
+/* 38 */,
+/* 39 */,
+/* 40 */,
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* global require */
+
+var csslint = __webpack_require__( 42 );
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*!
+CSSLint v1.0.4
+Copyright (c) 2016 Nicole Sullivan and Nicholas C. Zakas. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the 'Software'), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
+var clone = __webpack_require__(43);
+var parserlib = __webpack_require__(48);
 /**
  * Main CSSLint object.
  * @class CSSLint
@@ -10855,5 +10040,3078 @@ CSSLint.addFormatter({
     }
 });
 
-return CSSLint;
+exports.CSSLint = CSSLint;
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(Buffer) {var clone = (function() {
+'use strict';
+
+function _instanceof(obj, type) {
+  return type != null && obj instanceof type;
+}
+
+var nativeMap;
+try {
+  nativeMap = Map;
+} catch(_) {
+  // maybe a reference error because no `Map`. Give it a dummy value that no
+  // value will ever be an instanceof.
+  nativeMap = function() {};
+}
+
+var nativeSet;
+try {
+  nativeSet = Set;
+} catch(_) {
+  nativeSet = function() {};
+}
+
+var nativePromise;
+try {
+  nativePromise = Promise;
+} catch(_) {
+  nativePromise = function() {};
+}
+
+/**
+ * Clones (copies) an Object using deep copying.
+ *
+ * This function supports circular references by default, but if you are certain
+ * there are no circular references in your object, you can save some CPU time
+ * by calling clone(obj, false).
+ *
+ * Caution: if `circular` is false and `parent` contains circular references,
+ * your program may enter an infinite loop and crash.
+ *
+ * @param `parent` - the object to be cloned
+ * @param `circular` - set to true if the object to be cloned may contain
+ *    circular references. (optional - true by default)
+ * @param `depth` - set to a number if the object is only to be cloned to
+ *    a particular depth. (optional - defaults to Infinity)
+ * @param `prototype` - sets the prototype to be used when cloning an object.
+ *    (optional - defaults to parent prototype).
+ * @param `includeNonEnumerable` - set to true if the non-enumerable properties
+ *    should be cloned as well. Non-enumerable properties on the prototype
+ *    chain will be ignored. (optional - false by default)
+*/
+function clone(parent, circular, depth, prototype, includeNonEnumerable) {
+  if (typeof circular === 'object') {
+    depth = circular.depth;
+    prototype = circular.prototype;
+    includeNonEnumerable = circular.includeNonEnumerable;
+    circular = circular.circular;
+  }
+  // maintain two arrays for circular references, where corresponding parents
+  // and children have the same index
+  var allParents = [];
+  var allChildren = [];
+
+  var useBuffer = typeof Buffer != 'undefined';
+
+  if (typeof circular == 'undefined')
+    circular = true;
+
+  if (typeof depth == 'undefined')
+    depth = Infinity;
+
+  // recurse this function so we don't reset allParents and allChildren
+  function _clone(parent, depth) {
+    // cloning null always returns null
+    if (parent === null)
+      return null;
+
+    if (depth === 0)
+      return parent;
+
+    var child;
+    var proto;
+    if (typeof parent != 'object') {
+      return parent;
+    }
+
+    if (_instanceof(parent, nativeMap)) {
+      child = new nativeMap();
+    } else if (_instanceof(parent, nativeSet)) {
+      child = new nativeSet();
+    } else if (_instanceof(parent, nativePromise)) {
+      child = new nativePromise(function (resolve, reject) {
+        parent.then(function(value) {
+          resolve(_clone(value, depth - 1));
+        }, function(err) {
+          reject(_clone(err, depth - 1));
+        });
+      });
+    } else if (clone.__isArray(parent)) {
+      child = [];
+    } else if (clone.__isRegExp(parent)) {
+      child = new RegExp(parent.source, __getRegExpFlags(parent));
+      if (parent.lastIndex) child.lastIndex = parent.lastIndex;
+    } else if (clone.__isDate(parent)) {
+      child = new Date(parent.getTime());
+    } else if (useBuffer && Buffer.isBuffer(parent)) {
+      child = new Buffer(parent.length);
+      parent.copy(child);
+      return child;
+    } else if (_instanceof(parent, Error)) {
+      child = Object.create(parent);
+    } else {
+      if (typeof prototype == 'undefined') {
+        proto = Object.getPrototypeOf(parent);
+        child = Object.create(proto);
+      }
+      else {
+        child = Object.create(prototype);
+        proto = prototype;
+      }
+    }
+
+    if (circular) {
+      var index = allParents.indexOf(parent);
+
+      if (index != -1) {
+        return allChildren[index];
+      }
+      allParents.push(parent);
+      allChildren.push(child);
+    }
+
+    if (_instanceof(parent, nativeMap)) {
+      parent.forEach(function(value, key) {
+        var keyChild = _clone(key, depth - 1);
+        var valueChild = _clone(value, depth - 1);
+        child.set(keyChild, valueChild);
+      });
+    }
+    if (_instanceof(parent, nativeSet)) {
+      parent.forEach(function(value) {
+        var entryChild = _clone(value, depth - 1);
+        child.add(entryChild);
+      });
+    }
+
+    for (var i in parent) {
+      var attrs;
+      if (proto) {
+        attrs = Object.getOwnPropertyDescriptor(proto, i);
+      }
+
+      if (attrs && attrs.set == null) {
+        continue;
+      }
+      child[i] = _clone(parent[i], depth - 1);
+    }
+
+    if (Object.getOwnPropertySymbols) {
+      var symbols = Object.getOwnPropertySymbols(parent);
+      for (var i = 0; i < symbols.length; i++) {
+        // Don't need to worry about cloning a symbol because it is a primitive,
+        // like a number or string.
+        var symbol = symbols[i];
+        var descriptor = Object.getOwnPropertyDescriptor(parent, symbol);
+        if (descriptor && !descriptor.enumerable && !includeNonEnumerable) {
+          continue;
+        }
+        child[symbol] = _clone(parent[symbol], depth - 1);
+        if (!descriptor.enumerable) {
+          Object.defineProperty(child, symbol, {
+            enumerable: false
+          });
+        }
+      }
+    }
+
+    if (includeNonEnumerable) {
+      var allPropertyNames = Object.getOwnPropertyNames(parent);
+      for (var i = 0; i < allPropertyNames.length; i++) {
+        var propertyName = allPropertyNames[i];
+        var descriptor = Object.getOwnPropertyDescriptor(parent, propertyName);
+        if (descriptor && descriptor.enumerable) {
+          continue;
+        }
+        child[propertyName] = _clone(parent[propertyName], depth - 1);
+        Object.defineProperty(child, propertyName, {
+          enumerable: false
+        });
+      }
+    }
+
+    return child;
+  }
+
+  return _clone(parent, depth);
+}
+
+/**
+ * Simple flat clone using prototype, accepts only objects, usefull for property
+ * override on FLAT configuration object (no nested props).
+ *
+ * USE WITH CAUTION! This may not behave as you wish if you do not know how this
+ * works.
+ */
+clone.clonePrototype = function clonePrototype(parent) {
+  if (parent === null)
+    return null;
+
+  var c = function () {};
+  c.prototype = parent;
+  return new c();
+};
+
+// private utility functions
+
+function __objToStr(o) {
+  return Object.prototype.toString.call(o);
+}
+clone.__objToStr = __objToStr;
+
+function __isDate(o) {
+  return typeof o === 'object' && __objToStr(o) === '[object Date]';
+}
+clone.__isDate = __isDate;
+
+function __isArray(o) {
+  return typeof o === 'object' && __objToStr(o) === '[object Array]';
+}
+clone.__isArray = __isArray;
+
+function __isRegExp(o) {
+  return typeof o === 'object' && __objToStr(o) === '[object RegExp]';
+}
+clone.__isRegExp = __isRegExp;
+
+function __getRegExpFlags(re) {
+  var flags = '';
+  if (re.global) flags += 'g';
+  if (re.ignoreCase) flags += 'i';
+  if (re.multiline) flags += 'm';
+  return flags;
+}
+clone.__getRegExpFlags = __getRegExpFlags;
+
+return clone;
 })();
+
+if (typeof module === 'object' && module.exports) {
+  module.exports = clone;
+}
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(44).Buffer))
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+/* eslint-disable no-proto */
+
+
+
+var base64 = __webpack_require__(45)
+var ieee754 = __webpack_require__(46)
+var isArray = __webpack_require__(47)
+
+exports.Buffer = Buffer
+exports.SlowBuffer = SlowBuffer
+exports.INSPECT_MAX_BYTES = 50
+
+/**
+ * If `Buffer.TYPED_ARRAY_SUPPORT`:
+ *   === true    Use Uint8Array implementation (fastest)
+ *   === false   Use Object implementation (most compatible, even IE6)
+ *
+ * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
+ * Opera 11.6+, iOS 4.2+.
+ *
+ * Due to various browser bugs, sometimes the Object implementation will be used even
+ * when the browser supports typed arrays.
+ *
+ * Note:
+ *
+ *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
+ *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
+ *
+ *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
+ *
+ *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
+ *     incorrect length in some situations.
+
+ * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
+ * get the Object implementation, which is slower but behaves correctly.
+ */
+Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
+  ? global.TYPED_ARRAY_SUPPORT
+  : typedArraySupport()
+
+/*
+ * Export kMaxLength after typed array support is determined.
+ */
+exports.kMaxLength = kMaxLength()
+
+function typedArraySupport () {
+  try {
+    var arr = new Uint8Array(1)
+    arr.__proto__ = {__proto__: Uint8Array.prototype, foo: function () { return 42 }}
+    return arr.foo() === 42 && // typed array instances can be augmented
+        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
+        arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
+  } catch (e) {
+    return false
+  }
+}
+
+function kMaxLength () {
+  return Buffer.TYPED_ARRAY_SUPPORT
+    ? 0x7fffffff
+    : 0x3fffffff
+}
+
+function createBuffer (that, length) {
+  if (kMaxLength() < length) {
+    throw new RangeError('Invalid typed array length')
+  }
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    // Return an augmented `Uint8Array` instance, for best performance
+    that = new Uint8Array(length)
+    that.__proto__ = Buffer.prototype
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    if (that === null) {
+      that = new Buffer(length)
+    }
+    that.length = length
+  }
+
+  return that
+}
+
+/**
+ * The Buffer constructor returns instances of `Uint8Array` that have their
+ * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
+ * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
+ * and the `Uint8Array` methods. Square bracket notation works as expected -- it
+ * returns a single octet.
+ *
+ * The `Uint8Array` prototype remains unmodified.
+ */
+
+function Buffer (arg, encodingOrOffset, length) {
+  if (!Buffer.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer)) {
+    return new Buffer(arg, encodingOrOffset, length)
+  }
+
+  // Common case.
+  if (typeof arg === 'number') {
+    if (typeof encodingOrOffset === 'string') {
+      throw new Error(
+        'If encoding is specified then the first argument must be a string'
+      )
+    }
+    return allocUnsafe(this, arg)
+  }
+  return from(this, arg, encodingOrOffset, length)
+}
+
+Buffer.poolSize = 8192 // not used by this implementation
+
+// TODO: Legacy, not needed anymore. Remove in next major version.
+Buffer._augment = function (arr) {
+  arr.__proto__ = Buffer.prototype
+  return arr
+}
+
+function from (that, value, encodingOrOffset, length) {
+  if (typeof value === 'number') {
+    throw new TypeError('"value" argument must not be a number')
+  }
+
+  if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
+    return fromArrayBuffer(that, value, encodingOrOffset, length)
+  }
+
+  if (typeof value === 'string') {
+    return fromString(that, value, encodingOrOffset)
+  }
+
+  return fromObject(that, value)
+}
+
+/**
+ * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
+ * if value is a number.
+ * Buffer.from(str[, encoding])
+ * Buffer.from(array)
+ * Buffer.from(buffer)
+ * Buffer.from(arrayBuffer[, byteOffset[, length]])
+ **/
+Buffer.from = function (value, encodingOrOffset, length) {
+  return from(null, value, encodingOrOffset, length)
+}
+
+if (Buffer.TYPED_ARRAY_SUPPORT) {
+  Buffer.prototype.__proto__ = Uint8Array.prototype
+  Buffer.__proto__ = Uint8Array
+  if (typeof Symbol !== 'undefined' && Symbol.species &&
+      Buffer[Symbol.species] === Buffer) {
+    // Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
+    Object.defineProperty(Buffer, Symbol.species, {
+      value: null,
+      configurable: true
+    })
+  }
+}
+
+function assertSize (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('"size" argument must be a number')
+  } else if (size < 0) {
+    throw new RangeError('"size" argument must not be negative')
+  }
+}
+
+function alloc (that, size, fill, encoding) {
+  assertSize(size)
+  if (size <= 0) {
+    return createBuffer(that, size)
+  }
+  if (fill !== undefined) {
+    // Only pay attention to encoding if it's a string. This
+    // prevents accidentally sending in a number that would
+    // be interpretted as a start offset.
+    return typeof encoding === 'string'
+      ? createBuffer(that, size).fill(fill, encoding)
+      : createBuffer(that, size).fill(fill)
+  }
+  return createBuffer(that, size)
+}
+
+/**
+ * Creates a new filled Buffer instance.
+ * alloc(size[, fill[, encoding]])
+ **/
+Buffer.alloc = function (size, fill, encoding) {
+  return alloc(null, size, fill, encoding)
+}
+
+function allocUnsafe (that, size) {
+  assertSize(size)
+  that = createBuffer(that, size < 0 ? 0 : checked(size) | 0)
+  if (!Buffer.TYPED_ARRAY_SUPPORT) {
+    for (var i = 0; i < size; ++i) {
+      that[i] = 0
+    }
+  }
+  return that
+}
+
+/**
+ * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
+ * */
+Buffer.allocUnsafe = function (size) {
+  return allocUnsafe(null, size)
+}
+/**
+ * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
+ */
+Buffer.allocUnsafeSlow = function (size) {
+  return allocUnsafe(null, size)
+}
+
+function fromString (that, string, encoding) {
+  if (typeof encoding !== 'string' || encoding === '') {
+    encoding = 'utf8'
+  }
+
+  if (!Buffer.isEncoding(encoding)) {
+    throw new TypeError('"encoding" must be a valid string encoding')
+  }
+
+  var length = byteLength(string, encoding) | 0
+  that = createBuffer(that, length)
+
+  var actual = that.write(string, encoding)
+
+  if (actual !== length) {
+    // Writing a hex string, for example, that contains invalid characters will
+    // cause everything after the first invalid character to be ignored. (e.g.
+    // 'abxxcd' will be treated as 'ab')
+    that = that.slice(0, actual)
+  }
+
+  return that
+}
+
+function fromArrayLike (that, array) {
+  var length = array.length < 0 ? 0 : checked(array.length) | 0
+  that = createBuffer(that, length)
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255
+  }
+  return that
+}
+
+function fromArrayBuffer (that, array, byteOffset, length) {
+  array.byteLength // this throws if `array` is not a valid ArrayBuffer
+
+  if (byteOffset < 0 || array.byteLength < byteOffset) {
+    throw new RangeError('\'offset\' is out of bounds')
+  }
+
+  if (array.byteLength < byteOffset + (length || 0)) {
+    throw new RangeError('\'length\' is out of bounds')
+  }
+
+  if (byteOffset === undefined && length === undefined) {
+    array = new Uint8Array(array)
+  } else if (length === undefined) {
+    array = new Uint8Array(array, byteOffset)
+  } else {
+    array = new Uint8Array(array, byteOffset, length)
+  }
+
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    // Return an augmented `Uint8Array` instance, for best performance
+    that = array
+    that.__proto__ = Buffer.prototype
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    that = fromArrayLike(that, array)
+  }
+  return that
+}
+
+function fromObject (that, obj) {
+  if (Buffer.isBuffer(obj)) {
+    var len = checked(obj.length) | 0
+    that = createBuffer(that, len)
+
+    if (that.length === 0) {
+      return that
+    }
+
+    obj.copy(that, 0, 0, len)
+    return that
+  }
+
+  if (obj) {
+    if ((typeof ArrayBuffer !== 'undefined' &&
+        obj.buffer instanceof ArrayBuffer) || 'length' in obj) {
+      if (typeof obj.length !== 'number' || isnan(obj.length)) {
+        return createBuffer(that, 0)
+      }
+      return fromArrayLike(that, obj)
+    }
+
+    if (obj.type === 'Buffer' && isArray(obj.data)) {
+      return fromArrayLike(that, obj.data)
+    }
+  }
+
+  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.')
+}
+
+function checked (length) {
+  // Note: cannot use `length < kMaxLength()` here because that fails when
+  // length is NaN (which is otherwise coerced to zero.)
+  if (length >= kMaxLength()) {
+    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
+                         'size: 0x' + kMaxLength().toString(16) + ' bytes')
+  }
+  return length | 0
+}
+
+function SlowBuffer (length) {
+  if (+length != length) { // eslint-disable-line eqeqeq
+    length = 0
+  }
+  return Buffer.alloc(+length)
+}
+
+Buffer.isBuffer = function isBuffer (b) {
+  return !!(b != null && b._isBuffer)
+}
+
+Buffer.compare = function compare (a, b) {
+  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
+    throw new TypeError('Arguments must be Buffers')
+  }
+
+  if (a === b) return 0
+
+  var x = a.length
+  var y = b.length
+
+  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
+    if (a[i] !== b[i]) {
+      x = a[i]
+      y = b[i]
+      break
+    }
+  }
+
+  if (x < y) return -1
+  if (y < x) return 1
+  return 0
+}
+
+Buffer.isEncoding = function isEncoding (encoding) {
+  switch (String(encoding).toLowerCase()) {
+    case 'hex':
+    case 'utf8':
+    case 'utf-8':
+    case 'ascii':
+    case 'latin1':
+    case 'binary':
+    case 'base64':
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      return true
+    default:
+      return false
+  }
+}
+
+Buffer.concat = function concat (list, length) {
+  if (!isArray(list)) {
+    throw new TypeError('"list" argument must be an Array of Buffers')
+  }
+
+  if (list.length === 0) {
+    return Buffer.alloc(0)
+  }
+
+  var i
+  if (length === undefined) {
+    length = 0
+    for (i = 0; i < list.length; ++i) {
+      length += list[i].length
+    }
+  }
+
+  var buffer = Buffer.allocUnsafe(length)
+  var pos = 0
+  for (i = 0; i < list.length; ++i) {
+    var buf = list[i]
+    if (!Buffer.isBuffer(buf)) {
+      throw new TypeError('"list" argument must be an Array of Buffers')
+    }
+    buf.copy(buffer, pos)
+    pos += buf.length
+  }
+  return buffer
+}
+
+function byteLength (string, encoding) {
+  if (Buffer.isBuffer(string)) {
+    return string.length
+  }
+  if (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' &&
+      (ArrayBuffer.isView(string) || string instanceof ArrayBuffer)) {
+    return string.byteLength
+  }
+  if (typeof string !== 'string') {
+    string = '' + string
+  }
+
+  var len = string.length
+  if (len === 0) return 0
+
+  // Use a for loop to avoid recursion
+  var loweredCase = false
+  for (;;) {
+    switch (encoding) {
+      case 'ascii':
+      case 'latin1':
+      case 'binary':
+        return len
+      case 'utf8':
+      case 'utf-8':
+      case undefined:
+        return utf8ToBytes(string).length
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return len * 2
+      case 'hex':
+        return len >>> 1
+      case 'base64':
+        return base64ToBytes(string).length
+      default:
+        if (loweredCase) return utf8ToBytes(string).length // assume utf8
+        encoding = ('' + encoding).toLowerCase()
+        loweredCase = true
+    }
+  }
+}
+Buffer.byteLength = byteLength
+
+function slowToString (encoding, start, end) {
+  var loweredCase = false
+
+  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
+  // property of a typed array.
+
+  // This behaves neither like String nor Uint8Array in that we set start/end
+  // to their upper/lower bounds if the value passed is out of range.
+  // undefined is handled specially as per ECMA-262 6th Edition,
+  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
+  if (start === undefined || start < 0) {
+    start = 0
+  }
+  // Return early if start > this.length. Done here to prevent potential uint32
+  // coercion fail below.
+  if (start > this.length) {
+    return ''
+  }
+
+  if (end === undefined || end > this.length) {
+    end = this.length
+  }
+
+  if (end <= 0) {
+    return ''
+  }
+
+  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
+  end >>>= 0
+  start >>>= 0
+
+  if (end <= start) {
+    return ''
+  }
+
+  if (!encoding) encoding = 'utf8'
+
+  while (true) {
+    switch (encoding) {
+      case 'hex':
+        return hexSlice(this, start, end)
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Slice(this, start, end)
+
+      case 'ascii':
+        return asciiSlice(this, start, end)
+
+      case 'latin1':
+      case 'binary':
+        return latin1Slice(this, start, end)
+
+      case 'base64':
+        return base64Slice(this, start, end)
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return utf16leSlice(this, start, end)
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
+        encoding = (encoding + '').toLowerCase()
+        loweredCase = true
+    }
+  }
+}
+
+// The property is used by `Buffer.isBuffer` and `is-buffer` (in Safari 5-7) to detect
+// Buffer instances.
+Buffer.prototype._isBuffer = true
+
+function swap (b, n, m) {
+  var i = b[n]
+  b[n] = b[m]
+  b[m] = i
+}
+
+Buffer.prototype.swap16 = function swap16 () {
+  var len = this.length
+  if (len % 2 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 16-bits')
+  }
+  for (var i = 0; i < len; i += 2) {
+    swap(this, i, i + 1)
+  }
+  return this
+}
+
+Buffer.prototype.swap32 = function swap32 () {
+  var len = this.length
+  if (len % 4 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 32-bits')
+  }
+  for (var i = 0; i < len; i += 4) {
+    swap(this, i, i + 3)
+    swap(this, i + 1, i + 2)
+  }
+  return this
+}
+
+Buffer.prototype.swap64 = function swap64 () {
+  var len = this.length
+  if (len % 8 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 64-bits')
+  }
+  for (var i = 0; i < len; i += 8) {
+    swap(this, i, i + 7)
+    swap(this, i + 1, i + 6)
+    swap(this, i + 2, i + 5)
+    swap(this, i + 3, i + 4)
+  }
+  return this
+}
+
+Buffer.prototype.toString = function toString () {
+  var length = this.length | 0
+  if (length === 0) return ''
+  if (arguments.length === 0) return utf8Slice(this, 0, length)
+  return slowToString.apply(this, arguments)
+}
+
+Buffer.prototype.equals = function equals (b) {
+  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
+  if (this === b) return true
+  return Buffer.compare(this, b) === 0
+}
+
+Buffer.prototype.inspect = function inspect () {
+  var str = ''
+  var max = exports.INSPECT_MAX_BYTES
+  if (this.length > 0) {
+    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ')
+    if (this.length > max) str += ' ... '
+  }
+  return '<Buffer ' + str + '>'
+}
+
+Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
+  if (!Buffer.isBuffer(target)) {
+    throw new TypeError('Argument must be a Buffer')
+  }
+
+  if (start === undefined) {
+    start = 0
+  }
+  if (end === undefined) {
+    end = target ? target.length : 0
+  }
+  if (thisStart === undefined) {
+    thisStart = 0
+  }
+  if (thisEnd === undefined) {
+    thisEnd = this.length
+  }
+
+  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
+    throw new RangeError('out of range index')
+  }
+
+  if (thisStart >= thisEnd && start >= end) {
+    return 0
+  }
+  if (thisStart >= thisEnd) {
+    return -1
+  }
+  if (start >= end) {
+    return 1
+  }
+
+  start >>>= 0
+  end >>>= 0
+  thisStart >>>= 0
+  thisEnd >>>= 0
+
+  if (this === target) return 0
+
+  var x = thisEnd - thisStart
+  var y = end - start
+  var len = Math.min(x, y)
+
+  var thisCopy = this.slice(thisStart, thisEnd)
+  var targetCopy = target.slice(start, end)
+
+  for (var i = 0; i < len; ++i) {
+    if (thisCopy[i] !== targetCopy[i]) {
+      x = thisCopy[i]
+      y = targetCopy[i]
+      break
+    }
+  }
+
+  if (x < y) return -1
+  if (y < x) return 1
+  return 0
+}
+
+// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
+// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
+//
+// Arguments:
+// - buffer - a Buffer to search
+// - val - a string, Buffer, or number
+// - byteOffset - an index into `buffer`; will be clamped to an int32
+// - encoding - an optional encoding, relevant is val is a string
+// - dir - true for indexOf, false for lastIndexOf
+function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
+  // Empty buffer means no match
+  if (buffer.length === 0) return -1
+
+  // Normalize byteOffset
+  if (typeof byteOffset === 'string') {
+    encoding = byteOffset
+    byteOffset = 0
+  } else if (byteOffset > 0x7fffffff) {
+    byteOffset = 0x7fffffff
+  } else if (byteOffset < -0x80000000) {
+    byteOffset = -0x80000000
+  }
+  byteOffset = +byteOffset  // Coerce to Number.
+  if (isNaN(byteOffset)) {
+    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
+    byteOffset = dir ? 0 : (buffer.length - 1)
+  }
+
+  // Normalize byteOffset: negative offsets start from the end of the buffer
+  if (byteOffset < 0) byteOffset = buffer.length + byteOffset
+  if (byteOffset >= buffer.length) {
+    if (dir) return -1
+    else byteOffset = buffer.length - 1
+  } else if (byteOffset < 0) {
+    if (dir) byteOffset = 0
+    else return -1
+  }
+
+  // Normalize val
+  if (typeof val === 'string') {
+    val = Buffer.from(val, encoding)
+  }
+
+  // Finally, search either indexOf (if dir is true) or lastIndexOf
+  if (Buffer.isBuffer(val)) {
+    // Special case: looking for empty string/buffer always fails
+    if (val.length === 0) {
+      return -1
+    }
+    return arrayIndexOf(buffer, val, byteOffset, encoding, dir)
+  } else if (typeof val === 'number') {
+    val = val & 0xFF // Search for a byte value [0-255]
+    if (Buffer.TYPED_ARRAY_SUPPORT &&
+        typeof Uint8Array.prototype.indexOf === 'function') {
+      if (dir) {
+        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset)
+      } else {
+        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
+      }
+    }
+    return arrayIndexOf(buffer, [ val ], byteOffset, encoding, dir)
+  }
+
+  throw new TypeError('val must be string, number or Buffer')
+}
+
+function arrayIndexOf (arr, val, byteOffset, encoding, dir) {
+  var indexSize = 1
+  var arrLength = arr.length
+  var valLength = val.length
+
+  if (encoding !== undefined) {
+    encoding = String(encoding).toLowerCase()
+    if (encoding === 'ucs2' || encoding === 'ucs-2' ||
+        encoding === 'utf16le' || encoding === 'utf-16le') {
+      if (arr.length < 2 || val.length < 2) {
+        return -1
+      }
+      indexSize = 2
+      arrLength /= 2
+      valLength /= 2
+      byteOffset /= 2
+    }
+  }
+
+  function read (buf, i) {
+    if (indexSize === 1) {
+      return buf[i]
+    } else {
+      return buf.readUInt16BE(i * indexSize)
+    }
+  }
+
+  var i
+  if (dir) {
+    var foundIndex = -1
+    for (i = byteOffset; i < arrLength; i++) {
+      if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
+        if (foundIndex === -1) foundIndex = i
+        if (i - foundIndex + 1 === valLength) return foundIndex * indexSize
+      } else {
+        if (foundIndex !== -1) i -= i - foundIndex
+        foundIndex = -1
+      }
+    }
+  } else {
+    if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength
+    for (i = byteOffset; i >= 0; i--) {
+      var found = true
+      for (var j = 0; j < valLength; j++) {
+        if (read(arr, i + j) !== read(val, j)) {
+          found = false
+          break
+        }
+      }
+      if (found) return i
+    }
+  }
+
+  return -1
+}
+
+Buffer.prototype.includes = function includes (val, byteOffset, encoding) {
+  return this.indexOf(val, byteOffset, encoding) !== -1
+}
+
+Buffer.prototype.indexOf = function indexOf (val, byteOffset, encoding) {
+  return bidirectionalIndexOf(this, val, byteOffset, encoding, true)
+}
+
+Buffer.prototype.lastIndexOf = function lastIndexOf (val, byteOffset, encoding) {
+  return bidirectionalIndexOf(this, val, byteOffset, encoding, false)
+}
+
+function hexWrite (buf, string, offset, length) {
+  offset = Number(offset) || 0
+  var remaining = buf.length - offset
+  if (!length) {
+    length = remaining
+  } else {
+    length = Number(length)
+    if (length > remaining) {
+      length = remaining
+    }
+  }
+
+  // must be an even number of digits
+  var strLen = string.length
+  if (strLen % 2 !== 0) throw new TypeError('Invalid hex string')
+
+  if (length > strLen / 2) {
+    length = strLen / 2
+  }
+  for (var i = 0; i < length; ++i) {
+    var parsed = parseInt(string.substr(i * 2, 2), 16)
+    if (isNaN(parsed)) return i
+    buf[offset + i] = parsed
+  }
+  return i
+}
+
+function utf8Write (buf, string, offset, length) {
+  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length)
+}
+
+function asciiWrite (buf, string, offset, length) {
+  return blitBuffer(asciiToBytes(string), buf, offset, length)
+}
+
+function latin1Write (buf, string, offset, length) {
+  return asciiWrite(buf, string, offset, length)
+}
+
+function base64Write (buf, string, offset, length) {
+  return blitBuffer(base64ToBytes(string), buf, offset, length)
+}
+
+function ucs2Write (buf, string, offset, length) {
+  return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
+}
+
+Buffer.prototype.write = function write (string, offset, length, encoding) {
+  // Buffer#write(string)
+  if (offset === undefined) {
+    encoding = 'utf8'
+    length = this.length
+    offset = 0
+  // Buffer#write(string, encoding)
+  } else if (length === undefined && typeof offset === 'string') {
+    encoding = offset
+    length = this.length
+    offset = 0
+  // Buffer#write(string, offset[, length][, encoding])
+  } else if (isFinite(offset)) {
+    offset = offset | 0
+    if (isFinite(length)) {
+      length = length | 0
+      if (encoding === undefined) encoding = 'utf8'
+    } else {
+      encoding = length
+      length = undefined
+    }
+  // legacy write(string, encoding, offset, length) - remove in v0.13
+  } else {
+    throw new Error(
+      'Buffer.write(string, encoding, offset[, length]) is no longer supported'
+    )
+  }
+
+  var remaining = this.length - offset
+  if (length === undefined || length > remaining) length = remaining
+
+  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
+    throw new RangeError('Attempt to write outside buffer bounds')
+  }
+
+  if (!encoding) encoding = 'utf8'
+
+  var loweredCase = false
+  for (;;) {
+    switch (encoding) {
+      case 'hex':
+        return hexWrite(this, string, offset, length)
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Write(this, string, offset, length)
+
+      case 'ascii':
+        return asciiWrite(this, string, offset, length)
+
+      case 'latin1':
+      case 'binary':
+        return latin1Write(this, string, offset, length)
+
+      case 'base64':
+        // Warning: maxLength not taken into account in base64Write
+        return base64Write(this, string, offset, length)
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return ucs2Write(this, string, offset, length)
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
+        encoding = ('' + encoding).toLowerCase()
+        loweredCase = true
+    }
+  }
+}
+
+Buffer.prototype.toJSON = function toJSON () {
+  return {
+    type: 'Buffer',
+    data: Array.prototype.slice.call(this._arr || this, 0)
+  }
+}
+
+function base64Slice (buf, start, end) {
+  if (start === 0 && end === buf.length) {
+    return base64.fromByteArray(buf)
+  } else {
+    return base64.fromByteArray(buf.slice(start, end))
+  }
+}
+
+function utf8Slice (buf, start, end) {
+  end = Math.min(buf.length, end)
+  var res = []
+
+  var i = start
+  while (i < end) {
+    var firstByte = buf[i]
+    var codePoint = null
+    var bytesPerSequence = (firstByte > 0xEF) ? 4
+      : (firstByte > 0xDF) ? 3
+      : (firstByte > 0xBF) ? 2
+      : 1
+
+    if (i + bytesPerSequence <= end) {
+      var secondByte, thirdByte, fourthByte, tempCodePoint
+
+      switch (bytesPerSequence) {
+        case 1:
+          if (firstByte < 0x80) {
+            codePoint = firstByte
+          }
+          break
+        case 2:
+          secondByte = buf[i + 1]
+          if ((secondByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0x1F) << 0x6 | (secondByte & 0x3F)
+            if (tempCodePoint > 0x7F) {
+              codePoint = tempCodePoint
+            }
+          }
+          break
+        case 3:
+          secondByte = buf[i + 1]
+          thirdByte = buf[i + 2]
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F)
+            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
+              codePoint = tempCodePoint
+            }
+          }
+          break
+        case 4:
+          secondByte = buf[i + 1]
+          thirdByte = buf[i + 2]
+          fourthByte = buf[i + 3]
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F)
+            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
+              codePoint = tempCodePoint
+            }
+          }
+      }
+    }
+
+    if (codePoint === null) {
+      // we did not generate a valid codePoint so insert a
+      // replacement char (U+FFFD) and advance only 1 byte
+      codePoint = 0xFFFD
+      bytesPerSequence = 1
+    } else if (codePoint > 0xFFFF) {
+      // encode to utf16 (surrogate pair dance)
+      codePoint -= 0x10000
+      res.push(codePoint >>> 10 & 0x3FF | 0xD800)
+      codePoint = 0xDC00 | codePoint & 0x3FF
+    }
+
+    res.push(codePoint)
+    i += bytesPerSequence
+  }
+
+  return decodeCodePointsArray(res)
+}
+
+// Based on http://stackoverflow.com/a/22747272/680742, the browser with
+// the lowest limit is Chrome, with 0x10000 args.
+// We go 1 magnitude less, for safety
+var MAX_ARGUMENTS_LENGTH = 0x1000
+
+function decodeCodePointsArray (codePoints) {
+  var len = codePoints.length
+  if (len <= MAX_ARGUMENTS_LENGTH) {
+    return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
+  }
+
+  // Decode in chunks to avoid "call stack size exceeded".
+  var res = ''
+  var i = 0
+  while (i < len) {
+    res += String.fromCharCode.apply(
+      String,
+      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH)
+    )
+  }
+  return res
+}
+
+function asciiSlice (buf, start, end) {
+  var ret = ''
+  end = Math.min(buf.length, end)
+
+  for (var i = start; i < end; ++i) {
+    ret += String.fromCharCode(buf[i] & 0x7F)
+  }
+  return ret
+}
+
+function latin1Slice (buf, start, end) {
+  var ret = ''
+  end = Math.min(buf.length, end)
+
+  for (var i = start; i < end; ++i) {
+    ret += String.fromCharCode(buf[i])
+  }
+  return ret
+}
+
+function hexSlice (buf, start, end) {
+  var len = buf.length
+
+  if (!start || start < 0) start = 0
+  if (!end || end < 0 || end > len) end = len
+
+  var out = ''
+  for (var i = start; i < end; ++i) {
+    out += toHex(buf[i])
+  }
+  return out
+}
+
+function utf16leSlice (buf, start, end) {
+  var bytes = buf.slice(start, end)
+  var res = ''
+  for (var i = 0; i < bytes.length; i += 2) {
+    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256)
+  }
+  return res
+}
+
+Buffer.prototype.slice = function slice (start, end) {
+  var len = this.length
+  start = ~~start
+  end = end === undefined ? len : ~~end
+
+  if (start < 0) {
+    start += len
+    if (start < 0) start = 0
+  } else if (start > len) {
+    start = len
+  }
+
+  if (end < 0) {
+    end += len
+    if (end < 0) end = 0
+  } else if (end > len) {
+    end = len
+  }
+
+  if (end < start) end = start
+
+  var newBuf
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    newBuf = this.subarray(start, end)
+    newBuf.__proto__ = Buffer.prototype
+  } else {
+    var sliceLen = end - start
+    newBuf = new Buffer(sliceLen, undefined)
+    for (var i = 0; i < sliceLen; ++i) {
+      newBuf[i] = this[i + start]
+    }
+  }
+
+  return newBuf
+}
+
+/*
+ * Need to make sure that buffer isn't trying to write out of bounds.
+ */
+function checkOffset (offset, ext, length) {
+  if ((offset % 1) !== 0 || offset < 0) throw new RangeError('offset is not uint')
+  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length')
+}
+
+Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
+
+  var val = this[offset]
+  var mul = 1
+  var i = 0
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul
+  }
+
+  return val
+}
+
+Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) {
+    checkOffset(offset, byteLength, this.length)
+  }
+
+  var val = this[offset + --byteLength]
+  var mul = 1
+  while (byteLength > 0 && (mul *= 0x100)) {
+    val += this[offset + --byteLength] * mul
+  }
+
+  return val
+}
+
+Buffer.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 1, this.length)
+  return this[offset]
+}
+
+Buffer.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  return this[offset] | (this[offset + 1] << 8)
+}
+
+Buffer.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  return (this[offset] << 8) | this[offset + 1]
+}
+
+Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return ((this[offset]) |
+      (this[offset + 1] << 8) |
+      (this[offset + 2] << 16)) +
+      (this[offset + 3] * 0x1000000)
+}
+
+Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return (this[offset] * 0x1000000) +
+    ((this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    this[offset + 3])
+}
+
+Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
+
+  var val = this[offset]
+  var mul = 1
+  var i = 0
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul
+  }
+  mul *= 0x80
+
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
+
+  return val
+}
+
+Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
+
+  var i = byteLength
+  var mul = 1
+  var val = this[offset + --i]
+  while (i > 0 && (mul *= 0x100)) {
+    val += this[offset + --i] * mul
+  }
+  mul *= 0x80
+
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
+
+  return val
+}
+
+Buffer.prototype.readInt8 = function readInt8 (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 1, this.length)
+  if (!(this[offset] & 0x80)) return (this[offset])
+  return ((0xff - this[offset] + 1) * -1)
+}
+
+Buffer.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  var val = this[offset] | (this[offset + 1] << 8)
+  return (val & 0x8000) ? val | 0xFFFF0000 : val
+}
+
+Buffer.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  var val = this[offset + 1] | (this[offset] << 8)
+  return (val & 0x8000) ? val | 0xFFFF0000 : val
+}
+
+Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return (this[offset]) |
+    (this[offset + 1] << 8) |
+    (this[offset + 2] << 16) |
+    (this[offset + 3] << 24)
+}
+
+Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return (this[offset] << 24) |
+    (this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    (this[offset + 3])
+}
+
+Buffer.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+  return ieee754.read(this, offset, true, 23, 4)
+}
+
+Buffer.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+  return ieee754.read(this, offset, false, 23, 4)
+}
+
+Buffer.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 8, this.length)
+  return ieee754.read(this, offset, true, 52, 8)
+}
+
+Buffer.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 8, this.length)
+  return ieee754.read(this, offset, false, 52, 8)
+}
+
+function checkInt (buf, value, offset, ext, max, min) {
+  if (!Buffer.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance')
+  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds')
+  if (offset + ext > buf.length) throw new RangeError('Index out of range')
+}
+
+Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) {
+    var maxBytes = Math.pow(2, 8 * byteLength) - 1
+    checkInt(this, value, offset, byteLength, maxBytes, 0)
+  }
+
+  var mul = 1
+  var i = 0
+  this[offset] = value & 0xFF
+  while (++i < byteLength && (mul *= 0x100)) {
+    this[offset + i] = (value / mul) & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) {
+    var maxBytes = Math.pow(2, 8 * byteLength) - 1
+    checkInt(this, value, offset, byteLength, maxBytes, 0)
+  }
+
+  var i = byteLength - 1
+  var mul = 1
+  this[offset + i] = value & 0xFF
+  while (--i >= 0 && (mul *= 0x100)) {
+    this[offset + i] = (value / mul) & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
+  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
+  this[offset] = (value & 0xff)
+  return offset + 1
+}
+
+function objectWriteUInt16 (buf, value, offset, littleEndian) {
+  if (value < 0) value = 0xffff + value + 1
+  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; ++i) {
+    buf[offset + i] = (value & (0xff << (8 * (littleEndian ? i : 1 - i)))) >>>
+      (littleEndian ? i : 1 - i) * 8
+  }
+}
+
+Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value & 0xff)
+    this[offset + 1] = (value >>> 8)
+  } else {
+    objectWriteUInt16(this, value, offset, true)
+  }
+  return offset + 2
+}
+
+Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 8)
+    this[offset + 1] = (value & 0xff)
+  } else {
+    objectWriteUInt16(this, value, offset, false)
+  }
+  return offset + 2
+}
+
+function objectWriteUInt32 (buf, value, offset, littleEndian) {
+  if (value < 0) value = 0xffffffff + value + 1
+  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; ++i) {
+    buf[offset + i] = (value >>> (littleEndian ? i : 3 - i) * 8) & 0xff
+  }
+}
+
+Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset + 3] = (value >>> 24)
+    this[offset + 2] = (value >>> 16)
+    this[offset + 1] = (value >>> 8)
+    this[offset] = (value & 0xff)
+  } else {
+    objectWriteUInt32(this, value, offset, true)
+  }
+  return offset + 4
+}
+
+Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 24)
+    this[offset + 1] = (value >>> 16)
+    this[offset + 2] = (value >>> 8)
+    this[offset + 3] = (value & 0xff)
+  } else {
+    objectWriteUInt32(this, value, offset, false)
+  }
+  return offset + 4
+}
+
+Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) {
+    var limit = Math.pow(2, 8 * byteLength - 1)
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit)
+  }
+
+  var i = 0
+  var mul = 1
+  var sub = 0
+  this[offset] = value & 0xFF
+  while (++i < byteLength && (mul *= 0x100)) {
+    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
+      sub = 1
+    }
+    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) {
+    var limit = Math.pow(2, 8 * byteLength - 1)
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit)
+  }
+
+  var i = byteLength - 1
+  var mul = 1
+  var sub = 0
+  this[offset + i] = value & 0xFF
+  while (--i >= 0 && (mul *= 0x100)) {
+    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
+      sub = 1
+    }
+    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
+  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
+  if (value < 0) value = 0xff + value + 1
+  this[offset] = (value & 0xff)
+  return offset + 1
+}
+
+Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value & 0xff)
+    this[offset + 1] = (value >>> 8)
+  } else {
+    objectWriteUInt16(this, value, offset, true)
+  }
+  return offset + 2
+}
+
+Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 8)
+    this[offset + 1] = (value & 0xff)
+  } else {
+    objectWriteUInt16(this, value, offset, false)
+  }
+  return offset + 2
+}
+
+Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value & 0xff)
+    this[offset + 1] = (value >>> 8)
+    this[offset + 2] = (value >>> 16)
+    this[offset + 3] = (value >>> 24)
+  } else {
+    objectWriteUInt32(this, value, offset, true)
+  }
+  return offset + 4
+}
+
+Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (value < 0) value = 0xffffffff + value + 1
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 24)
+    this[offset + 1] = (value >>> 16)
+    this[offset + 2] = (value >>> 8)
+    this[offset + 3] = (value & 0xff)
+  } else {
+    objectWriteUInt32(this, value, offset, false)
+  }
+  return offset + 4
+}
+
+function checkIEEE754 (buf, value, offset, ext, max, min) {
+  if (offset + ext > buf.length) throw new RangeError('Index out of range')
+  if (offset < 0) throw new RangeError('Index out of range')
+}
+
+function writeFloat (buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38)
+  }
+  ieee754.write(buf, value, offset, littleEndian, 23, 4)
+  return offset + 4
+}
+
+Buffer.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
+  return writeFloat(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
+  return writeFloat(this, value, offset, false, noAssert)
+}
+
+function writeDouble (buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308)
+  }
+  ieee754.write(buf, value, offset, littleEndian, 52, 8)
+  return offset + 8
+}
+
+Buffer.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
+  return writeDouble(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
+  return writeDouble(this, value, offset, false, noAssert)
+}
+
+// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
+Buffer.prototype.copy = function copy (target, targetStart, start, end) {
+  if (!start) start = 0
+  if (!end && end !== 0) end = this.length
+  if (targetStart >= target.length) targetStart = target.length
+  if (!targetStart) targetStart = 0
+  if (end > 0 && end < start) end = start
+
+  // Copy 0 bytes; we're done
+  if (end === start) return 0
+  if (target.length === 0 || this.length === 0) return 0
+
+  // Fatal error conditions
+  if (targetStart < 0) {
+    throw new RangeError('targetStart out of bounds')
+  }
+  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
+  if (end < 0) throw new RangeError('sourceEnd out of bounds')
+
+  // Are we oob?
+  if (end > this.length) end = this.length
+  if (target.length - targetStart < end - start) {
+    end = target.length - targetStart + start
+  }
+
+  var len = end - start
+  var i
+
+  if (this === target && start < targetStart && targetStart < end) {
+    // descending copy from end
+    for (i = len - 1; i >= 0; --i) {
+      target[i + targetStart] = this[i + start]
+    }
+  } else if (len < 1000 || !Buffer.TYPED_ARRAY_SUPPORT) {
+    // ascending copy from start
+    for (i = 0; i < len; ++i) {
+      target[i + targetStart] = this[i + start]
+    }
+  } else {
+    Uint8Array.prototype.set.call(
+      target,
+      this.subarray(start, start + len),
+      targetStart
+    )
+  }
+
+  return len
+}
+
+// Usage:
+//    buffer.fill(number[, offset[, end]])
+//    buffer.fill(buffer[, offset[, end]])
+//    buffer.fill(string[, offset[, end]][, encoding])
+Buffer.prototype.fill = function fill (val, start, end, encoding) {
+  // Handle string cases:
+  if (typeof val === 'string') {
+    if (typeof start === 'string') {
+      encoding = start
+      start = 0
+      end = this.length
+    } else if (typeof end === 'string') {
+      encoding = end
+      end = this.length
+    }
+    if (val.length === 1) {
+      var code = val.charCodeAt(0)
+      if (code < 256) {
+        val = code
+      }
+    }
+    if (encoding !== undefined && typeof encoding !== 'string') {
+      throw new TypeError('encoding must be a string')
+    }
+    if (typeof encoding === 'string' && !Buffer.isEncoding(encoding)) {
+      throw new TypeError('Unknown encoding: ' + encoding)
+    }
+  } else if (typeof val === 'number') {
+    val = val & 255
+  }
+
+  // Invalid ranges are not set to a default, so can range check early.
+  if (start < 0 || this.length < start || this.length < end) {
+    throw new RangeError('Out of range index')
+  }
+
+  if (end <= start) {
+    return this
+  }
+
+  start = start >>> 0
+  end = end === undefined ? this.length : end >>> 0
+
+  if (!val) val = 0
+
+  var i
+  if (typeof val === 'number') {
+    for (i = start; i < end; ++i) {
+      this[i] = val
+    }
+  } else {
+    var bytes = Buffer.isBuffer(val)
+      ? val
+      : utf8ToBytes(new Buffer(val, encoding).toString())
+    var len = bytes.length
+    for (i = 0; i < end - start; ++i) {
+      this[i + start] = bytes[i % len]
+    }
+  }
+
+  return this
+}
+
+// HELPER FUNCTIONS
+// ================
+
+var INVALID_BASE64_RE = /[^+\/0-9A-Za-z-_]/g
+
+function base64clean (str) {
+  // Node strips out invalid characters like \n and \t from the string, base64-js does not
+  str = stringtrim(str).replace(INVALID_BASE64_RE, '')
+  // Node converts strings with length < 2 to ''
+  if (str.length < 2) return ''
+  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
+  while (str.length % 4 !== 0) {
+    str = str + '='
+  }
+  return str
+}
+
+function stringtrim (str) {
+  if (str.trim) return str.trim()
+  return str.replace(/^\s+|\s+$/g, '')
+}
+
+function toHex (n) {
+  if (n < 16) return '0' + n.toString(16)
+  return n.toString(16)
+}
+
+function utf8ToBytes (string, units) {
+  units = units || Infinity
+  var codePoint
+  var length = string.length
+  var leadSurrogate = null
+  var bytes = []
+
+  for (var i = 0; i < length; ++i) {
+    codePoint = string.charCodeAt(i)
+
+    // is surrogate component
+    if (codePoint > 0xD7FF && codePoint < 0xE000) {
+      // last char was a lead
+      if (!leadSurrogate) {
+        // no lead yet
+        if (codePoint > 0xDBFF) {
+          // unexpected trail
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+          continue
+        } else if (i + 1 === length) {
+          // unpaired lead
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+          continue
+        }
+
+        // valid lead
+        leadSurrogate = codePoint
+
+        continue
+      }
+
+      // 2 leads in a row
+      if (codePoint < 0xDC00) {
+        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+        leadSurrogate = codePoint
+        continue
+      }
+
+      // valid surrogate pair
+      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000
+    } else if (leadSurrogate) {
+      // valid bmp char, but last char was a lead
+      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+    }
+
+    leadSurrogate = null
+
+    // encode utf8
+    if (codePoint < 0x80) {
+      if ((units -= 1) < 0) break
+      bytes.push(codePoint)
+    } else if (codePoint < 0x800) {
+      if ((units -= 2) < 0) break
+      bytes.push(
+        codePoint >> 0x6 | 0xC0,
+        codePoint & 0x3F | 0x80
+      )
+    } else if (codePoint < 0x10000) {
+      if ((units -= 3) < 0) break
+      bytes.push(
+        codePoint >> 0xC | 0xE0,
+        codePoint >> 0x6 & 0x3F | 0x80,
+        codePoint & 0x3F | 0x80
+      )
+    } else if (codePoint < 0x110000) {
+      if ((units -= 4) < 0) break
+      bytes.push(
+        codePoint >> 0x12 | 0xF0,
+        codePoint >> 0xC & 0x3F | 0x80,
+        codePoint >> 0x6 & 0x3F | 0x80,
+        codePoint & 0x3F | 0x80
+      )
+    } else {
+      throw new Error('Invalid code point')
+    }
+  }
+
+  return bytes
+}
+
+function asciiToBytes (str) {
+  var byteArray = []
+  for (var i = 0; i < str.length; ++i) {
+    // Node's code seems to be doing this and not & 0x7F..
+    byteArray.push(str.charCodeAt(i) & 0xFF)
+  }
+  return byteArray
+}
+
+function utf16leToBytes (str, units) {
+  var c, hi, lo
+  var byteArray = []
+  for (var i = 0; i < str.length; ++i) {
+    if ((units -= 2) < 0) break
+
+    c = str.charCodeAt(i)
+    hi = c >> 8
+    lo = c % 256
+    byteArray.push(lo)
+    byteArray.push(hi)
+  }
+
+  return byteArray
+}
+
+function base64ToBytes (str) {
+  return base64.toByteArray(base64clean(str))
+}
+
+function blitBuffer (src, dst, offset, length) {
+  for (var i = 0; i < length; ++i) {
+    if ((i + offset >= dst.length) || (i >= src.length)) break
+    dst[i + offset] = src[i]
+  }
+  return i
+}
+
+function isnan (val) {
+  return val !== val // eslint-disable-line no-self-compare
+}
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.byteLength = byteLength
+exports.toByteArray = toByteArray
+exports.fromByteArray = fromByteArray
+
+var lookup = []
+var revLookup = []
+var Arr = typeof Uint8Array !== 'undefined' ? Uint8Array : Array
+
+var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+for (var i = 0, len = code.length; i < len; ++i) {
+  lookup[i] = code[i]
+  revLookup[code.charCodeAt(i)] = i
+}
+
+revLookup['-'.charCodeAt(0)] = 62
+revLookup['_'.charCodeAt(0)] = 63
+
+function placeHoldersCount (b64) {
+  var len = b64.length
+  if (len % 4 > 0) {
+    throw new Error('Invalid string. Length must be a multiple of 4')
+  }
+
+  // the number of equal signs (place holders)
+  // if there are two placeholders, than the two characters before it
+  // represent one byte
+  // if there is only one, then the three characters before it represent 2 bytes
+  // this is just a cheap hack to not do indexOf twice
+  return b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0
+}
+
+function byteLength (b64) {
+  // base64 is 4/3 + up to two characters of the original data
+  return (b64.length * 3 / 4) - placeHoldersCount(b64)
+}
+
+function toByteArray (b64) {
+  var i, l, tmp, placeHolders, arr
+  var len = b64.length
+  placeHolders = placeHoldersCount(b64)
+
+  arr = new Arr((len * 3 / 4) - placeHolders)
+
+  // if there are placeholders, only get up to the last complete 4 chars
+  l = placeHolders > 0 ? len - 4 : len
+
+  var L = 0
+
+  for (i = 0; i < l; i += 4) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
+    arr[L++] = (tmp >> 16) & 0xFF
+    arr[L++] = (tmp >> 8) & 0xFF
+    arr[L++] = tmp & 0xFF
+  }
+
+  if (placeHolders === 2) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 2) | (revLookup[b64.charCodeAt(i + 1)] >> 4)
+    arr[L++] = tmp & 0xFF
+  } else if (placeHolders === 1) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 10) | (revLookup[b64.charCodeAt(i + 1)] << 4) | (revLookup[b64.charCodeAt(i + 2)] >> 2)
+    arr[L++] = (tmp >> 8) & 0xFF
+    arr[L++] = tmp & 0xFF
+  }
+
+  return arr
+}
+
+function tripletToBase64 (num) {
+  return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F]
+}
+
+function encodeChunk (uint8, start, end) {
+  var tmp
+  var output = []
+  for (var i = start; i < end; i += 3) {
+    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
+    output.push(tripletToBase64(tmp))
+  }
+  return output.join('')
+}
+
+function fromByteArray (uint8) {
+  var tmp
+  var len = uint8.length
+  var extraBytes = len % 3 // if we have 1 byte left, pad 2 bytes
+  var output = ''
+  var parts = []
+  var maxChunkLength = 16383 // must be multiple of 3
+
+  // go through the array every three bytes, we'll deal with trailing stuff later
+  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
+    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
+  }
+
+  // pad the end with zeros, but make sure to not forget the extra bytes
+  if (extraBytes === 1) {
+    tmp = uint8[len - 1]
+    output += lookup[tmp >> 2]
+    output += lookup[(tmp << 4) & 0x3F]
+    output += '=='
+  } else if (extraBytes === 2) {
+    tmp = (uint8[len - 2] << 8) + (uint8[len - 1])
+    output += lookup[tmp >> 10]
+    output += lookup[(tmp >> 4) & 0x3F]
+    output += lookup[(tmp << 2) & 0x3F]
+    output += '='
+  }
+
+  parts.push(output)
+
+  return parts.join('')
+}
+
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports) {
+
+exports.read = function (buffer, offset, isLE, mLen, nBytes) {
+  var e, m
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var nBits = -7
+  var i = isLE ? (nBytes - 1) : 0
+  var d = isLE ? -1 : 1
+  var s = buffer[offset + i]
+
+  i += d
+
+  e = s & ((1 << (-nBits)) - 1)
+  s >>= (-nBits)
+  nBits += eLen
+  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  m = e & ((1 << (-nBits)) - 1)
+  e >>= (-nBits)
+  nBits += mLen
+  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  if (e === 0) {
+    e = 1 - eBias
+  } else if (e === eMax) {
+    return m ? NaN : ((s ? -1 : 1) * Infinity)
+  } else {
+    m = m + Math.pow(2, mLen)
+    e = e - eBias
+  }
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
+}
+
+exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
+  var e, m, c
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
+  var i = isLE ? 0 : (nBytes - 1)
+  var d = isLE ? 1 : -1
+  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
+
+  value = Math.abs(value)
+
+  if (isNaN(value) || value === Infinity) {
+    m = isNaN(value) ? 1 : 0
+    e = eMax
+  } else {
+    e = Math.floor(Math.log(value) / Math.LN2)
+    if (value * (c = Math.pow(2, -e)) < 1) {
+      e--
+      c *= 2
+    }
+    if (e + eBias >= 1) {
+      value += rt / c
+    } else {
+      value += rt * Math.pow(2, 1 - eBias)
+    }
+    if (value * c >= 2) {
+      e++
+      c /= 2
+    }
+
+    if (e + eBias >= eMax) {
+      m = 0
+      e = eMax
+    } else if (e + eBias >= 1) {
+      m = (value * c - 1) * Math.pow(2, mLen)
+      e = e + eBias
+    } else {
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
+      e = 0
+    }
+  }
+
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
+
+  e = (e << mLen) | m
+  eLen += mLen
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
+
+  buffer[offset + i - d] |= s * 128
+}
+
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
+
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+    css  : __webpack_require__(49),
+    util : __webpack_require__(54)
+};
+
+
+/***/ }),
+/* 49 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+    Colors            : __webpack_require__(21),
+    Combinator        : __webpack_require__(22),
+    Parser            : __webpack_require__(2),
+    PropertyName      : __webpack_require__(26),
+    PropertyValue     : __webpack_require__(27),
+    PropertyValuePart : __webpack_require__(14),
+    Matcher           : __webpack_require__(17),
+    MediaFeature      : __webpack_require__(24),
+    MediaQuery        : __webpack_require__(25),
+    Selector          : __webpack_require__(28),
+    SelectorPart      : __webpack_require__(15),
+    SelectorSubPart   : __webpack_require__(30),
+    Specificity       : __webpack_require__(29),
+    TokenStream       : __webpack_require__(31),
+    Tokens            : __webpack_require__(11),
+    ValidationError   : __webpack_require__(33)
+};
+
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Pseudos = module.exports = {
+    __proto__:       null,
+    ":first-letter": 1,
+    ":first-line":   1,
+    ":before":       1,
+    ":after":        1
+};
+
+Pseudos.ELEMENT = 1;
+Pseudos.CLASS = 2;
+
+Pseudos.isElement = function(pseudo) {
+    return pseudo.indexOf("::") === 0 || Pseudos[pseudo.toLowerCase()] === Pseudos.ELEMENT;
+};
+
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/* exported Validation */
+
+var Matcher = __webpack_require__(17);
+var Properties = __webpack_require__(52);
+var ValidationTypes = __webpack_require__(18);
+var ValidationError = __webpack_require__(33);
+var PropertyValueIterator = __webpack_require__(53);
+
+var Validation = module.exports = {
+
+    validate: function(property, value) {
+
+        //normalize name
+        var name        = property.toString().toLowerCase(),
+            expression  = new PropertyValueIterator(value),
+            spec        = Properties[name],
+            part;
+
+        if (!spec) {
+            if (name.indexOf("-") !== 0) {    //vendor prefixed are ok
+                throw new ValidationError("Unknown property '" + property + "'.", property.line, property.col);
+            }
+        } else if (typeof spec !== "number") {
+
+            // All properties accept some CSS-wide values.
+            // https://drafts.csswg.org/css-values-3/#common-keywords
+            if (ValidationTypes.isAny(expression, "inherit | initial | unset")) {
+                if (expression.hasNext()) {
+                    part = expression.next();
+                    throw new ValidationError("Expected end of value but found '" + part + "'.", part.line, part.col);
+                }
+                return;
+            }
+
+            // Property-specific validation.
+            this.singleProperty(spec, expression);
+
+        }
+
+    },
+
+    singleProperty: function(types, expression) {
+
+        var result      = false,
+            value       = expression.value,
+            part;
+
+        result = Matcher.parse(types).match(expression);
+
+        if (!result) {
+            if (expression.hasNext() && !expression.isFirst()) {
+                part = expression.peek();
+                throw new ValidationError("Expected end of value but found '" + part + "'.", part.line, part.col);
+            } else {
+                throw new ValidationError("Expected (" + ValidationTypes.describe(types) + ") but found '" + value + "'.", value.line, value.col);
+            }
+        } else if (expression.hasNext()) {
+            part = expression.next();
+            throw new ValidationError("Expected end of value but found '" + part + "'.", part.line, part.col);
+        }
+
+    }
+
+};
+
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/* exported Properties */
+
+var Properties = module.exports = {
+    __proto__: null,
+
+    //A
+    "align-items"                   : "flex-start | flex-end | center | baseline | stretch",
+    "align-content"                 : "flex-start | flex-end | center | space-between | space-around | stretch",
+    "align-self"                    : "auto | flex-start | flex-end | center | baseline | stretch",
+    "all"                           : "initial | inherit | unset",
+    "-webkit-align-items"           : "flex-start | flex-end | center | baseline | stretch",
+    "-webkit-align-content"         : "flex-start | flex-end | center | space-between | space-around | stretch",
+    "-webkit-align-self"            : "auto | flex-start | flex-end | center | baseline | stretch",
+    "alignment-adjust"              : "auto | baseline | before-edge | text-before-edge | middle | central | after-edge | text-after-edge | ideographic | alphabetic | hanging | mathematical | <percentage> | <length>",
+    "alignment-baseline"            : "auto | baseline | use-script | before-edge | text-before-edge | after-edge | text-after-edge | central | middle | ideographic | alphabetic | hanging | mathematical",
+    "animation"                     : 1,
+    "animation-delay"               : "<time>#",
+    "animation-direction"           : "<single-animation-direction>#",
+    "animation-duration"            : "<time>#",
+    "animation-fill-mode"           : "[ none | forwards | backwards | both ]#",
+    "animation-iteration-count"     : "[ <number> | infinite ]#",
+    "animation-name"                : "[ none | <single-animation-name> ]#",
+    "animation-play-state"          : "[ running | paused ]#",
+    "animation-timing-function"     : 1,
+
+    //vendor prefixed
+    "-moz-animation-delay"               : "<time>#",
+    "-moz-animation-direction"           : "[ normal | alternate ]#",
+    "-moz-animation-duration"            : "<time>#",
+    "-moz-animation-iteration-count"     : "[ <number> | infinite ]#",
+    "-moz-animation-name"                : "[ none | <single-animation-name> ]#",
+    "-moz-animation-play-state"          : "[ running | paused ]#",
+
+    "-ms-animation-delay"               : "<time>#",
+    "-ms-animation-direction"           : "[ normal | alternate ]#",
+    "-ms-animation-duration"            : "<time>#",
+    "-ms-animation-iteration-count"     : "[ <number> | infinite ]#",
+    "-ms-animation-name"                : "[ none | <single-animation-name> ]#",
+    "-ms-animation-play-state"          : "[ running | paused ]#",
+
+    "-webkit-animation-delay"               : "<time>#",
+    "-webkit-animation-direction"           : "[ normal | alternate ]#",
+    "-webkit-animation-duration"            : "<time>#",
+    "-webkit-animation-fill-mode"           : "[ none | forwards | backwards | both ]#",
+    "-webkit-animation-iteration-count"     : "[ <number> | infinite ]#",
+    "-webkit-animation-name"                : "[ none | <single-animation-name> ]#",
+    "-webkit-animation-play-state"          : "[ running | paused ]#",
+
+    "-o-animation-delay"               : "<time>#",
+    "-o-animation-direction"           : "[ normal | alternate ]#",
+    "-o-animation-duration"            : "<time>#",
+    "-o-animation-iteration-count"     : "[ <number> | infinite ]#",
+    "-o-animation-name"                : "[ none | <single-animation-name> ]#",
+    "-o-animation-play-state"          : "[ running | paused ]#",
+
+    "appearance"                    : "none | auto",
+    "-moz-appearance"               : "none | button | button-arrow-down | button-arrow-next | button-arrow-previous | button-arrow-up | button-bevel | button-focus | caret | checkbox | checkbox-container | checkbox-label | checkmenuitem | dualbutton | groupbox | listbox | listitem | menuarrow | menubar | menucheckbox | menuimage | menuitem | menuitemtext | menulist | menulist-button | menulist-text | menulist-textfield | menupopup | menuradio | menuseparator | meterbar | meterchunk | progressbar | progressbar-vertical | progresschunk | progresschunk-vertical | radio | radio-container | radio-label | radiomenuitem | range | range-thumb | resizer | resizerpanel | scale-horizontal | scalethumbend | scalethumb-horizontal | scalethumbstart | scalethumbtick | scalethumb-vertical | scale-vertical | scrollbarbutton-down | scrollbarbutton-left | scrollbarbutton-right | scrollbarbutton-up | scrollbarthumb-horizontal | scrollbarthumb-vertical | scrollbartrack-horizontal | scrollbartrack-vertical | searchfield | separator | sheet | spinner | spinner-downbutton | spinner-textfield | spinner-upbutton | splitter | statusbar | statusbarpanel | tab | tabpanel | tabpanels | tab-scroll-arrow-back | tab-scroll-arrow-forward | textfield | textfield-multiline | toolbar | toolbarbutton | toolbarbutton-dropdown | toolbargripper | toolbox | tooltip | treeheader | treeheadercell | treeheadersortarrow | treeitem | treeline | treetwisty | treetwistyopen | treeview | -moz-mac-unified-toolbar | -moz-win-borderless-glass | -moz-win-browsertabbar-toolbox | -moz-win-communicationstext | -moz-win-communications-toolbox | -moz-win-exclude-glass | -moz-win-glass | -moz-win-mediatext | -moz-win-media-toolbox | -moz-window-button-box | -moz-window-button-box-maximized | -moz-window-button-close | -moz-window-button-maximize | -moz-window-button-minimize | -moz-window-button-restore | -moz-window-frame-bottom | -moz-window-frame-left | -moz-window-frame-right | -moz-window-titlebar | -moz-window-titlebar-maximized",
+    "-ms-appearance"                : "none | icon | window | desktop | workspace | document | tooltip | dialog | button | push-button | hyperlink | radio | radio-button | checkbox | menu-item | tab | menu | menubar | pull-down-menu | pop-up-menu | list-menu | radio-group | checkbox-group | outline-tree | range | field | combo-box | signature | password | normal",
+    "-webkit-appearance"            : "none | button | button-bevel | caps-lock-indicator | caret | checkbox | default-button | listbox	| listitem | media-fullscreen-button | media-mute-button | media-play-button | media-seek-back-button	| media-seek-forward-button	| media-slider | media-sliderthumb | menulist	| menulist-button	| menulist-text	| menulist-textfield | push-button	| radio	| searchfield	| searchfield-cancel-button	| searchfield-decoration | searchfield-results-button | searchfield-results-decoration | slider-horizontal | slider-vertical | sliderthumb-horizontal | sliderthumb-vertical	| square-button	| textarea	| textfield	| scrollbarbutton-down | scrollbarbutton-left | scrollbarbutton-right | scrollbarbutton-up | scrollbargripper-horizontal | scrollbargripper-vertical | scrollbarthumb-horizontal | scrollbarthumb-vertical | scrollbartrack-horizontal | scrollbartrack-vertical",
+    "-o-appearance"                 : "none | window | desktop | workspace | document | tooltip | dialog | button | push-button | hyperlink | radio | radio-button | checkbox | menu-item | tab | menu | menubar | pull-down-menu | pop-up-menu | list-menu | radio-group | checkbox-group | outline-tree | range | field | combo-box | signature | password | normal",
+
+    "azimuth"                       : "<azimuth>",
+
+    //B
+    "backface-visibility"           : "visible | hidden",
+    "background"                    : 1,
+    "background-attachment"         : "<attachment>#",
+    "background-clip"               : "<box>#",
+    "background-color"              : "<color>",
+    "background-image"              : "<bg-image>#",
+    "background-origin"             : "<box>#",
+    "background-position"           : "<bg-position>",
+    "background-repeat"             : "<repeat-style>#",
+    "background-size"               : "<bg-size>#",
+    "baseline-shift"                : "baseline | sub | super | <percentage> | <length>",
+    "behavior"                      : 1,
+    "binding"                       : 1,
+    "bleed"                         : "<length>",
+    "bookmark-label"                : "<content> | <attr> | <string>",
+    "bookmark-level"                : "none | <integer>",
+    "bookmark-state"                : "open | closed",
+    "bookmark-target"               : "none | <uri> | <attr>",
+    "border"                        : "<border-width> || <border-style> || <color>",
+    "border-bottom"                 : "<border-width> || <border-style> || <color>",
+    "border-bottom-color"           : "<color>",
+    "border-bottom-left-radius"     :  "<x-one-radius>",
+    "border-bottom-right-radius"    :  "<x-one-radius>",
+    "border-bottom-style"           : "<border-style>",
+    "border-bottom-width"           : "<border-width>",
+    "border-collapse"               : "collapse | separate",
+    "border-color"                  : "<color>{1,4}",
+    "border-image"                  : 1,
+    "border-image-outset"           : "[ <length> | <number> ]{1,4}",
+    "border-image-repeat"           : "[ stretch | repeat | round ]{1,2}",
+    "border-image-slice"            : "<border-image-slice>",
+    "border-image-source"           : "<image> | none",
+    "border-image-width"            : "[ <length> | <percentage> | <number> | auto ]{1,4}",
+    "border-left"                   : "<border-width> || <border-style> || <color>",
+    "border-left-color"             : "<color>",
+    "border-left-style"             : "<border-style>",
+    "border-left-width"             : "<border-width>",
+    "border-radius"                 : "<border-radius>",
+    "border-right"                  : "<border-width> || <border-style> || <color>",
+    "border-right-color"            : "<color>",
+    "border-right-style"            : "<border-style>",
+    "border-right-width"            : "<border-width>",
+    "border-spacing"                : "<length>{1,2}",
+    "border-style"                  : "<border-style>{1,4}",
+    "border-top"                    : "<border-width> || <border-style> || <color>",
+    "border-top-color"              : "<color>",
+    "border-top-left-radius"        : "<x-one-radius>",
+    "border-top-right-radius"       : "<x-one-radius>",
+    "border-top-style"              : "<border-style>",
+    "border-top-width"              : "<border-width>",
+    "border-width"                  : "<border-width>{1,4}",
+    "bottom"                        : "<margin-width>",
+    "-moz-box-align"                : "start | end | center | baseline | stretch",
+    "-moz-box-decoration-break"     : "slice | clone",
+    "-moz-box-direction"            : "normal | reverse",
+    "-moz-box-flex"                 : "<number>",
+    "-moz-box-flex-group"           : "<integer>",
+    "-moz-box-lines"                : "single | multiple",
+    "-moz-box-ordinal-group"        : "<integer>",
+    "-moz-box-orient"               : "horizontal | vertical | inline-axis | block-axis",
+    "-moz-box-pack"                 : "start | end | center | justify",
+    "-o-box-decoration-break"       : "slice | clone",
+    "-webkit-box-align"             : "start | end | center | baseline | stretch",
+    "-webkit-box-decoration-break"  : "slice | clone",
+    "-webkit-box-direction"         : "normal | reverse",
+    "-webkit-box-flex"              : "<number>",
+    "-webkit-box-flex-group"        : "<integer>",
+    "-webkit-box-lines"             : "single | multiple",
+    "-webkit-box-ordinal-group"     : "<integer>",
+    "-webkit-box-orient"            : "horizontal | vertical | inline-axis | block-axis",
+    "-webkit-box-pack"              : "start | end | center | justify",
+    "box-decoration-break"          : "slice | clone",
+    "box-shadow"                    : "<box-shadow>",
+    "box-sizing"                    : "content-box | border-box",
+    "break-after"                   : "auto | always | avoid | left | right | page | column | avoid-page | avoid-column",
+    "break-before"                  : "auto | always | avoid | left | right | page | column | avoid-page | avoid-column",
+    "break-inside"                  : "auto | avoid | avoid-page | avoid-column",
+
+    //C
+    "caption-side"                  : "top | bottom",
+    "clear"                         : "none | right | left | both",
+    "clip"                          : "<shape> | auto",
+    "-webkit-clip-path"             : "<clip-source> | <clip-path> | none",
+    "clip-path"                     : "<clip-source> | <clip-path> | none",
+    "clip-rule"                     : "nonzero | evenodd",
+    "color"                         : "<color>",
+    "color-interpolation"           : "auto | sRGB | linearRGB",
+    "color-interpolation-filters"   : "auto | sRGB | linearRGB",
+    "color-profile"                 : 1,
+    "color-rendering"               : "auto | optimizeSpeed | optimizeQuality",
+    "column-count"                  : "<integer> | auto",                      //https://www.w3.org/TR/css3-multicol/
+    "column-fill"                   : "auto | balance",
+    "column-gap"                    : "<length> | normal",
+    "column-rule"                   : "<border-width> || <border-style> || <color>",
+    "column-rule-color"             : "<color>",
+    "column-rule-style"             : "<border-style>",
+    "column-rule-width"             : "<border-width>",
+    "column-span"                   : "none | all",
+    "column-width"                  : "<length> | auto",
+    "columns"                       : 1,
+    "content"                       : 1,
+    "counter-increment"             : 1,
+    "counter-reset"                 : 1,
+    "crop"                          : "<shape> | auto",
+    "cue"                           : "cue-after | cue-before",
+    "cue-after"                     : 1,
+    "cue-before"                    : 1,
+    "cursor"                        : 1,
+
+    //D
+    "direction"                     : "ltr | rtl",
+    "display"                       : "inline | block | list-item | inline-block | table | inline-table | table-row-group | table-header-group | table-footer-group | table-row | table-column-group | table-column | table-cell | table-caption | grid | inline-grid | run-in | ruby | ruby-base | ruby-text | ruby-base-container | ruby-text-container | contents | none | -moz-box | -moz-inline-block | -moz-inline-box | -moz-inline-grid | -moz-inline-stack | -moz-inline-table | -moz-grid | -moz-grid-group | -moz-grid-line | -moz-groupbox | -moz-deck | -moz-popup | -moz-stack | -moz-marker | -webkit-box | -webkit-inline-box | -ms-flexbox | -ms-inline-flexbox | flex | -webkit-flex | inline-flex | -webkit-inline-flex",
+    "dominant-baseline"             : "auto | use-script | no-change | reset-size | ideographic | alphabetic | hanging | mathematical | central | middle | text-after-edge | text-before-edge",
+    "drop-initial-after-adjust"     : "central | middle | after-edge | text-after-edge | ideographic | alphabetic | mathematical | <percentage> | <length>",
+    "drop-initial-after-align"      : "baseline | use-script | before-edge | text-before-edge | after-edge | text-after-edge | central | middle | ideographic | alphabetic | hanging | mathematical",
+    "drop-initial-before-adjust"    : "before-edge | text-before-edge | central | middle | hanging | mathematical | <percentage> | <length>",
+    "drop-initial-before-align"     : "caps-height | baseline | use-script | before-edge | text-before-edge | after-edge | text-after-edge | central | middle | ideographic | alphabetic | hanging | mathematical",
+    "drop-initial-size"             : "auto | line | <length> | <percentage>",
+    "drop-initial-value"            : "<integer>",
+
+    //E
+    "elevation"                     : "<angle> | below | level | above | higher | lower",
+    "empty-cells"                   : "show | hide",
+    "enable-background"             : 1,
+
+    //F
+    "fill"                          : "<paint>",
+    "fill-opacity"                  : "<opacity-value>",
+    "fill-rule"                     : "nonzero | evenodd",
+    "filter"                        : "<filter-function-list> | none",
+    "fit"                           : "fill | hidden | meet | slice",
+    "fit-position"                  : 1,
+    "flex"                          : "<flex>",
+    "flex-basis"                    : "<width>",
+    "flex-direction"                : "row | row-reverse | column | column-reverse",
+    "flex-flow"                     : "<flex-direction> || <flex-wrap>",
+    "flex-grow"                     : "<number>",
+    "flex-shrink"                   : "<number>",
+    "flex-wrap"                     : "nowrap | wrap | wrap-reverse",
+    "-webkit-flex"                  : "<flex>",
+    "-webkit-flex-basis"            : "<width>",
+    "-webkit-flex-direction"        : "row | row-reverse | column | column-reverse",
+    "-webkit-flex-flow"             : "<flex-direction> || <flex-wrap>",
+    "-webkit-flex-grow"             : "<number>",
+    "-webkit-flex-shrink"           : "<number>",
+    "-webkit-flex-wrap"             : "nowrap | wrap | wrap-reverse",
+    "-ms-flex"                      : "<flex>",
+    "-ms-flex-align"                : "start | end | center | stretch | baseline",
+    "-ms-flex-direction"            : "row | row-reverse | column | column-reverse",
+    "-ms-flex-order"                : "<number>",
+    "-ms-flex-pack"                 : "start | end | center | justify",
+    "-ms-flex-wrap"                 : "nowrap | wrap | wrap-reverse",
+    "float"                         : "left | right | none",
+    "float-offset"                  : 1,
+    "flood-color"                   : 1,
+    "flood-opacity"                 : "<opacity-value>",
+    "font"                          : "<font-shorthand> | caption | icon | menu | message-box | small-caption | status-bar",
+    "font-family"                   : "<font-family>",
+    "font-feature-settings"         : "<feature-tag-value> | normal",
+    "font-kerning"                  : "auto | normal | none",
+    "font-size"                     : "<font-size>",
+    "font-size-adjust"              : "<number> | none",
+    "font-stretch"                  : "<font-stretch>",
+    "font-style"                    : "<font-style>",
+    "font-variant"                  : "<font-variant> | normal | none",
+    "font-variant-alternates"       : "<font-variant-alternates> | normal",
+    "font-variant-caps"             : "<font-variant-caps> | normal",
+    "font-variant-east-asian"       : "<font-variant-east-asian> | normal",
+    "font-variant-ligatures"        : "<font-variant-ligatures> | normal | none",
+    "font-variant-numeric"          : "<font-variant-numeric> | normal",
+    "font-variant-position"         : "normal | sub | super",
+    "font-weight"                   : "<font-weight>",
+
+    //G
+    "glyph-orientation-horizontal"  : "<glyph-angle>",
+    "glyph-orientation-vertical"    : "auto | <glyph-angle>",
+    "grid"                          : 1,
+    "grid-area"                     : 1,
+    "grid-auto-columns"             : 1,
+    "grid-auto-flow"                : 1,
+    "grid-auto-position"            : 1,
+    "grid-auto-rows"                : 1,
+    "grid-cell-stacking"            : "columns | rows | layer",
+    "grid-column"                   : 1,
+    "grid-columns"                  : 1,
+    "grid-column-align"             : "start | end | center | stretch",
+    "grid-column-sizing"            : 1,
+    "grid-column-start"             : 1,
+    "grid-column-end"               : 1,
+    "grid-column-span"              : "<integer>",
+    "grid-flow"                     : "none | rows | columns",
+    "grid-layer"                    : "<integer>",
+    "grid-row"                      : 1,
+    "grid-rows"                     : 1,
+    "grid-row-align"                : "start | end | center | stretch",
+    "grid-row-start"                : 1,
+    "grid-row-end"                  : 1,
+    "grid-row-span"                 : "<integer>",
+    "grid-row-sizing"               : 1,
+    "grid-template"                 : 1,
+    "grid-template-areas"           : 1,
+    "grid-template-columns"         : 1,
+    "grid-template-rows"            : 1,
+
+    //H
+    "hanging-punctuation"           : 1,
+    "height"                        : "<margin-width> | <content-sizing>",
+    "hyphenate-after"               : "<integer> | auto",
+    "hyphenate-before"              : "<integer> | auto",
+    "hyphenate-character"           : "<string> | auto",
+    "hyphenate-lines"               : "no-limit | <integer>",
+    "hyphenate-resource"            : 1,
+    "hyphens"                       : "none | manual | auto",
+
+    //I
+    "icon"                          : 1,
+    "image-orientation"             : "angle | auto",
+    "image-rendering"               : "auto | optimizeSpeed | optimizeQuality",
+    "image-resolution"              : 1,
+    "ime-mode"                      : "auto | normal | active | inactive | disabled",
+    "inline-box-align"              : "last | <integer>",
+
+    //J
+    "justify-content"               : "flex-start | flex-end | center | space-between | space-around",
+    "-webkit-justify-content"       : "flex-start | flex-end | center | space-between | space-around",
+
+    //K
+    "kerning"                       : "auto | <length>",
+
+    //L
+    "left"                          : "<margin-width>",
+    "letter-spacing"                : "<length> | normal",
+    "line-height"                   : "<line-height>",
+    "line-break"                    : "auto | loose | normal | strict",
+    "line-stacking"                 : 1,
+    "line-stacking-ruby"            : "exclude-ruby | include-ruby",
+    "line-stacking-shift"           : "consider-shifts | disregard-shifts",
+    "line-stacking-strategy"        : "inline-line-height | block-line-height | max-height | grid-height",
+    "list-style"                    : 1,
+    "list-style-image"              : "<uri> | none",
+    "list-style-position"           : "inside | outside",
+    "list-style-type"               : "disc | circle | square | decimal | decimal-leading-zero | lower-roman | upper-roman | lower-greek | lower-latin | upper-latin | armenian | georgian | lower-alpha | upper-alpha | none",
+
+    //M
+    "margin"                        : "<margin-width>{1,4}",
+    "margin-bottom"                 : "<margin-width>",
+    "margin-left"                   : "<margin-width>",
+    "margin-right"                  : "<margin-width>",
+    "margin-top"                    : "<margin-width>",
+    "mark"                          : 1,
+    "mark-after"                    : 1,
+    "mark-before"                   : 1,
+    "marker"                        : 1,
+    "marker-end"                    : 1,
+    "marker-mid"                    : 1,
+    "marker-start"                  : 1,
+    "marks"                         : 1,
+    "marquee-direction"             : 1,
+    "marquee-play-count"            : 1,
+    "marquee-speed"                 : 1,
+    "marquee-style"                 : 1,
+    "mask"                          : 1,
+    "max-height"                    : "<length> | <percentage> | <content-sizing> | none",
+    "max-width"                     : "<length> | <percentage> | <content-sizing> | none",
+    "min-height"                    : "<length> | <percentage> | <content-sizing> | contain-floats | -moz-contain-floats | -webkit-contain-floats",
+    "min-width"                     : "<length> | <percentage> | <content-sizing> | contain-floats | -moz-contain-floats | -webkit-contain-floats",
+    "move-to"                       : 1,
+
+    //N
+    "nav-down"                      : 1,
+    "nav-index"                     : 1,
+    "nav-left"                      : 1,
+    "nav-right"                     : 1,
+    "nav-up"                        : 1,
+
+    //O
+    "object-fit"                    : "fill | contain | cover | none | scale-down",
+    "object-position"               : "<position>",
+    "opacity"                       : "<opacity-value>",
+    "order"                         : "<integer>",
+    "-webkit-order"                 : "<integer>",
+    "orphans"                       : "<integer>",
+    "outline"                       : 1,
+    "outline-color"                 : "<color> | invert",
+    "outline-offset"                : 1,
+    "outline-style"                 : "<border-style>",
+    "outline-width"                 : "<border-width>",
+    "overflow"                      : "visible | hidden | scroll | auto",
+    "overflow-style"                : 1,
+    "overflow-wrap"                 : "normal | break-word",
+    "overflow-x"                    : 1,
+    "overflow-y"                    : 1,
+
+    //P
+    "padding"                       : "<padding-width>{1,4}",
+    "padding-bottom"                : "<padding-width>",
+    "padding-left"                  : "<padding-width>",
+    "padding-right"                 : "<padding-width>",
+    "padding-top"                   : "<padding-width>",
+    "page"                          : 1,
+    "page-break-after"              : "auto | always | avoid | left | right",
+    "page-break-before"             : "auto | always | avoid | left | right",
+    "page-break-inside"             : "auto | avoid",
+    "page-policy"                   : 1,
+    "pause"                         : 1,
+    "pause-after"                   : 1,
+    "pause-before"                  : 1,
+    "perspective"                   : 1,
+    "perspective-origin"            : 1,
+    "phonemes"                      : 1,
+    "pitch"                         : 1,
+    "pitch-range"                   : 1,
+    "play-during"                   : 1,
+    "pointer-events"                : "auto | none | visiblePainted | visibleFill | visibleStroke | visible | painted | fill | stroke | all",
+    "position"                      : "static | relative | absolute | fixed",
+    "presentation-level"            : 1,
+    "punctuation-trim"              : 1,
+
+    //Q
+    "quotes"                        : 1,
+
+    //R
+    "rendering-intent"              : 1,
+    "resize"                        : 1,
+    "rest"                          : 1,
+    "rest-after"                    : 1,
+    "rest-before"                   : 1,
+    "richness"                      : 1,
+    "right"                         : "<margin-width>",
+    "rotation"                      : 1,
+    "rotation-point"                : 1,
+    "ruby-align"                    : 1,
+    "ruby-overhang"                 : 1,
+    "ruby-position"                 : 1,
+    "ruby-span"                     : 1,
+
+    //S
+    "shape-rendering"               : "auto | optimizeSpeed | crispEdges | geometricPrecision",
+    "size"                          : 1,
+    "speak"                         : "normal | none | spell-out",
+    "speak-header"                  : "once | always",
+    "speak-numeral"                 : "digits | continuous",
+    "speak-punctuation"             : "code | none",
+    "speech-rate"                   : 1,
+    "src"                           : 1,
+    "stop-color"                    : 1,
+    "stop-opacity"                  : "<opacity-value>",
+    "stress"                        : 1,
+    "string-set"                    : 1,
+    "stroke"                        : "<paint>",
+    "stroke-dasharray"              : "none | <dasharray>",
+    "stroke-dashoffset"             : "<percentage> | <length>",
+    "stroke-linecap"                : "butt | round | square",
+    "stroke-linejoin"               : "miter | round | bevel",
+    "stroke-miterlimit"             : "<miterlimit>",
+    "stroke-opacity"                : "<opacity-value>",
+    "stroke-width"                  : "<percentage> | <length>",
+
+    "table-layout"                  : "auto | fixed",
+    "tab-size"                      : "<integer> | <length>",
+    "target"                        : 1,
+    "target-name"                   : 1,
+    "target-new"                    : 1,
+    "target-position"               : 1,
+    "text-align"                    : "left | right | center | justify | match-parent | start | end",
+    "text-align-last"               : 1,
+    "text-anchor"                   : "start | middle | end",
+    "text-decoration"               : "<text-decoration-line> || <text-decoration-style> || <text-decoration-color>",
+    "text-decoration-color"         : "<text-decoration-color>",
+    "text-decoration-line"          : "<text-decoration-line>",
+    "text-decoration-style"         : "<text-decoration-style>",
+    "text-emphasis"                 : 1,
+    "text-height"                   : 1,
+    "text-indent"                   : "<length> | <percentage>",
+    "text-justify"                  : "auto | none | inter-word | inter-ideograph | inter-cluster | distribute | kashida",
+    "text-outline"                  : 1,
+    "text-overflow"                 : 1,
+    "text-rendering"                : "auto | optimizeSpeed | optimizeLegibility | geometricPrecision",
+    "text-shadow"                   : 1,
+    "text-transform"                : "capitalize | uppercase | lowercase | none",
+    "text-wrap"                     : "normal | none | avoid",
+    "top"                           : "<margin-width>",
+    "-ms-touch-action"              : "auto | none | pan-x | pan-y | pan-left | pan-right | pan-up | pan-down | manipulation",
+    "touch-action"                  : "auto | none | pan-x | pan-y | pan-left | pan-right | pan-up | pan-down | manipulation",
+    "transform"                     : 1,
+    "transform-origin"              : 1,
+    "transform-style"               : 1,
+    "transition"                    : 1,
+    "transition-delay"              : 1,
+    "transition-duration"           : 1,
+    "transition-property"           : 1,
+    "transition-timing-function"    : 1,
+
+    //U
+    "unicode-bidi"                  : "normal | embed | isolate | bidi-override | isolate-override | plaintext",
+    "user-modify"                   : "read-only | read-write | write-only",
+    "user-select"                   : "none | text | toggle | element | elements | all",
+
+    //V
+    "vertical-align"                : "auto | use-script | baseline | sub | super | top | text-top | central | middle | bottom | text-bottom | <percentage> | <length>",
+    "visibility"                    : "visible | hidden | collapse",
+    "voice-balance"                 : 1,
+    "voice-duration"                : 1,
+    "voice-family"                  : 1,
+    "voice-pitch"                   : 1,
+    "voice-pitch-range"             : 1,
+    "voice-rate"                    : 1,
+    "voice-stress"                  : 1,
+    "voice-volume"                  : 1,
+    "volume"                        : 1,
+
+    //W
+    "white-space"                   : "normal | pre | nowrap | pre-wrap | pre-line | -pre-wrap | -o-pre-wrap | -moz-pre-wrap | -hp-pre-wrap",   // https://perishablepress.com/wrapping-content/
+    "white-space-collapse"          : 1,
+    "widows"                        : "<integer>",
+    "width"                         : "<length> | <percentage> | <content-sizing> | auto",
+    "will-change"                   : "<will-change>",
+    "word-break"                    : "normal | keep-all | break-all",
+    "word-spacing"                  : "<length> | normal",
+    "word-wrap"                     : "normal | break-word",
+    "writing-mode"                  : "horizontal-tb | vertical-rl | vertical-lr | lr-tb | rl-tb | tb-rl | bt-rl | tb-lr | bt-lr | lr-bt | rl-bt | lr | rl | tb",
+
+    //Z
+    "z-index"                       : "<integer> | auto",
+    "zoom"                          : "<number> | <percentage> | normal"
+};
+
+
+/***/ }),
+/* 53 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = PropertyValueIterator;
+
+/**
+ * A utility class that allows for easy iteration over the various parts of a
+ * property value.
+ * @param {parserlib.css.PropertyValue} value The property value to iterate over.
+ * @namespace parserlib.css
+ * @class PropertyValueIterator
+ * @constructor
+ */
+function PropertyValueIterator(value) {
+
+    /**
+     * Iterator value
+     * @type int
+     * @property _i
+     * @private
+     */
+    this._i = 0;
+
+    /**
+     * The parts that make up the value.
+     * @type Array
+     * @property _parts
+     * @private
+     */
+    this._parts = value.parts;
+
+    /**
+     * Keeps track of bookmarks along the way.
+     * @type Array
+     * @property _marks
+     * @private
+     */
+    this._marks = [];
+
+    /**
+     * Holds the original property value.
+     * @type parserlib.css.PropertyValue
+     * @property value
+     */
+    this.value = value;
+
+}
+
+/**
+ * Returns the total number of parts in the value.
+ * @return {int} The total number of parts in the value.
+ * @method count
+ */
+PropertyValueIterator.prototype.count = function() {
+    return this._parts.length;
+};
+
+/**
+ * Indicates if the iterator is positioned at the first item.
+ * @return {Boolean} True if positioned at first item, false if not.
+ * @method isFirst
+ */
+PropertyValueIterator.prototype.isFirst = function() {
+    return this._i === 0;
+};
+
+/**
+ * Indicates if there are more parts of the property value.
+ * @return {Boolean} True if there are more parts, false if not.
+ * @method hasNext
+ */
+PropertyValueIterator.prototype.hasNext = function() {
+    return this._i < this._parts.length;
+};
+
+/**
+ * Marks the current spot in the iteration so it can be restored to
+ * later on.
+ * @return {void}
+ * @method mark
+ */
+PropertyValueIterator.prototype.mark = function() {
+    this._marks.push(this._i);
+};
+
+/**
+ * Returns the next part of the property value or null if there is no next
+ * part. Does not move the internal counter forward.
+ * @return {parserlib.css.PropertyValuePart} The next part of the property value or null if there is no next
+ * part.
+ * @method peek
+ */
+PropertyValueIterator.prototype.peek = function(count) {
+    return this.hasNext() ? this._parts[this._i + (count || 0)] : null;
+};
+
+/**
+ * Returns the next part of the property value or null if there is no next
+ * part.
+ * @return {parserlib.css.PropertyValuePart} The next part of the property value or null if there is no next
+ * part.
+ * @method next
+ */
+PropertyValueIterator.prototype.next = function() {
+    return this.hasNext() ? this._parts[this._i++] : null;
+};
+
+/**
+ * Returns the previous part of the property value or null if there is no
+ * previous part.
+ * @return {parserlib.css.PropertyValuePart} The previous part of the
+ * property value or null if there is no previous part.
+ * @method previous
+ */
+PropertyValueIterator.prototype.previous = function() {
+    return this._i > 0 ? this._parts[--this._i] : null;
+};
+
+/**
+ * Restores the last saved bookmark.
+ * @return {void}
+ * @method restore
+ */
+PropertyValueIterator.prototype.restore = function() {
+    if (this._marks.length) {
+        this._i = this._marks.pop();
+    }
+};
+
+/**
+ * Drops the last saved bookmark.
+ * @return {void}
+ * @method drop
+ */
+PropertyValueIterator.prototype.drop = function() {
+    this._marks.pop();
+};
+
+
+/***/ }),
+/* 54 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+    StringReader    : __webpack_require__(16),
+    SyntaxError     : __webpack_require__(10),
+    SyntaxUnit      : __webpack_require__(1),
+    EventTarget     : __webpack_require__(23),
+    TokenStreamBase : __webpack_require__(32)
+};
+
+
+/***/ })
+/******/ ]);
