@@ -780,12 +780,15 @@ function rest_cookie_check_errors( $result ) {
 	// Check the nonce.
 	$result = wp_verify_nonce( $nonce, 'wp_rest' );
 
+	if ( is_user_logged_in() ) {
+		// Send a refreshed nonce in header.
+		rest_get_server()->send_header( 'X-WP-Nonce', wp_create_nonce( 'wp_rest' ) );
+	}
+
 	if ( ! $result ) {
 		return new WP_Error( 'rest_cookie_invalid_nonce', __( 'Cookie nonce is invalid' ), array( 'status' => 403 ) );
 	}
 
-	// Send a refreshed nonce in header.
-	rest_get_server()->send_header( 'X-WP-Nonce', wp_create_nonce( 'wp_rest' ) );
 
 	return true;
 }
