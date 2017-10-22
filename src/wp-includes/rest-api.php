@@ -781,6 +781,7 @@ function rest_cookie_check_errors( $result ) {
 	$result = wp_verify_nonce( $nonce, 'wp_rest' );
 
 	if ( is_user_logged_in() ) {
+
 		// Send a refreshed nonce in header.
 		rest_get_server()->send_header( 'X-WP-Nonce', wp_create_nonce( 'wp_rest' ) );
 	}
