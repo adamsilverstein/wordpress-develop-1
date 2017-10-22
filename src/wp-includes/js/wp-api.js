@@ -880,13 +880,18 @@
 					};
 
 					// Update the nonce when a new nonce is returned with the response.
-					options.complete = function( xhr ) {
+					options.complete = _.bind( function( xhr ) {
 						var returnedNonce = xhr.getResponseHeader( 'X-WP-Nonce' );
 
 						if ( returnedNonce && _.isFunction( model.nonce ) && model.nonce() !== returnedNonce ) {
 							model.endpointModel.set( 'nonce', returnedNonce );
+							if ( 'rest_cookie_invalid_nonce' === xhr.responseJSON.code ) {
+								this.sync(  method, model, options );
+							}
 						}
-					};
+					}, this );
+
+
 				}
 
 				// Add '?force=true' to use delete method when required.
