@@ -2986,12 +2986,21 @@
 		 * @returns {void}
 		 */
 		attachEvents: function() {
-			var panel = this, toggleDisabledNotification;
+			var panel = this;
 
 			// Attach regular panel events.
 			api.Panel.prototype.attachEvents.apply( panel );
 
-			toggleDisabledNotification = function() {
+			// Temporary since supplying SFTP credentials does not work yet. See #42184
+			if ( api.settings.theme._filesystemCredentialsNeeded ) {
+				panel.notifications.add( new api.Notification( 'theme_install_unavailable', {
+					message: api.l10n.themeInstallUnavailable,
+					type: 'info',
+					dismissible: true
+				} ) );
+			}
+
+			function toggleDisabledNotifications() {
 				if ( 'publish' === api.state( 'selectedChangesetStatus' ).get() ) {
 					panel.notifications.remove( 'theme_switch_unavailable' );
 				} else {
@@ -3000,9 +3009,9 @@
 						type: 'warning'
 					} ) );
 				}
-			};
-			toggleDisabledNotification();
-			api.state( 'selectedChangesetStatus' ).bind( toggleDisabledNotification );
+			}
+			toggleDisabledNotifications();
+			api.state( 'selectedChangesetStatus' ).bind( toggleDisabledNotifications );
 
 			// Collapse panel to customize the current theme.
 			panel.contentContainer.on( 'click', '.customize-theme', function() {
@@ -3095,6 +3104,14 @@
 		installTheme: function( event ) {
 			var panel = this, preview, onInstallSuccess, slug = $( event.target ).data( 'slug' ), deferred = $.Deferred(), request;
 			preview = $( event.target ).hasClass( 'preview' );
+
+			// Temporary since supplying SFTP credentials does not work yet. See #42184.
+			if ( api.settings.theme._filesystemCredentialsNeeded ) {
+				deferred.reject({
+					errorCode: 'theme_install_unavailable'
+				});
+				return deferred.promise();
+			}
 
 			// Prevent loading a non-active theme preview when there is a drafted/scheduled changeset.
 			if ( 'publish' !== api.state( 'selectedChangesetStatus' ).get() && slug !== api.settings.theme.stylesheet ) {
@@ -3296,6 +3313,11 @@
 
 			event.preventDefault();
 
+			// Temporary since supplying SFTP credentials does not work yet. See #42184.
+			if ( api.settings.theme._filesystemCredentialsNeeded ) {
+				return;
+			}
+
 			// Confirmation dialog for deleting a theme.
 			if ( ! window.confirm( api.settings.l10n.confirmDeleteTheme ) ) {
 				return;
@@ -3452,12 +3474,18 @@
 			}
 			_.extend( settings, control.params.settings );
 
-			// Note: Settings can be an array or an object.
-			_.each( settings, function( setting, key ) {
-				if ( _.isObject( setting ) ) { // @todo Or check if instance of api.Setting?
-					control.settings[ key ] = setting;
-				} else {
-					deferredSettingIds.push( setting );
+			// Note: Settings can be an array or an object, with values being either setting IDs or Setting (or Value) objects.
+			_.each( settings, function( value, key ) {
+				var setting;
+				if ( _.isObject( value ) && _.isFunction( value.extended ) && value.extended( api.Value ) ) {
+					control.settings[ key ] = value;
+				} else if ( _.isString( value ) ) {
+					setting = api( value );
+					if ( setting ) {
+						control.settings[ key ] = setting;
+					} else {
+						deferredSettingIds.push( value );
+					}
 				}
 			} );
 
@@ -3478,6 +3506,7 @@
 				// Identify the main setting.
 				control.setting = control.settings['default'] || null;
 
+				control.linkElements(); // Link initial elements present in server-rendered content.
 				control.embed();
 			};
 
@@ -3489,7 +3518,7 @@
 
 			// After the control is embedded on the page, invoke the "ready" method.
 			control.deferred.embedded.done( function () {
-				control.linkElements();
+				control.linkElements(); // Link any additional elements after template is rendered by renderContent().
 				control.setupNotifications();
 				control.ready();
 			});
@@ -4983,16 +5012,25 @@
 		 * @since 4.2.0
 		 */
 		ready: function() {
-			var control = this, disableSwitchButtons, updateButtons;
+			var control = this;
 
-			disableSwitchButtons = function() {
+			function disableSwitchButtons() {
 				return 'publish' !== api.state( 'selectedChangesetStatus' ).get() && control.params.theme.id !== api.settings.theme.stylesheet;
-			};
-			updateButtons = function() {
-				control.container.find( 'button' ).toggleClass( 'disabled', disableSwitchButtons() );
-			};
+			}
 
-			api.state( 'selectedChangesetStatus' ).bind( updateButtons );
+			// Temporary special function since supplying SFTP credentials does not work yet. See #42184.
+			function disableInstallButtons() {
+				return disableSwitchButtons() || true === api.settings.theme._filesystemCredentialsNeeded;
+			}
+			function updateButtons( container ) {
+				var _container = container || control.container;
+				_container.find( 'button.preview, button.preview-theme' ).toggleClass( 'disabled', disableSwitchButtons() );
+				_container.find( 'button.theme-install' ).toggleClass( 'disabled', disableInstallButtons() );
+			}
+
+			api.state( 'selectedChangesetStatus' ).bind( function() {
+				updateButtons();
+			});
 			updateButtons();
 
 			control.container.on( 'touchmove', '.theme', function() {
@@ -5019,7 +5057,12 @@
 				event.preventDefault(); // Keep this AFTER the key filter above
 				section = api.section( control.section() );
 				section.showDetails( control.params.theme, function() {
-					section.overlay.find( '.theme-actions button' ).toggleClass( 'disabled', disableSwitchButtons() );
+					updateButtons( section.overlay.find( '.theme-actions' ) );
+
+					// Temporary special function since supplying SFTP credentials does not work yet. See #42184.
+					if ( api.settings.theme._filesystemCredentialsNeeded ) {
+						section.overlay.find( '.theme-actions .delete-theme' ).remove();
+					}
 				} );
 			});
 
@@ -5797,6 +5840,8 @@
 			api.bind( 'ready', control.updatePreviewLink );
 			api.state( 'saved' ).bind( control.updatePreviewLink );
 			api.state( 'changesetStatus' ).bind( control.updatePreviewLink );
+			api.state( 'activated' ).bind( control.updatePreviewLink );
+			api.previewer.previewUrl.bind( control.updatePreviewLink );
 
 			button.element.on( 'click', function( event ) {
 				event.preventDefault();
@@ -6956,6 +7001,15 @@
 			publishSettingsBtn = $( '#publish-settings' ),
 			footerActions = $( '#customize-footer-actions' );
 
+		// Add publish settings section in JS instead of PHP since the Customizer depends on it to function.
+		api.bind( 'ready', function() {
+			api.section.add( new api.OuterSection( 'publish_settings', {
+				title: api.l10n.publishSettings,
+				priority: 0,
+				active: api.settings.theme.active
+			} ) );
+		} );
+
 		// Set up publish settings section and its controls.
 		api.section( 'publish_settings', function( section ) {
 			var updateButtonsState, trashControl, updateSectionActive, isSectionActive, statusControl, dateControl, toggleDateControl, publishWhenTime, pollInterval, updateTimeArrivedPoller, cancelScheduleButtonReminder, timeArrivedPollingInterval = 1000;
@@ -7586,18 +7640,23 @@
 			 * @return {string} Preview url.
 			 */
 			getFrontendPreviewUrl: function() {
-				var previewer = this,
-					a = document.createElement( 'a' ),
-					params = {};
+				var previewer = this, params, urlParser;
+				urlParser = document.createElement( 'a' );
+				urlParser.href = previewer.previewUrl.get();
+				params = api.utils.parseQueryString( urlParser.search.substr( 1 ) );
 
 				if ( api.state( 'changesetStatus' ).get() && 'publish' !== api.state( 'changesetStatus' ).get() ) {
 					params.customize_changeset_uuid = api.settings.changeset.uuid;
 				}
+				if ( ! api.state( 'activated' ).get() ) {
+					params.customize_theme = api.settings.theme.stylesheet;
+				}
+				if ( api.settings.changeset.autosaved || ! api.state( 'saved' ).get() ) {
+					params.customize_autosaved = 'on';
+				}
 
-				a.href = previewer.previewUrl();
-				a.search = $.param( params );
-
-				return a.href;
+				urlParser.search = $.param( params );
+				return urlParser.href;
 			}
 		});
 
