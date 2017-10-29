@@ -348,24 +348,48 @@
 	 *
 	 * @see PHP class WP_Customize_Setting.
 	 *
+	 * @since 3.4.0
 	 * @class
 	 * @augments wp.customize.Value
 	 * @augments wp.customize.Class
-	 *
-	 * @param {object} id                The Setting ID.
-	 * @param {object} value             The initial value of the setting.
-	 * @param {object} options.previewer The Previewer instance to sync with.
-	 * @param {object} options.transport The transport to use for previewing. Supports 'refresh' and 'postMessage'.
-	 * @param {object} options.dirty
 	 */
 	api.Setting = api.Value.extend({
+
+		/**
+		 * Default params.
+		 *
+		 * @since 4.9.0
+		 * @var {object}
+		 */
+		defaults: {
+			transport: 'refresh',
+			dirty: false
+		},
+
+		/**
+		 * Initialize.
+		 *
+		 * @since 3.4.0
+		 *
+		 * @param {string}  id                          - The setting ID.
+		 * @param {*}       value                       - The initial value of the setting.
+		 * @param {object}  [options={}]                - Options.
+		 * @param {string}  [options.transport=refresh] - The transport to use for previewing. Supports 'refresh' and 'postMessage'.
+		 * @param {boolean} [options.dirty=false]       - Whether the setting should be considered initially dirty.
+		 * @param {object}  [options.previewer]         - The Previewer instance to sync with. Defaults to wp.customize.previewer.
+		 */
 		initialize: function( id, value, options ) {
-			var setting = this;
-			api.Value.prototype.initialize.call( setting, value, options );
+			var setting = this, params;
+			params = _.extend(
+				{ previewer: api.previewer },
+				setting.defaults,
+				options || {}
+			);
+
+			api.Value.prototype.initialize.call( setting, value, params );
 
 			setting.id = id;
-			setting.transport = setting.transport || 'refresh';
-			setting._dirty = options.dirty || false;
+			setting._dirty = params.dirty; // The _dirty property is what the Customizer reads from.
 			setting.notifications = new api.Notifications();
 
 			// Whenever the setting's value changes, refresh the preview.
@@ -1302,7 +1326,10 @@
 				template = wp.template( 'customize-' + container.containerType + '-default' );
 			}
 			if ( template && container.container ) {
-				return $.trim( template( container.params ) );
+				return $.trim( template( _.extend(
+					{ id: container.id },
+					container.params
+				) ) );
 			}
 
 			return '<li></li>';
@@ -1887,6 +1914,17 @@
 				api.section( 'wporg_themes' ).focus();
 			});
 
+			function updateSelectedState() {
+				var el = section.headerContainer.find( '.customize-themes-section-title' );
+				el.toggleClass( 'selected', section.expanded() );
+				el.attr( 'aria-expanded', section.expanded() ? 'true' : 'false' );
+				if ( ! section.expanded() ) {
+					el.removeClass( 'details-open' );
+				}
+			}
+			section.expanded.bind( updateSelectedState );
+			updateSelectedState();
+
 			// Move section controls to the themes area.
 			api.bind( 'ready', function () {
 				section.contentContainer = section.container.find( '.customize-themes-section' );
@@ -1920,7 +1958,7 @@
 				return;
 			}
 
-			if ( expanded ) {
+			function expand() {
 
 				// Try to load controls if none are loaded yet.
 				if ( 0 === section.loaded ) {
@@ -1949,14 +1987,13 @@
 									section.filterSearch( searchTerm );
 								}
 							}
+							otherSection.collapse( { duration: args.duration } );
 						}
-						otherSection.collapse( { duration: args.duration } );
 					}
 				});
 
 				section.contentContainer.addClass( 'current-section' );
 				container.scrollTop();
-				section.headerContainer.find( '.customize-themes-section-title' ).addClass( 'selected' ).attr( 'aria-expanded', 'true' );
 
 				container.on( 'scroll', _.throttle( section.renderScreenshots, 300 ) );
 				container.on( 'scroll', _.throttle( section.loadMore, 300 ) );
@@ -1965,11 +2002,21 @@
 					args.completeCallback();
 				}
 				section.updateCount(); // Show this section's count.
+			}
+
+			if ( expanded ) {
+				if ( section.panel() && api.panel.has( section.panel() ) ) {
+					api.panel( section.panel() ).expand({
+						duration: args.duration,
+						completeCallback: expand
+					});
+				} else {
+					expand();
+				}
 			} else {
 				section.contentContainer.removeClass( 'current-section' );
 
 				// Always hide, even if they don't exist or are already hidden.
-				section.headerContainer.find( '.customize-themes-section-title' ).removeClass( 'selected details-open' ).attr( 'aria-expanded', 'false' );
 				section.headerContainer.find( '.filter-details' ).slideUp( 180 );
 
 				container.off( 'scroll' );
@@ -2948,7 +2995,10 @@
 				template = wp.template( 'customize-panel-default-content' );
 			}
 			if ( template && panel.headContainer ) {
-				panel.contentContainer.html( template( panel.params ) );
+				panel.contentContainer.html( template( _.extend(
+					{ id: panel.id },
+					panel.params
+				) ) );
 			}
 		}
 	});
@@ -3058,7 +3108,7 @@
 		 * @returns {void}
 		 */
 		onChangeExpanded: function( expanded, args ) {
-			var panel = this, overlay;
+			var panel = this, overlay, sections, hasExpandedSection = false;
 
 			// Expand/collapse the panel normally.
 			api.Panel.prototype.onChangeExpanded.apply( this, [ expanded, args ] );
@@ -3082,9 +3132,17 @@
 					overlay.addClass( 'themes-panel-expanded' );
 				}, 200 );
 
-				// Automatically open the installed themes section (except on small screens).
+				// Automatically open the first section (except on small screens), if one isn't already expanded.
 				if ( 600 < window.innerWidth ) {
-					api.section( 'installed_themes' ).expand();
+					sections = panel.sections();
+					_.each( sections, function( section ) {
+						if ( section.expanded() ) {
+							hasExpandedSection = true;
+						}
+					} );
+					if ( ! hasExpandedSection && sections.length > 0 ) {
+						sections[0].expand();
+					}
 				}
 			} else {
 				overlay
@@ -3367,6 +3425,12 @@
 	api.Control = api.Class.extend({
 		defaultActiveArguments: { duration: 'fast', completeCallback: $.noop },
 
+		/**
+		 * Default params.
+		 *
+		 * @since 4.9.0
+		 * @var {object}
+		 */
 		defaults: {
 			label: '',
 			description: '',
@@ -3693,8 +3757,6 @@
 				} );
 			} );
 
-			control.notifications.container = control.getNotificationsContainerElement();
-
 			renderNotificationsIfVisible = function() {
 				var sectionId = control.section();
 				if ( ! sectionId || ( api.section.has( sectionId ) && api.section( sectionId ).expanded() ) ) {
@@ -3905,7 +3967,7 @@
 		 * @since 4.1.0
 		 */
 		renderContent: function () {
-			var control = this, template, standardTypes, templateId;
+			var control = this, template, standardTypes, templateId, sectionId;
 
 			standardTypes = [
 				'button',
@@ -3945,6 +4007,13 @@
 				if ( template && control.container ) {
 					control.container.html( template( control.params ) );
 				}
+			}
+
+			// Re-render notifications after content has been re-rendered.
+			control.notifications.container = control.getNotificationsContainerElement();
+			sectionId = control.section();
+			if ( ! sectionId || ( api.section.has( sectionId ) && api.section( sectionId ).expanded() ) ) {
+				control.notifications.render();
 			}
 		},
 
