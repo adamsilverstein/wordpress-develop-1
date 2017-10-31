@@ -1209,8 +1209,19 @@
 				}
 			},
 
-			modelEndpoints = routeModel.get( 'modelEndpoints' ),
-			modelRegex     = new RegExp( '(?:.*[+)]|\/(' + modelEndpoints.join( '|' ) + '))$' );
+			modelEndpoints  = routeModel.get( 'modelEndpoints' ),
+			modelRegex      = new RegExp( '(?:.*[+)]|\/(' + modelEndpoints.join( '|' ) + '))$' ),
+			trashableTypes  = [ 'Comment', 'Media', 'Comment', 'Post', 'Page', 'Status', 'Taxonomy', 'Type' ],
+			modelInitialize = function() {
+
+				/**
+				* Types that don't support trashing require passing ?force=true to delete.
+				*
+				*/
+				if ( -1 === _.indexOf( trashableTypes, this.name ) ) {
+					this.requireForceForDelete = true;
+				}
+			};
 
 			/**
 			 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
@@ -1269,17 +1280,6 @@
 					routeName = 'me';
 				}
 
-				var trashableTypes = [ 'Comment', 'Media', 'Comment', 'Post', 'Page', 'Status', 'Taxonomy', 'Type' ];
-				var modelInitialize = function( attributes, options ) {
-					/**
-					* Posts and pages support trashing, other types don't support a trash
-					* and remodelInitializequire that you pass ?force=true to actually delete them.
-					*
-					*/
-					if ( -1 === _.indexOf( trashableTypes, this.name ) ) {
-						this.requireForceForDelete = true;
-					}
-				};
 
 				// If the model has a parent in its route, add that to its class name.
 				if ( '' !== parentName && parentName !== routeName ) {
