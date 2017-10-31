@@ -803,7 +803,8 @@
 
 	'use strict';
 
-	var wpApiSettings = window.wpApiSettings || {};
+	var wpApiSettings = window.wpApiSettings || {},
+	trashableTypes    = [ 'Comment', 'Media', 'Comment', 'Post', 'Page', 'Status', 'Taxonomy', 'Type' ];
 
 	/**
 	 * Backbone base model for all models.
@@ -811,6 +812,18 @@
 	wp.api.WPApiBaseModel = Backbone.Model.extend(
 		/** @lends WPApiBaseModel.prototype  */
 		{
+
+			// Initialize the model.
+			initialize: function() {
+
+				/**
+				* Types that don't support trashing require passing ?force=true to delete.
+				*
+				*/
+				if ( -1 === _.indexOf( trashableTypes, this.name ) ) {
+					this.requireForceForDelete = true;
+				}
+			},
 
 			/**
 			 * Set nonce header before every Backbone sync.
@@ -1209,19 +1222,8 @@
 				}
 			},
 
-			modelEndpoints  = routeModel.get( 'modelEndpoints' ),
-			modelRegex      = new RegExp( '(?:.*[+)]|\/(' + modelEndpoints.join( '|' ) + '))$' ),
-			trashableTypes  = [ 'Comment', 'Media', 'Comment', 'Post', 'Page', 'Status', 'Taxonomy', 'Type' ],
-			modelInitialize = function() {
-
-				/**
-				* Types that don't support trashing require passing ?force=true to delete.
-				*
-				*/
-				if ( -1 === _.indexOf( trashableTypes, this.name ) ) {
-					this.requireForceForDelete = true;
-				}
-			};
+			modelEndpoints = routeModel.get( 'modelEndpoints' ),
+			modelRegex     = new RegExp( '(?:.*[+)]|\/(' + modelEndpoints.join( '|' ) + '))$' );
 
 			/**
 			 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
@@ -1280,7 +1282,6 @@
 					routeName = 'me';
 				}
 
-
 				// If the model has a parent in its route, add that to its class name.
 				if ( '' !== parentName && parentName !== routeName ) {
 					modelClassName = wp.api.utils.capitalizeAndCamelCaseDashes( parentName ) + wp.api.utils.capitalizeAndCamelCaseDashes( routeName );
@@ -1320,9 +1321,6 @@
 						// Include the array of route methods for easy reference.
 						methods: modelRoute.route.methods,
 
-						// Initialize the model.
-						initialize: modelInitialize,
-
 						// Include the array of route endpoints for easy reference.
 						endpoints: modelRoute.route.endpoints
 					} );
@@ -1360,9 +1358,6 @@
 
 						// Include the array of route methods for easy reference.
 						methods: modelRoute.route.methods,
-
-						// Initialize the model.
-						initialize: modelInitialize,
 
 						// Include the array of route endpoints for easy reference.
 						endpoints: modelRoute.route.endpoints
