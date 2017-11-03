@@ -816,6 +816,9 @@
 			// Initialize the model.
 			initialize: function() {
 
+				// Limit recursion in sync.
+				this.maxRecursion = 1;
+
 				/**
 				* Types that don't support trashing require passing ?force=true to delete.
 				*
@@ -869,8 +872,10 @@
 
 						if ( returnedNonce && _.isFunction( model.nonce ) && model.nonce() !== returnedNonce ) {
 							model.endpointModel.set( 'nonce', returnedNonce );
-							if ( 'rest_cookie_invalid_nonce' === xhr.responseJSON.code ) {
+							if ( 'rest_cookie_invalid_nonce' === xhr.responseJSON.code && this.maxRecursion-- > 0 ) {
 								this.sync(  method, model, options );
+							} else {
+								this.maxRecursion = 1;
 							}
 						}
 					}, this );
