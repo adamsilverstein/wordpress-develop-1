@@ -45,6 +45,12 @@ if ( ! function_exists( 'twentysixteen_setup' ) ) :
  * @since Twenty Sixteen 1.0
  */
 function twentysixteen_setup() {
+
+	add_filter( 'revision_text_diff_options', function( array $args ) {
+        $args['show_split_view'] = false;
+        return $args;
+} );
+	
 	/*
 	 * Make theme available for translation.
 	 * Translations can be filed at WordPress.org. See: https://translate.wordpress.org/projects/wp-themes/twentysixteen
