@@ -3202,7 +3202,7 @@
 			}
 
 			// Prevent loading a non-active theme preview when there is a drafted/scheduled changeset.
-			if ( panel.canSwitchTheme( slug ) ) {
+			if ( ! panel.canSwitchTheme( slug ) ) {
 				deferred.reject({
 					errorCode: 'theme_switch_unavailable'
 				});
@@ -3299,7 +3299,10 @@
 
 			// Prevent loading a non-active theme preview when there is a drafted/scheduled changeset.
 			if ( ! panel.canSwitchTheme( themeId ) ) {
-				return deferred.reject().promise();
+				deferred.reject({
+					errorCode: 'theme_switch_unavailable'
+				});
+				return deferred.promise();
 			}
 
 			urlParser = document.createElement( 'a' );
@@ -7774,9 +7777,6 @@
 				}
 				if ( ! api.state( 'activated' ).get() ) {
 					params.customize_theme = api.settings.theme.stylesheet;
-				}
-				if ( api.settings.changeset.autosaved || ! api.state( 'saved' ).get() ) {
-					params.customize_autosaved = 'on';
 				}
 
 				urlParser.search = $.param( params );
