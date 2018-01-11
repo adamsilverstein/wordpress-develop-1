@@ -44,6 +44,14 @@
 				}
 			};
 
+            /*
+			 * Add a custom error handler, this ensures media files can be
+			 * downloaded if the player encounters an error.
+			 */
+			settings.customError = function ( media, node ) {
+				return '<a href="' + node.src + '">Download ' + node.src.substring( node.src.lastIndexOf( '/' ) + 1 ) + '</a>';
+			};
+			
 			// Only initialize new media elements.
 			$( '.wp-audio-shortcode, .wp-video-shortcode' )
 				.not( '.mejs-container' )
