@@ -954,7 +954,6 @@ Library = wp.media.controller.State.extend(/** @lends wp.media.controller.Librar
 		}
 
 		this._filterContext();
-		this.get('library').on( 'add', this._filterContext, this );
 
 		this.resetDisplays();
 	},
