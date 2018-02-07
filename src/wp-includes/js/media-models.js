@@ -644,7 +644,10 @@ var Attachments = Backbone.Collection.extend(/** @lends wp.media.model.Attachmen
 	validator: function( attachment ) {
 
 		// Filter out contextually created attachments (e.g. headers, logos, etc.).
-		if ( '' !== attachment.attributes.context ) {
+		if (
+			! _.isUndefined( attachment.attributes.context ) &&
+			'' !== attachment.attributes.context
+		) {
 			return false;
 		}
 
