@@ -4247,10 +4247,6 @@ Modal = wp.media.View.extend(/** @lends wp.media.view.Modal.prototype */{
 	tagName:  'div',
 	template: wp.template('media-modal'),
 
-	attributes: {
-		tabindex: 0
-	},
-
 	events: {
 		'click .media-modal-backdrop, .media-modal-close': 'escapeHandler',
 		'keydown': 'keydown'
@@ -4262,8 +4258,7 @@ Modal = wp.media.View.extend(/** @lends wp.media.view.Modal.prototype */{
 		_.defaults( this.options, {
 			container: document.body,
 			title:     '',
-			propagate: true,
-			freeze:    true
+			propagate: true
 		});
 
 		this.focusManager = new wp.media.view.FocusManager({
@@ -4318,7 +4313,6 @@ Modal = wp.media.View.extend(/** @lends wp.media.view.Modal.prototype */{
 	 */
 	open: function() {
 		var $el = this.$el,
-			options = this.options,
 			mceEditor;
 
 		if ( $el.is(':visible') ) {
@@ -4331,13 +4325,6 @@ Modal = wp.media.View.extend(/** @lends wp.media.view.Modal.prototype */{
 			this.attach();
 		}
 
-		// If the `freeze` option is set, record the window's scroll position.
-		if ( options.freeze ) {
-			this._freeze = {
-				scrollTop: $( window ).scrollTop()
-			};
-		}
-
 		// Disable page scrolling.
 		$( 'body' ).addClass( 'modal-open' );
 
@@ -4345,7 +4332,7 @@ Modal = wp.media.View.extend(/** @lends wp.media.view.Modal.prototype */{
 
 		// Try to close the onscreen keyboard
 		if ( 'ontouchend' in document ) {
-			if ( ( mceEditor = window.tinymce && window.tinymce.activeEditor )  && ! mceEditor.isHidden() && mceEditor.iframeElement ) {
+			if ( ( mceEditor = window.tinymce && window.tinymce.activeEditor ) && ! mceEditor.isHidden() && mceEditor.iframeElement ) {
 				mceEditor.iframeElement.focus();
 				mceEditor.iframeElement.blur();
 
@@ -4355,7 +4342,8 @@ Modal = wp.media.View.extend(/** @lends wp.media.view.Modal.prototype */{
 			}
 		}
 
-		this.$el.focus();
+		// Set initial focus on the content instead of this view element, to avoid page scrolling.
+		this.$( '.media-modal' ).focus();
 
 		return this.propagate('open');
 	},
@@ -4365,8 +4353,6 @@ Modal = wp.media.View.extend(/** @lends wp.media.view.Modal.prototype */{
 	 * @returns {wp.media.view.Modal} Returns itself to allow chaining
 	 */
 	close: function( options ) {
-		var freeze = this._freeze;
-
 		if ( ! this.views.attached || ! this.$el.is(':visible') ) {
 			return this;
 		}
@@ -4385,11 +4371,6 @@ Modal = wp.media.View.extend(/** @lends wp.media.view.Modal.prototype */{
 		}
 
 		this.propagate('close');
-
-		// If the `freeze` option is set, restore the container's scroll position.
-		if ( freeze ) {
-			$( window ).scrollTop( freeze.scrollTop );
-		}
 
 		if ( options && options.escape ) {
 			this.propagate('escape');
