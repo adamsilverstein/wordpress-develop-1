@@ -728,6 +728,19 @@
 			$( '#available-menu-items .menu-item-handle.item-added' ).removeClass( 'item-added' );
 
 			this.$search.val( '' );
+
+			// Clear search fields.
+			if ( this.$clearResults.hasClass( 'open' ) ) {
+				this.$clearResults.removeClass( 'open' );
+			}
+			
+			if ( this.$clearResults.hasClass( 'is-visible' ) ) {
+				this.$clearResults.removeClass( 'is-visible' );
+			}
+
+			if ( this.sectionContent.is(':visible') ) {
+				this.sectionContent.hide();
+			}
 		},
 
 		// Add a few keyboard enhancements to the panel.
