@@ -727,8 +727,7 @@
 			$( 'body' ).removeClass( 'adding-menu-items' );
 			$( '#available-menu-items .menu-item-handle.item-added' ).removeClass( 'item-added' );
 
-			this.$search.val( '' ).trigger( 'keyup' );;
-
+			this.$search.val( '' ).trigger( 'keyup' );
 		},
 
 		// Add a few keyboard enhancements to the panel.
