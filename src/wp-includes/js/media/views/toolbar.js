@@ -140,13 +140,18 @@ Toolbar = View.extend(/** @lends wp.media.view.Toolbar.prototype */{
 			}
 
 			var requires = button.options.requires,
-				disabled = false;
+				disabled = false,
+				modelsUploading = ! _.isEmpty( library.findWhere(  { 'uploading': true } ) );
 
 			// Prevent insertion of attachments if any of them are still uploading
 			if ( selection && selection.models ) {
 				disabled = _.some( selection.models, function( attachment ) {
 					return attachment.get('uploading') === true;
 				});
+			}
+
+			if ( requires.uploadingComplete && modelsUploading ) {
+				disabled = true;
 			}
 
 			if ( requires.selection && selection && ! selection.length ) {
