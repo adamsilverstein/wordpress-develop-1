@@ -3885,11 +3885,10 @@ Post = Select.extend(/** @lends wp.media.view.MediaFrame.Post.prototype */{
 					 */
 					click: function() {
 						var controller = this.controller,
-							state = controller.state(),
-							library = state.get('library');
+							state = controller.state();
 
 						controller.close();
-						state.trigger( 'update', library );
+						state.trigger( 'update', state.get('library') );
 
 						// Restore and reset the default state.
 						controller.setState( controller.options.state );
