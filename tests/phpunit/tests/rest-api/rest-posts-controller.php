@@ -2363,6 +2363,119 @@ class WP_Test_REST_Posts_Controller extends WP_Test_REST_Post_Type_Controller_Te
 		$this->assertEquals( $params['excerpt'], $post->post_excerpt );
 	}
 
+	public function test_rest_autosave_published_post() {
+		wp_set_current_user( self::$editor_id );
+
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/posts/%d', self::$post_id ) );
+		$request->add_header( 'content-type', 'application/json' );
+
+		$autosave_data = $this->set_post_data(
+			array(
+				'id' => self::$post_id,
+				'is_autosave' => true,
+				'content' => 'Updated post content',
+			)
+		);
+
+		$request->set_body( wp_json_encode( $autosave_data ) );
+		$response = $this->server->dispatch( $request );
+
+		$this->check_update_post_response( $response );
+		$new_data = $response->get_data();
+
+		// The published post shouldn't change.
+		$current_post = get_post( self::$post_id );
+		$this->assertEquals( $current_post->ID, $new_data['id'] );
+		$this->assertEquals( $current_post->post_title, $new_data['title']['raw'] );
+		$this->assertEquals( $current_post->post_content, $new_data['content']['raw'] );
+		$this->assertEquals( $current_post->post_excerpt, $new_data['excerpt']['raw'] );
+
+		$autosave_post = wp_get_post_autosave( self::$post_id );
+		$this->assertEquals( $autosave_data['title'], $autosave_post->post_title );
+		$this->assertEquals( $autosave_data['content'], $autosave_post->post_content );
+		$this->assertEquals( $autosave_data['excerpt'], $autosave_post->post_excerpt );
+	}
+
+	public function test_rest_autosave_draft_post_same_author() {
+		wp_set_current_user( self::$editor_id );
+
+		$post_data = array(
+			'post_content' => 'Test post content',
+			'post_title'   => 'Test post title',
+			'post_excerpt' => 'Test post excerpt',
+		);
+		$post_id = wp_insert_post( $post_data );
+
+		$autosave_data = array(
+			'id' => $post_id,
+			'is_autosave' => true,
+			'content' => 'Updated post content',
+		);
+
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/posts/%d', $post_id ) );
+		$request->add_header( 'content-type', 'application/json' );
+		$request->set_body( wp_json_encode( $autosave_data ) );
+		$response = $this->server->dispatch( $request );
+
+		$this->check_update_post_response( $response );
+		$new_data = $response->get_data();
+
+		// The draft post should be updated.
+		$this->assertEquals( $post_id, $new_data['id'] );
+		$this->assertEquals( $autosave_data['content'], $new_data['content']['raw'] );
+
+		$post = get_post( $post_id );
+		$this->assertEquals( $post_data['post_title'], $post->post_title );
+		$this->assertEquals( $autosave_data['content'], $post->post_content );
+		$this->assertEquals( $post_data['post_excerpt'], $post->post_excerpt );
+
+		wp_delete_post( $post_id );
+	}
+
+	public function test_rest_autosave_draft_post_different_author() {
+		wp_set_current_user( self::$editor_id );
+
+		$post_data = array(
+			'post_content' => 'Test post content',
+			'post_title'   => 'Test post title',
+			'post_excerpt' => 'Test post excerpt',
+			'post_author'  => ++self::$editor_id,
+		);
+		$post_id = wp_insert_post( $post_data );
+
+		$autosave_data = array(
+			'id' => $post_id,
+			'is_autosave' => true,
+			'content' => 'Updated post content',
+		);
+
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/posts/%d', $post_id ) );
+		$request->add_header( 'content-type', 'application/json' );
+		$request->set_body( wp_json_encode( $autosave_data ) );
+		$response = $this->server->dispatch( $request );
+
+		$this->check_update_post_response( $response );
+		$new_data = $response->get_data();
+
+
+		// The draft post shouldn't change.
+		$current_post = get_post( $post_id );
+		$this->assertEquals( $current_post->ID, $new_data['id'] );
+		$this->assertEquals( $current_post->post_title, $new_data['title']['raw'] );
+		$this->assertEquals( $current_post->post_content, $new_data['content']['raw'] );
+		$this->assertEquals( $current_post->post_excerpt, $new_data['excerpt']['raw'] );
+
+		$autosave_post = wp_get_post_autosave( $post_id );
+		// No changes
+		$this->assertEquals( $current_post->post_title, $autosave_post->post_title );
+		$this->assertEquals( $current_post->post_excerpt, $autosave_post->post_excerpt );
+
+		// Has changes
+		$this->assertEquals( $autosave_data['content'], $autosave_post->post_content );
+
+		wp_delete_post( $post_id );
+	}
+
 	public function test_rest_update_post_raw() {
 		wp_set_current_user( self::$editor_id );
 

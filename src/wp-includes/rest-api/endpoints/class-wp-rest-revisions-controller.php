@@ -188,6 +188,41 @@ class WP_REST_Revisions_Controller extends WP_REST_Controller {
 	}
 
 	/**
+	 * Get autosave revision if it exists.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param  WP_REST_Request $request Full data about the request.
+	 * @return WP_Post|WP_Error Revision post object if post autosave exists, WP_Error otherwise.
+	 */
+	protected function get_autosave( $request ) {
+		$parent = $this->get_parent( $request['parent'] );
+		if ( is_wp_error( $parent ) ) {
+			return $parent;
+		}
+
+		$user_id = 0;
+
+		if ( ! empty( $request['author'] ) ) {
+			$post_author = (int) $request['author'];
+			$user_obj = get_userdata( $post_author );
+
+			if ( ! $user_obj ) {
+				return new WP_Error( 'rest_invalid_author', __( 'Invalid author ID.' ), array( 'status' => 400 ) );
+			} else {
+				$user_id = $post_author;
+			}
+		}
+
+		$revision = wp_get_post_autosave( $parent->ID, $user_id );
+		if ( empty( $revision ) || empty( $revision->ID ) || 'revision' !== $revision->post_type ) {
+			return new WP_Error( 'rest_post_no_autosave', __( 'Autosave does not exist.' ), array( 'status' => 404 ) );
+		}
+
+		return $revision;
+	}
+
+	/**
 	 * Gets a collection of revisions.
 	 *
 	 * @since 4.7.0
@@ -201,7 +236,15 @@ class WP_REST_Revisions_Controller extends WP_REST_Controller {
 			return $parent;
 		}
 
-		$revisions = wp_get_post_revisions( $request['parent'] );
+		$revisions = wp_get_post_revisions( $parent->ID );
+
+		if ( ! empty( $request['is_autosave'] ) ) {
+			foreach ( $revisions as $revision_id => $revision ) {
+				if ( ! wp_is_post_autosave( $revision ) ) {
+					unset( $revisions[ $revision_id ] );
+				}
+			}
+		}
 
 		$response = array();
 		foreach ( $revisions as $revision ) {
@@ -237,7 +280,12 @@ class WP_REST_Revisions_Controller extends WP_REST_Controller {
 			return $parent;
 		}
 
-		$revision = $this->get_revision( $request['id'] );
+		if ( ! empty( $request['is_autosave'] ) ) {
+			$revision = $this->get_autosave( $request );
+		} else {
+			$revision = $this->get_revision( $request['id'] );
+		}
+
 		if ( is_wp_error( $revision ) ) {
 			return $revision;
 		}

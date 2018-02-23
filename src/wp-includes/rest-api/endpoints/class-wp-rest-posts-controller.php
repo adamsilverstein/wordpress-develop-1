@@ -657,19 +657,92 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function update_item( $request ) {
-		$valid_check = $this->get_post( $request['id'] );
-		if ( is_wp_error( $valid_check ) ) {
-			return $valid_check;
+		$existing_post = $this->get_post( $request['id'] );
+		if ( is_wp_error( $existing_post ) ) {
+			return $existing_post;
 		}
 
-		$post = $this->prepare_item_for_database( $request );
+		$new_post = $this->prepare_item_for_database( $request );
 
-		if ( is_wp_error( $post ) ) {
-			return $post;
+		if ( is_wp_error( $new_post ) ) {
+			return $new_post;
 		}
 
-		// convert the post object to an array, otherwise wp_update_post will expect non-escaped input.
-		$post_id = wp_update_post( wp_slash( (array) $post ), true );
+		// Keep the ID for later.
+		$post_id = $new_post->ID;
+
+		// The following functions expect array.
+		$post_data = get_object_vars( $new_post );
+
+		// Autosave
+		if ( ! empty( $request['is_autosave'] ) ) {
+			if ( ! defined( 'DOING_AUTOSAVE' ) ) {
+				define( 'DOING_AUTOSAVE', true );
+			}
+
+			$post_author = get_current_user_id();
+			$autosave_id = 0;
+
+			// Also needs to check post lock.
+			if ( $post_author == $existing_post->post_author && ( 'auto-draft' === $existing_post->post_status || 'draft' === $existing_post->post_status ) ) {
+				// Drafts and auto-drafts are just overwritten by autosave for the same user.
+				// Expects escaped input when array.
+				$post_id = wp_update_post( wp_slash( $post_data ), true );
+			} else {
+				// Store one autosave per author. If there is already an autosave, update it.
+				if ( $old_autosave = wp_get_post_autosave( $post_data['ID'], $post_author ) ) {
+					$new_autosave                = _wp_post_revision_data( $post_data, true );
+					$new_autosave['ID']          = $old_autosave->ID;
+					$new_autosave['post_author'] = $post_author;
+
+					// If the new autosave has the same content as the post, delete the autosave.
+					$autosave_is_different = false;
+
+					foreach ( array_intersect( array_keys( $new_autosave ), array_keys( _wp_post_revision_fields( $existing_post ) ) ) as $field ) {
+						if ( normalize_whitespace( $new_autosave[ $field ] ) != normalize_whitespace( $existing_post->$field ) ) {
+							$autosave_is_different = true;
+							break;
+						}
+					}
+
+					if ( ! $autosave_is_different ) {
+						wp_delete_post_revision( $old_autosave->ID );
+					} else {
+						/**
+						 * Fires before an autosave is stored via the REST API.
+						 *
+						 * @since 5.0.0
+						 *
+						 * @param array           $new_autosave Post array - the autosave that is about to be saved.
+						 * @param WP_REST_Request $request      Request object.     
+						 */
+						do_action( 'rest_creating_autosave', $new_autosave, $request );
+
+						$autosave_id = wp_update_post( $new_autosave );
+					}
+				} else {
+					// Need to merge the autosave data with some of the existing post data.
+					foreach ( array_keys( _wp_post_revision_fields( $existing_post ) ) as $field ) {
+						if ( empty( $post_data[ $field ] ) ) {
+							$post_data[ $field ] = $existing_post->$field;
+						}
+					}
+
+					/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php */
+					do_action( 'rest_creating_autosave', $post_data, $request );
+
+					$autosave_id = _wp_put_post_revision( $post_data, true );
+				}
+
+				if ( is_wp_error( $autosave_id ) ) {
+					// Pass on the error.
+					$post_id = $autosave_id;
+				}
+			}
+		} else {
+			// Expects escaped input when array.
+			$post_id = wp_update_post( wp_slash( $post_data ), true );
+		}
 
 		if ( is_wp_error( $post_id ) ) {
 			if ( 'db_update_error' === $post_id->get_error_code() ) {

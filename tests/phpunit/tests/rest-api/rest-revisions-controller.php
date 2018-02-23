@@ -44,6 +44,16 @@ class WP_Test_REST_Revisions_Controller extends WP_Test_REST_Controller_Testcase
 				'ID'           => self::$post_id,
 			)
 		);
+
+		// Autosave, different user
+		wp_set_current_user( self::$contributor_id );
+		_wp_put_post_revision(
+			array(
+				'post_content' => 'This content is better autosaved.',
+				'ID'           => self::$post_id,
+			),
+			true
+		);
 		wp_set_current_user( 0 );
 	}
 
@@ -64,6 +74,8 @@ class WP_Test_REST_Revisions_Controller extends WP_Test_REST_Controller_Testcase
 		$this->revision_id1 = $this->revision_1->ID;
 		$this->revision_2   = array_pop( $revisions );
 		$this->revision_id2 = $this->revision_2->ID;
+		$this->revision_3   = array_pop( $revisions );
+		$this->revision_id3 = $this->revision_3->ID;
 	}
 
 	public function test_register_routes() {
@@ -95,14 +107,17 @@ class WP_Test_REST_Revisions_Controller extends WP_Test_REST_Controller_Testcase
 		$response = rest_get_server()->dispatch( $request );
 		$data     = $response->get_data();
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertCount( 2, $data );
+		$this->assertCount( 3, $data );
 
 		// Reverse chron
-		$this->assertEquals( $this->revision_id2, $data[0]['id'] );
-		$this->check_get_revision_response( $data[0], $this->revision_2 );
+		$this->assertEquals( $this->revision_id3, $data[0]['id'] );
+		$this->check_get_revision_response( $data[0], $this->revision_3 );
 
-		$this->assertEquals( $this->revision_id1, $data[1]['id'] );
-		$this->check_get_revision_response( $data[1], $this->revision_1 );
+		$this->assertEquals( $this->revision_id2, $data[1]['id'] );
+		$this->check_get_revision_response( $data[1], $this->revision_2 );
+
+		$this->assertEquals( $this->revision_id1, $data[2]['id'] );
+		$this->check_get_revision_response( $data[2], $this->revision_1 );
 	}
 
 	public function test_get_items_no_permission() {
@@ -153,6 +168,20 @@ class WP_Test_REST_Revisions_Controller extends WP_Test_REST_Controller_Testcase
 		$data   = $response->get_data();
 		$this->assertEqualSets( $fields, array_keys( $data ) );
 		$this->assertSame( self::$editor_id, $data['author'] );
+	}
+
+	public function test_get_autosave_item() {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id3 );
+		$request->set_param( 'is_autosave', true );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$data     = $response->get_data();
+
+		$this->assertNotEquals( self::$editor_id, $data['author'] );
+		$this->assertEquals( $this->revision_id3, $data['id'] );
+		$this->check_get_revision_response( $response, $this->revision_3 );
 	}
 
 	public function test_get_item_embed_context() {
@@ -330,8 +359,10 @@ class WP_Test_REST_Revisions_Controller extends WP_Test_REST_Controller_Testcase
 		$this->assertEquals( mysql_to_rfc3339( $revision->post_date ), $response['date'] );
 		$this->assertEquals( mysql_to_rfc3339( $revision->post_date_gmt ), $response['date_gmt'] );
 
-		$rendered_excerpt = apply_filters( 'the_excerpt', apply_filters( 'get_the_excerpt', $revision->post_excerpt, $revision ) );
-		$this->assertEquals( $rendered_excerpt, $response['excerpt']['rendered'] );
+		if ( ! empty( $revision->post_excerpt ) ) {
+			$rendered_excerpt = apply_filters( 'the_excerpt', apply_filters( 'get_the_excerpt', $revision->post_excerpt, $revision ) );
+			$this->assertEquals( $rendered_excerpt, $response['excerpt']['rendered'] );
+		}
 
 		$rendered_guid = apply_filters( 'get_the_guid', $revision->guid, $revision->ID );
 		$this->assertEquals( $rendered_guid, $response['guid']['rendered'] );

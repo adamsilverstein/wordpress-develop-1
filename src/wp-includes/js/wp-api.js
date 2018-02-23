@@ -291,6 +291,18 @@
 		var hasDate = false,
 
 			/**
+			 * Specify the models that save autosaves.
+			 */
+			canSaveAutosaves = wpApiSettings.canSaveAutosaves ||
+				[ 'Post', 'Page' ];
+
+			/**
+			 * Specify the models that retrieve autosaves.
+			 */
+			canRetrieveAutosaves = wpApiSettings.canRetrieveAutosaves ||
+				[ 'Post', 'Page' ];
+
+			/**
 			 * Array of parseable dates.
 			 *
 			 * @type {string[]}.
@@ -741,6 +753,24 @@
 				getFeaturedMedia: function() {
 					return buildModelGetter( this, this.get( 'featured_media' ), 'Media', 'wp:featuredmedia', 'source_url' );
 				}
+			},
+
+			/**
+			 * Add a helper to enable saving autosaves.
+			 */
+			autosaveMixin = {
+			autosave: function() {
+					return this.save( { is_autosave: true } );
+				},
+			},
+
+			/**
+			 * Add a helper to enable retrieving autosaves.
+			 */
+			getAutosaveMixin = {
+				getAutosave: function() {
+					return this.fetch( { is_autosave: true } );
+				}
 			};
 
 		// Exit if we don't have valid model defaults.
@@ -789,6 +819,13 @@
 		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Revisions' ] ) ) {
 			model = model.extend( RevisionsMixin );
 		}
+
+		// Add Autosaving for specific models
+		if ( _.indexOf( modelsThatSaveAutosaves, modelClassName ) >= 0 ) {
+			console.log( modelClassName );
+			model = model.extend( autosaveMixin );
+		}
+
 
 		return model;
 	};
