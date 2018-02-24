@@ -287,14 +287,19 @@
 	 * @param {Object} 	       loadingObjects An object containing the models and collections we are building.
 	 */
 	wp.api.utils.addMixinsAndHelpers = function( model, modelClassName, loadingObjects ) {
-
 		var hasDate = false,
 
 			/**
 			 * Specify the models that save autosaves.
 			 */
-			modelsSupportingAutosave = wpApiSettings.modelsSupportingAutosave ||
+			canSaveAutosaves = wpApiSettings.canSaveAutosaves ||
 				[ 'Post', 'Page' ],
+
+			/**
+			 * Specify the models that retrieve autosaves.
+			 */
+			canRetrieveAutosaves = wpApiSettings.canRetrieveAutosaves ||
+				[ 'PostRevision', 'PageRevision' ],
 
 			/**
 			 * Array of parseable dates.
@@ -756,15 +761,25 @@
 				autosave: function() {
 					return this.save( { is_autosave: true } );
 				},
+			},
 
+			/**
+			 * Add a helper to enable retrieving autosaves.
+			 */
+			getAutosaveMixin = {
 				getAutosave: function() {
 					return this.fetch( { data: { is_autosave: true } } );
 				}
 			};
 
 		// Add Autosaving for specific models
-		if ( _.indexOf( modelsSupportingAutosave, modelClassName ) >= 0 ) {
+		if ( _.indexOf( canSaveAutosaves, modelClassName ) >= 0 ) {
 			model = model.extend( autosaveMixin );
+		}
+
+		// Add Autosaving for specific models
+		if ( _.indexOf( canRetrieveAutosaves, modelClassName ) >= 0 ) {
+			model = model.extend( getAutosaveMixin );
 		}
 
 		// Exit if we don't have valid model defaults.
@@ -778,7 +793,6 @@
 				hasDate = true;
 			}
 		} );
-		console.log( 'addMixinsAndHelpers', modelClassName  );
 
 		// Add the TimeStampedMixin for models that contain a date field.
 		if ( hasDate ) {
@@ -817,6 +831,7 @@
 
 
 
+//getAutosaveMixin
 		return model;
 	};
 
