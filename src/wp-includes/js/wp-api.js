@@ -829,9 +829,6 @@
 			model = model.extend( RevisionsMixin );
 		}
 
-
-
-//getAutosaveMixin
 		return model;
 	};
 
