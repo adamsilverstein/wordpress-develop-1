@@ -760,7 +760,7 @@
 			autosaveMixin = {
 				autosave: function() {
 					return this.save( { is_autosave: true } );
-				},
+				}
 			},
 
 			/**
