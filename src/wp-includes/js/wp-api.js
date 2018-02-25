@@ -280,6 +280,36 @@
 	};
 
 	/**
+	 * Add mixins and helpers to collections.
+	 *
+	 * @param {Backbone Collection} collection          The collection to attach helpers and mixins to.
+	 * @param {string}         collectionClassName The classname of the constructed collection.
+	 */
+	wp.api.utils.addCollectionMixinsAndHelpers = function( collection, collectionClassName ) {
+		/**
+		 * Specify the collections that retrieve autosaves.
+		 */
+		var canRetrieveAutosavesCollections = wpApiSettings.canRetrieveAutosavesCollections ||
+			[ 'PostRevisions', 'PageRevisions' ],
+
+		/**
+		 * Add a helper to enable retrieving autosaves.
+		 */
+		getAutosaveMixin = {
+			getAutosave: function() {
+				return this.fetch( { data: { is_autosave: true } } );
+			}
+		};
+
+		// Add Autosaving for collections that can get autosaves.
+		if ( _.indexOf( canRetrieveAutosavesCollections, collectionClassName ) >= 0 ) {
+			collection = collection.extend( getAutosaveMixin );
+		}
+
+		return collection;
+	}
+
+	/**
 	 * Add mixins and helpers to models depending on their defaults.
 	 *
 	 * @param {Backbone Model} model          The model to attach helpers and mixins to.
@@ -1489,6 +1519,11 @@
 			// Add mixins and helpers for each of the models.
 			_.each( loadingObjects.models, function( model, index ) {
 				loadingObjects.models[ index ] = wp.api.utils.addMixinsAndHelpers( model, index, loadingObjects );
+			} );
+
+			// Add mixins and helpers for each of the collections.
+			_.each( loadingObjects.collections, function( collection, index ) {
+				loadingObjects.collections[ index ] = wp.api.utils.addCollectionMixinsAndHelpers( collection, index );
 			} );
 
 			// Set the routeModel models and collections.
