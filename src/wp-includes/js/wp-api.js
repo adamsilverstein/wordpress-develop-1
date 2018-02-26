@@ -66,6 +66,54 @@
 		} );
 	};
 
+	/**
+	 * Mapping associative array since WP object names do not map directly to Backbone models.
+	 */
+	wp.api.utils.typeModelMapping = {
+		'attachment': 'media',
+		'post_tag'  : 'tag',
+	}
+
+	/**
+	 * Mapping associative array since WP object names do not map directly to Backbone collections.
+	 */
+	wp.api.utils.typeCollectionMapping = {
+		'category': 'categories',
+		'page'    : 'pages',
+		'post'    : 'posts',
+		'post_tag': 'tags',
+	}
+
+	/**
+	 * Determine model based on object type.
+	 *
+	 * @param {string} type    The object type.
+	 *
+	 * @return {Backbone Model} The model found for given type. Undefined if not found.
+	 */
+	wp.api.getModelByType = function( type ) {
+		if ( wp.api.utils.typeModelMapping[ type ] ) {
+			type = wp.api.utils.typeModelMapping[ type ];
+		}
+		var modelName = wp.api.utils.capitalizeAndCamelCaseDashes( type );
+		return wp.api.models[ modelName ];
+	};
+
+	/**
+	 * Determine collection based on object type.
+	 *
+	 * @param {string} type    The object type.
+	 *
+	 * @return {Backbone Model} The collection found for given type. Undefined if not found.
+	 */
+	wp.api.getCollectionByType = function( type ) {
+		if ( wp.api.utils.typeCollectionMapping[ type ] ) {
+			type = wp.api.utils.typeCollectionMapping[ type ];
+		}
+		var collectionName = wp.api.utils.capitalizeAndCamelCaseDashes( type );
+		return wp.api.collections[ collectionName ];
+	};
+
 
 	/**
 	 * ECMAScript 5 shim, adapted from MDN.
