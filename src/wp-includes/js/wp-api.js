@@ -867,7 +867,12 @@
 					options.complete = function( xhr ) {
 						var returnedNonce = xhr.getResponseHeader( 'X-WP-Nonce' );
 
-						if ( returnedNonce && ! _.isEmpty( returnedNonce ) && _.isFunction( model.nonce ) && model.nonce() !== returnedNonce ) {
+						if (
+							returnedNonce &&
+							! _.isEmpty( returnedNonce ) &&
+							_.isFunction( model.nonce ) &&
+							model.nonce() !== returnedNonce
+						) {
 							model.endpointModel.set( 'nonce', returnedNonce );
 						}
 					};
