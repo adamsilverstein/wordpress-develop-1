@@ -87,7 +87,7 @@
 	/**
 	 * Determine model based on object type.
 	 *
-	 * @param {string} type    The object type.
+	 * @param {string} type     The object type.
 	 *
 	 * @return {Backbone Model} The model found for given type. Undefined if not found.
 	 */
@@ -102,7 +102,7 @@
 	/**
 	 * Determine collection based on object type.
 	 *
-	 * @param {string} type    The object type.
+	 * @param {string} type     The object type.
 	 *
 	 * @return {Backbone Model} The collection found for given type. Undefined if not found.
 	 */
