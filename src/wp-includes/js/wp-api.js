@@ -72,6 +72,7 @@
 	wp.api.utils.typeModelMapping = {
 		'attachment': 'media',
 		'post_tag'  : 'tag',
+		'me'        : 'users-me'
 	}
 
 	/**
@@ -81,7 +82,7 @@
 		'category': 'categories',
 		'page'    : 'pages',
 		'post'    : 'posts',
-		'post_tag': 'tags',
+		'post_tag': 'tags'
 	}
 
 	/**

@@ -421,4 +421,68 @@
 	} );
 
 
+
+		// Test that getModelByType and getCollectionByType return the correct objects.
+		var collectionsToTypeExpect = [
+			{ name:'category',       expect: 'Categories' },
+			{ name:'page',           expect: 'Pages' },
+			{ name:'post',           expect: 'Posts' },
+			{ name:'post_tag',       expect: 'Tags' },
+			{ name:'categories',     expect: 'Categories' },
+			{ name:'comments',       expect: 'Comments' },
+			{ name:'embed',          expect: 'Embed' },
+			{ name:'media',          expect: 'Media' },
+			{ name:'page-revisions', expect: 'PageRevisions' },
+			{ name:'pages',          expect: 'Pages' },
+			{ name:'post-revisions', expect: 'PostRevisions' },
+			{ name:'posts',          expect: 'Posts' },
+			{ name:'statuses',       expect: 'Statuses' },
+			{ name:'tags',           expect: 'Tags' },
+			{ name:'taxonomies',     expect: 'Taxonomies' },
+			{ name:'types',          expect: 'Types' },
+			{ name:'users',          expect: 'Users' }
+		];
+		_.each( collectionsToTypeExpect, function( collectionType ) {
+			wp.api.loadPromise.done( function() {
+				var name = wp.api.getCollectionByType( collectionType.name ).prototype.name;
+				QUnit.test( 'Check getCollectionByType support for ' + collectionType.name + '.', function( assert ) {
+					assert.equal(
+						name,
+						collectionType.expect,
+						'Expected getCollectionByType( ' + collectionType.name + ' ) to return the correct collection.'
+					);
+				} );
+			} );
+		} );
+
+	var modelsToTypeexpect = [
+		{ name:'categories',     expect: wp.api.models.Categories },
+		{ name:'comments',       expect: wp.api.models.Comments },
+		{ name:'embed',          expect: wp.api.models.Embed },
+		{ name:'media',          expect: wp.api.models.Media },
+		{ name:'page-revisions', expect: wp.api.models.PageRevisions },
+		{ name:'pages',          expect: wp.api.models.Pages },
+		{ name:'post-revisions', expect: wp.api.models.PostRevisions },
+		{ name:'posts',          expect: wp.api.models.Posts },
+		{ name:'statuses',       expect: wp.api.models.Statuses },
+		{ name:'tags',           expect: wp.api.models.Tags },
+		{ name:'taxonomies',     expect: wp.api.models.Taxonomies },
+		{ name:'types',          expect: wp.api.models.Types },
+		{ name:'users',          expect: wp.api.models.Users },
+		{ name:'me',             expect: wp.api.models.UsersMe },
+		{ name:'attachment',     expect: wp.api.models.Media },
+		{ name:'post_tag',       expect: wp.api.models.Tag }
+	];
+	_.each( modelsToTypeexpect, function( modelType ) {
+		wp.api.loadPromise.done( function() {
+			var name = wp.api.getModelByType( modelType.name ).prototype.name;
+			QUnit.test( 'Check getModelByType support for ' + modelType.name + '.', function( assert ) {
+				assert.equal(
+					name,
+					modelType.expect,
+					'Expected getModelByType( ' + modelType.name + ' ) to return the correct model.'
+				);
+			} );
+		} );
+	} );
 } )( window.QUnit );
