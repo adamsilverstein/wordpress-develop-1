@@ -1,12 +1,20 @@
+var Library = wp.media.controller.Library,
+	l10n = wp.media.view.l10n,
+	GalleryEdit;
+
 /**
  * wp.media.controller.GalleryEdit
  *
  * A state for editing a gallery's images and settings.
  *
+ * @since 3.5.0
+ *
  * @class
  * @augments wp.media.controller.Library
  * @augments wp.media.controller.State
  * @augments Backbone.Model
+ *
+ * @memberOf wp.media.controller
  *
  * @param {object}                     [attributes]                       The attributes hash passed to the state.
  * @param {string}                     [attributes.id=gallery-edit]       Unique identifier.
@@ -22,19 +30,15 @@
  * @param {boolean}                    [attributes.describe=true]         Whether to offer UI to describe attachments - e.g. captioning images in a gallery.
  * @param {boolean}                    [attributes.displaySettings=true]  Whether to show the attachment display settings interface.
  * @param {boolean}                    [attributes.dragInfo=true]         Whether to show instructional text about the attachments being sortable.
- * @param {int}                        [attributes.idealColumnWidth=170]  The ideal column width in pixels for attachments.
+ * @param {number}                     [attributes.idealColumnWidth=170]  The ideal column width in pixels for attachments.
  * @param {boolean}                    [attributes.editing=false]         Whether the gallery is being created, or editing an existing instance.
- * @param {int}                        [attributes.priority=60]           The priority for the state link in the media menu.
+ * @param {number}                     [attributes.priority=60]           The priority for the state link in the media menu.
  * @param {boolean}                    [attributes.syncSelection=false]   Whether the Attachments selection should be persisted from the last state.
  *                                                                        Defaults to false for this state, because the library passed in  *is* the selection.
  * @param {view}                       [attributes.AttachmentView]        The single `Attachment` view to be used in the `Attachments`.
  *                                                                        If none supplied, defaults to wp.media.view.Attachment.EditLibrary.
  */
-var Library = wp.media.controller.Library,
-	l10n = wp.media.view.l10n,
-	GalleryEdit;
-
-GalleryEdit = Library.extend({
+GalleryEdit = Library.extend(/** @lends wp.media.controller.GalleryEdit.prototype */{
 	defaults: {
 		id:               'gallery-edit',
 		title:            l10n.editGalleryTitle,
