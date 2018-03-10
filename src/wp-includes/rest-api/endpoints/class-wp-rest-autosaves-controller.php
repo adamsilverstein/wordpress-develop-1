@@ -152,7 +152,7 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	public function create_item( $request ) {
 
 		// Map new fields onto the existing post data.
-		$parent            = $this->revision_controller->get_parent( $request['parent'] );
+		$parent            = $this->revision_controller->get_parent( $request->get_param( 'parent' ) );
 		$prepared_post     = $this->parent_controller->prepare_item_for_database( $request );
 		$prepared_post->ID = $parent->ID;
 
@@ -191,17 +191,18 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	 *
 	 * @since 5.0.0
 	 *
-	 * @param int $id Supplied ID.
+	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_Post|WP_Error Revision post object if ID is valid, WP_Error otherwise.
 	 */
-	public function get_item( $id ) {
+	public function get_item( $request ) {
+		$id = $request->get_param( 'id' );
 		$error = new WP_Error( 'rest_post_invalid_id', __( 'Invalid autosave ID.', 'gutenberg' ), array( 'status' => 404 ) );
 		if ( (int) $id <= 0 ) {
 			return $error;
 		}
 
 		$autosave = get_post( (int) $id );
-		if ( empty( $autosave ) || empty( $autosave->ID ) || 'autosave' !== $autosave->post_type ) {
+		if ( empty( $autosave ) || empty( $autosave->ID ) || 'revision' !== $autosave->post_type ) {
 			return $error;
 		}
 
@@ -219,12 +220,12 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function get_items( $request ) {
-		$parent = $this->revision_controller->get_parent( $request['parent'] );
+		$parent = $this->revision_controller->get_parent( $request->get_param( 'parent' ) );
 		if ( is_wp_error( $parent ) ) {
 			return $parent;
 		}
 
-		$autosave = wp_get_post_autosave( $request['parent'] );
+		$autosave = wp_get_post_autosave( $request->get_param( 'parent' ) );
 
 		if ( ! $autosave ) {
 			return array();
