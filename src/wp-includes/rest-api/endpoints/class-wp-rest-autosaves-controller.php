@@ -159,13 +159,9 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		// If the parent post a draft, autosaving updates it and does not create a revision.
 		if ( 'draft' === $parent->post_status ) {
 
-			// Disable revisions.
-			remove_action( 'post_updated', 'wp_save_post_revision' );
-
+			define( 'DOING_AUTOSAVE', true );
 			$autosave_id = wp_update_post( (array) $prepared_post, true );
 
-			// Re-enable revisions.
-			add_action( 'post_updated', 'wp_save_post_revision' );
 			if ( ! is_wp_error( $autosave_id ) ) {
 				$post = get_post( $autosave_id );
 			}
