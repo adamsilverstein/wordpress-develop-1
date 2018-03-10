@@ -783,6 +783,223 @@ mockedApiResponse.Schema = {
                 }
             ]
         },
+        "/wp/v2/posts/(?P<parent>[\\d]+)/autosaves": {
+            "namespace": "wp/v2",
+            "methods": [
+                "GET",
+                "POST"
+            ],
+            "endpoints": [
+                {
+                    "methods": [
+                        "GET"
+                    ],
+                    "args": {
+                        "parent": {
+                            "required": false,
+                            "description": "The ID for the parent of the object.",
+                            "type": "integer"
+                        },
+                        "context": {
+                            "required": false,
+                            "default": "view",
+                            "enum": [
+                                "view",
+                                "embed",
+                                "edit"
+                            ],
+                            "description": "Scope under which the request is made; determines fields present in response.",
+                            "type": "string"
+                        }
+                    }
+                },
+                {
+                    "methods": [
+                        "POST"
+                    ],
+                    "args": {
+                        "parent": {
+                            "required": false,
+                            "description": "The ID for the parent of the object.",
+                            "type": "integer"
+                        },
+                        "author": {
+                            "required": false,
+                            "description": "The ID for the author of the object.",
+                            "type": "integer"
+                        },
+                        "date": {
+                            "required": false,
+                            "description": "The date the object was published, in the site's timezone.",
+                            "type": "string"
+                        },
+                        "date_gmt": {
+                            "required": false,
+                            "description": "The date the object was published, as GMT.",
+                            "type": "string"
+                        },
+                        "id": {
+                            "required": false,
+                            "description": "Unique identifier for the object.",
+                            "type": "integer"
+                        },
+                        "modified": {
+                            "required": false,
+                            "description": "The date the object was last modified, in the site's timezone.",
+                            "type": "string"
+                        },
+                        "modified_gmt": {
+                            "required": false,
+                            "description": "The date the object was last modified, as GMT.",
+                            "type": "string"
+                        },
+                        "slug": {
+                            "required": false,
+                            "description": "An alphanumeric identifier for the object unique to its type.",
+                            "type": "string"
+                        },
+                        "title": {
+                            "required": false,
+                            "description": "The title for the object.",
+                            "type": "object"
+                        },
+                        "content": {
+                            "required": false,
+                            "description": "The content for the object.",
+                            "type": "object"
+                        },
+                        "excerpt": {
+                            "required": false,
+                            "description": "The excerpt for the object.",
+                            "type": "object"
+                        }
+                    }
+                }
+            ]
+        },
+        "/wp/v2/posts/(?P<parent>[\\d]+)/autosaves/(?P<id>[\\d]+)": {
+            "namespace": "wp/v2",
+            "methods": [
+                "GET",
+                "DELETE",
+                "POST"
+            ],
+            "endpoints": [
+                {
+                    "methods": [
+                        "GET"
+                    ],
+                    "args": {
+                        "parent": {
+                            "required": false,
+                            "description": "The ID for the parent of the object.",
+                            "type": "integer"
+                        },
+                        "id": {
+                            "required": false,
+                            "description": "Unique identifier for the object.",
+                            "type": "integer"
+                        },
+                        "context": {
+                            "required": false,
+                            "default": "view",
+                            "enum": [
+                                "view",
+                                "embed",
+                                "edit"
+                            ],
+                            "description": "Scope under which the request is made; determines fields present in response.",
+                            "type": "string"
+                        }
+                    }
+                },
+                {
+                    "methods": [
+                        "DELETE"
+                    ],
+                    "args": {
+                        "parent": {
+                            "required": false,
+                            "description": "The ID for the parent of the object.",
+                            "type": "integer"
+                        },
+                        "id": {
+                            "required": false,
+                            "description": "Unique identifier for the object.",
+                            "type": "integer"
+                        },
+                        "force": {
+                            "required": false,
+                            "default": false,
+                            "description": "Required to be true, as autosaves do not support trashing.",
+                            "type": "boolean"
+                        }
+                    }
+                },
+                {
+                    "methods": [
+                        "POST"
+                    ],
+                    "args": {
+                        "parent": {
+                            "required": false,
+                            "description": "The ID for the parent of the object.",
+                            "type": "integer"
+                        },
+                        "id": {
+                            "required": false,
+                            "description": "Unique identifier for the object.",
+                            "type": "integer"
+                        },
+                        "author": {
+                            "required": false,
+                            "description": "The ID for the author of the object.",
+                            "type": "integer"
+                        },
+                        "date": {
+                            "required": false,
+                            "description": "The date the object was published, in the site's timezone.",
+                            "type": "string"
+                        },
+                        "date_gmt": {
+                            "required": false,
+                            "description": "The date the object was published, as GMT.",
+                            "type": "string"
+                        },
+                        "modified": {
+                            "required": false,
+                            "description": "The date the object was last modified, in the site's timezone.",
+                            "type": "string"
+                        },
+                        "modified_gmt": {
+                            "required": false,
+                            "description": "The date the object was last modified, as GMT.",
+                            "type": "string"
+                        },
+                        "slug": {
+                            "required": false,
+                            "description": "An alphanumeric identifier for the object unique to its type.",
+                            "type": "string"
+                        },
+                        "title": {
+                            "required": false,
+                            "description": "The title for the object.",
+                            "type": "object"
+                        },
+                        "content": {
+                            "required": false,
+                            "description": "The content for the object.",
+                            "type": "object"
+                        },
+                        "excerpt": {
+                            "required": false,
+                            "description": "The excerpt for the object.",
+                            "type": "object"
+                        }
+                    }
+                }
+            ]
+        },
         "/wp/v2/pages": {
             "namespace": "wp/v2",
             "methods": [
@@ -1316,6 +1533,223 @@ mockedApiResponse.Schema = {
                             "default": false,
                             "description": "Required to be true, as revisions do not support trashing.",
                             "type": "boolean"
+                        }
+                    }
+                }
+            ]
+        },
+        "/wp/v2/pages/(?P<parent>[\\d]+)/autosaves": {
+            "namespace": "wp/v2",
+            "methods": [
+                "GET",
+                "POST"
+            ],
+            "endpoints": [
+                {
+                    "methods": [
+                        "GET"
+                    ],
+                    "args": {
+                        "parent": {
+                            "required": false,
+                            "description": "The ID for the parent of the object.",
+                            "type": "integer"
+                        },
+                        "context": {
+                            "required": false,
+                            "default": "view",
+                            "enum": [
+                                "view",
+                                "embed",
+                                "edit"
+                            ],
+                            "description": "Scope under which the request is made; determines fields present in response.",
+                            "type": "string"
+                        }
+                    }
+                },
+                {
+                    "methods": [
+                        "POST"
+                    ],
+                    "args": {
+                        "parent": {
+                            "required": false,
+                            "description": "The ID for the parent of the object.",
+                            "type": "integer"
+                        },
+                        "author": {
+                            "required": false,
+                            "description": "The ID for the author of the object.",
+                            "type": "integer"
+                        },
+                        "date": {
+                            "required": false,
+                            "description": "The date the object was published, in the site's timezone.",
+                            "type": "string"
+                        },
+                        "date_gmt": {
+                            "required": false,
+                            "description": "The date the object was published, as GMT.",
+                            "type": "string"
+                        },
+                        "id": {
+                            "required": false,
+                            "description": "Unique identifier for the object.",
+                            "type": "integer"
+                        },
+                        "modified": {
+                            "required": false,
+                            "description": "The date the object was last modified, in the site's timezone.",
+                            "type": "string"
+                        },
+                        "modified_gmt": {
+                            "required": false,
+                            "description": "The date the object was last modified, as GMT.",
+                            "type": "string"
+                        },
+                        "slug": {
+                            "required": false,
+                            "description": "An alphanumeric identifier for the object unique to its type.",
+                            "type": "string"
+                        },
+                        "title": {
+                            "required": false,
+                            "description": "The title for the object.",
+                            "type": "object"
+                        },
+                        "content": {
+                            "required": false,
+                            "description": "The content for the object.",
+                            "type": "object"
+                        },
+                        "excerpt": {
+                            "required": false,
+                            "description": "The excerpt for the object.",
+                            "type": "object"
+                        }
+                    }
+                }
+            ]
+        },
+        "/wp/v2/pages/(?P<parent>[\\d]+)/autosaves/(?P<id>[\\d]+)": {
+            "namespace": "wp/v2",
+            "methods": [
+                "GET",
+                "DELETE",
+                "POST"
+            ],
+            "endpoints": [
+                {
+                    "methods": [
+                        "GET"
+                    ],
+                    "args": {
+                        "parent": {
+                            "required": false,
+                            "description": "The ID for the parent of the object.",
+                            "type": "integer"
+                        },
+                        "id": {
+                            "required": false,
+                            "description": "Unique identifier for the object.",
+                            "type": "integer"
+                        },
+                        "context": {
+                            "required": false,
+                            "default": "view",
+                            "enum": [
+                                "view",
+                                "embed",
+                                "edit"
+                            ],
+                            "description": "Scope under which the request is made; determines fields present in response.",
+                            "type": "string"
+                        }
+                    }
+                },
+                {
+                    "methods": [
+                        "DELETE"
+                    ],
+                    "args": {
+                        "parent": {
+                            "required": false,
+                            "description": "The ID for the parent of the object.",
+                            "type": "integer"
+                        },
+                        "id": {
+                            "required": false,
+                            "description": "Unique identifier for the object.",
+                            "type": "integer"
+                        },
+                        "force": {
+                            "required": false,
+                            "default": false,
+                            "description": "Required to be true, as autosaves do not support trashing.",
+                            "type": "boolean"
+                        }
+                    }
+                },
+                {
+                    "methods": [
+                        "POST"
+                    ],
+                    "args": {
+                        "parent": {
+                            "required": false,
+                            "description": "The ID for the parent of the object.",
+                            "type": "integer"
+                        },
+                        "id": {
+                            "required": false,
+                            "description": "Unique identifier for the object.",
+                            "type": "integer"
+                        },
+                        "author": {
+                            "required": false,
+                            "description": "The ID for the author of the object.",
+                            "type": "integer"
+                        },
+                        "date": {
+                            "required": false,
+                            "description": "The date the object was published, in the site's timezone.",
+                            "type": "string"
+                        },
+                        "date_gmt": {
+                            "required": false,
+                            "description": "The date the object was published, as GMT.",
+                            "type": "string"
+                        },
+                        "modified": {
+                            "required": false,
+                            "description": "The date the object was last modified, in the site's timezone.",
+                            "type": "string"
+                        },
+                        "modified_gmt": {
+                            "required": false,
+                            "description": "The date the object was last modified, as GMT.",
+                            "type": "string"
+                        },
+                        "slug": {
+                            "required": false,
+                            "description": "An alphanumeric identifier for the object unique to its type.",
+                            "type": "string"
+                        },
+                        "title": {
+                            "required": false,
+                            "description": "The title for the object.",
+                            "type": "object"
+                        },
+                        "content": {
+                            "required": false,
+                            "description": "The content for the object.",
+                            "type": "object"
+                        },
+                        "excerpt": {
+                            "required": false,
+                            "description": "The excerpt for the object.",
+                            "type": "object"
                         }
                     }
                 }
