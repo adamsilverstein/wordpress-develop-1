@@ -4104,6 +4104,35 @@ mockedApiResponse.postRevisions = [
             "rendered": "http://example.org/?p=4"
         },
         "title": {
+            "rendered": ""
+        },
+        "content": {
+            "rendered": "<p>Autosave post content.</p>\n"
+        },
+        "excerpt": {
+            "rendered": ""
+        },
+        "_links": {
+            "parent": [
+                {
+                    "href": "http://example.org/index.php?rest_route=/wp/v2/posts/3"
+                }
+            ]
+        }
+    },
+    {
+        "author": 59,
+        "date": "2017-02-14T00:00:00",
+        "date_gmt": "2017-02-14T00:00:00",
+        "id": 427,
+        "modified": "2017-02-14T00:00:00",
+        "modified_gmt": "2017-02-14T00:00:00",
+        "parent": 426,
+        "slug": "426-revision-v1",
+        "guid": {
+            "rendered": "http://example.org/?p=427"
+        },
+        "title": {
             "rendered": "REST API Client Fixture: Post"
         },
         "content": {
@@ -4115,7 +4144,7 @@ mockedApiResponse.postRevisions = [
         "_links": {
             "parent": [
                 {
-                    "href": "http://example.org/index.php?rest_route=/wp/v2/posts/3"
+                    "href": "http://example.org/index.php?rest_route=/wp/v2/posts/426"
                 }
             ]
         }
@@ -4143,6 +4172,65 @@ mockedApiResponse.revision = {
     "excerpt": {
         "rendered": "<p>REST API Client Fixture: Post</p>\n"
     }
+};
+
+mockedApiResponse.postAutosaves = [
+    {
+        "author": 59,
+        "date": "2017-02-14T00:00:00",
+        "date_gmt": "2017-02-14T00:00:00",
+        "id": 428,
+        "modified": "2017-02-14T00:00:00",
+        "modified_gmt": "2017-02-14T00:00:00",
+        "parent": 426,
+        "slug": "426-autosave-v1",
+        "guid": {
+            "rendered": "http://example.org/?p=428"
+        },
+        "title": {
+            "rendered": ""
+        },
+        "content": {
+            "rendered": "<p>Autosave post content.</p>\n"
+        },
+        "excerpt": {
+            "rendered": ""
+        },
+        "_links": {
+            "parent": [
+                {
+                    "href": "http://example.org/index.php?rest_route=/426"
+                }
+            ]
+        }
+    }
+];
+
+mockedApiResponse.autosave = {
+    "ID": 427,
+    "post_author": "59",
+    "post_date": "2018-03-10 16:46:38",
+    "post_date_gmt": "2018-03-10 16:46:38",
+    "post_content": "Updated post content.",
+    "post_title": "REST API Client Fixture: Post",
+    "post_excerpt": "REST API Client Fixture: Post",
+    "post_status": "inherit",
+    "comment_status": "closed",
+    "ping_status": "closed",
+    "post_password": "",
+    "post_name": "426-revision-v1",
+    "to_ping": "",
+    "pinged": "",
+    "post_modified": "2018-03-10 16:46:38",
+    "post_modified_gmt": "2018-03-10 16:46:38",
+    "post_content_filtered": "",
+    "post_parent": 426,
+    "guid": "http://example.org/?p=427",
+    "menu_order": 0,
+    "post_type": "revision",
+    "post_mime_type": "",
+    "comment_count": "0",
+    "filter": "raw"
 };
 
 mockedApiResponse.PagesCollection = [
@@ -4273,6 +4361,35 @@ mockedApiResponse.pageRevisions = [
             "rendered": "http://example.org/?p=6"
         },
         "title": {
+            "rendered": ""
+        },
+        "content": {
+            "rendered": "<p>Autosave page content.</p>\n"
+        },
+        "excerpt": {
+            "rendered": ""
+        },
+        "_links": {
+            "parent": [
+                {
+                    "href": "http://example.org/index.php?rest_route=/wp/v2/pages/5"
+                }
+            ]
+        }
+    },
+    {
+        "author": 59,
+        "date": "2017-02-14T00:00:00",
+        "date_gmt": "2017-02-14T00:00:00",
+        "id": 430,
+        "modified": "2017-02-14T00:00:00",
+        "modified_gmt": "2017-02-14T00:00:00",
+        "parent": 429,
+        "slug": "429-revision-v1",
+        "guid": {
+            "rendered": "http://example.org/?p=430"
+        },
+        "title": {
             "rendered": "REST API Client Fixture: Page"
         },
         "content": {
@@ -4284,7 +4401,7 @@ mockedApiResponse.pageRevisions = [
         "_links": {
             "parent": [
                 {
-                    "href": "http://example.org/index.php?rest_route=/wp/v2/pages/5"
+                    "href": "http://example.org/index.php?rest_route=/wp/v2/pages/429"
                 }
             ]
         }
@@ -4312,6 +4429,65 @@ mockedApiResponse.pageRevision = {
     "excerpt": {
         "rendered": "<p>REST API Client Fixture: Page</p>\n"
     }
+};
+
+mockedApiResponse.pageAutosaves = [
+    {
+        "author": 59,
+        "date": "2017-02-14T00:00:00",
+        "date_gmt": "2017-02-14T00:00:00",
+        "id": 431,
+        "modified": "2017-02-14T00:00:00",
+        "modified_gmt": "2017-02-14T00:00:00",
+        "parent": 429,
+        "slug": "429-autosave-v1",
+        "guid": {
+            "rendered": "http://example.org/?p=431"
+        },
+        "title": {
+            "rendered": ""
+        },
+        "content": {
+            "rendered": "<p>Autosave page content.</p>\n"
+        },
+        "excerpt": {
+            "rendered": ""
+        },
+        "_links": {
+            "parent": [
+                {
+                    "href": "http://example.org/index.php?rest_route=/429"
+                }
+            ]
+        }
+    }
+];
+
+mockedApiResponse.pageAutosave = {
+    "ID": 430,
+    "post_author": "59",
+    "post_date": "2018-03-10 16:46:38",
+    "post_date_gmt": "2018-03-10 16:46:38",
+    "post_content": "Updated page content.",
+    "post_title": "REST API Client Fixture: Page",
+    "post_excerpt": "REST API Client Fixture: Page",
+    "post_status": "inherit",
+    "comment_status": "closed",
+    "ping_status": "closed",
+    "post_password": "",
+    "post_name": "429-revision-v1",
+    "to_ping": "",
+    "pinged": "",
+    "post_modified": "2018-03-10 16:46:38",
+    "post_modified_gmt": "2018-03-10 16:46:38",
+    "post_content_filtered": "",
+    "post_parent": 429,
+    "guid": "http://example.org/?p=430",
+    "menu_order": 0,
+    "post_type": "revision",
+    "post_mime_type": "",
+    "comment_count": "0",
+    "filter": "raw"
 };
 
 mockedApiResponse.MediaCollection = [
