@@ -65,8 +65,8 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		$this->parent_base         = ! empty( $post_type_object->rest_base ) ? $post_type_object->rest_base : $post_type_object->name;
 	}
 
-	/**
-	 * Registers routes for autosaves based on post types supporting autosaves.
+	/**o
+	 * Registers routes for autosaves.
 	 *
 	 * @since 5.0.0
 	 *
@@ -253,7 +253,7 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	/**
 	 * Creates autosave data for the specified post from $_POST data.
 	 *
-	 * From core post.php.
+	 * From wp-admin/post.php.
 	 *
 	 * @since 2.6.0
 	 *
@@ -288,11 +288,7 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 			}
 
 			/**
-			 * Fires before an autosave is stored.
-			 *
-			 * @since 4.1.0
-			 *
-			 * @param array $new_autosave Post array - the autosave that is about to be saved.
+			 * This filter is documented in wp-admin/post.php.
 			 */
 			do_action( 'wp_creating_autosave', $new_autosave );
 
