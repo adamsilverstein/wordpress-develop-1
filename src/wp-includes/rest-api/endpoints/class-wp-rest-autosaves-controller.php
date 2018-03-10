@@ -168,9 +168,10 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		} else {
 
 			// Non-draft posts - update the post, creating an autosave.
-			$autosave_id = $this->create_post_autosave( (array) $prepared_post );
-			$post        = get_post( $autosave_id );
+			$autosave_id         = $this->create_post_autosave( (array) $prepared_post );
+			$post                = get_post( $autosave_id );
 		}
+
 		$request->set_param( 'context', 'edit' );
 
 		$response = $this->prepare_item_for_response( $post, $request );
@@ -191,13 +192,13 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	 * @return WP_Post|WP_Error Revision post object if ID is valid, WP_Error otherwise.
 	 */
 	public function get_item( $request ) {
-		$id = $request->get_param( 'id' );
-		$error = new WP_Error( 'rest_post_invalid_id', __( 'Invalid autosave ID.', 'gutenberg' ), array( 'status' => 404 ) );
-		if ( (int) $id <= 0 ) {
+		$parent = $request->get_param( 'parent' );
+		$error  = new WP_Error( 'rest_post_invalid_id', __( 'Invalid autosave ID.', 'gutenberg' ), array( 'status' => 404 ) );
+		if ( (int) $parent <= 0 ) {
 			return $error;
 		}
+		$autosave = wp_get_post_autosave( (int) $parent );
 
-		$autosave = get_post( (int) $id );
 		if ( empty( $autosave ) || empty( $autosave->ID ) || 'revision' !== $autosave->post_type ) {
 			return $error;
 		}
@@ -297,4 +298,36 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		// Otherwise create the new autosave as a special post revision.
 		return _wp_put_post_revision( $post_data, true );
 	}
+
+	/**
+	 * Prepares the revision for the REST response.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param WP_Post         $post    Post revision object.
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function prepare_item_for_response( $post, $request ) {
+		$data = array();
+		$response = $this->revision_controller->prepare_item_for_response( $post, $request );
+
+		// Adjust the link from revision to autosave
+		$response->add_link( 'parent', rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->parent_base, (int) $post->post_parent ) ) );
+
+		/**
+		 * Filters a revision returned from the API.
+		 *
+		 * Allows modification of the revision right before it is returned.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param WP_REST_Response $response The response object.
+		 * @param WP_Post          $post     The original revision object.
+		 * @param WP_REST_Request  $request  Request used to generate the response.
+		 */
+		return apply_filters( 'rest_prepare_autosave', $response, $post, $request );
+
+	}
+
 }
