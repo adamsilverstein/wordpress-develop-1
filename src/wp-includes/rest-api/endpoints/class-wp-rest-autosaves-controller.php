@@ -118,6 +118,12 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 					),
 				),
 				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_item' ),
+					'permission_callback' => '__return_true', //array( $this->parent_controller, 'update_item_permissions_check' ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
+				),
+				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'delete_item' ),
 					'permission_callback' => array( $this->revision_controller, 'delete_item_permissions_check' ),
@@ -194,6 +200,38 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		return $response;
 	}
 
+	/**
+	 * Update an autosave, if the ID is valid.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Post|WP_Error Revision post object if ID is valid, WP_Error otherwise.
+	 */
+	public function update_item( $request ) {
+		$parent = $request->get_param( 'parent' );
+		$id     = $request->get_param( 'id' );
+		$error  = new WP_Error( 'rest_post_invalid_id', __( 'Invalid autosave ID.', 'gutenberg' ), array( 'status' => 404 ) );
+		if ( (int) $parent <= 0 ) {
+			return $error;
+		}
+
+		$prepared_post     = $this->parent_controller->prepare_item_for_database( $request );
+		$prepared_post->ID = $id;
+		$post_id           = wp_update_post( (array) $prepared_post );
+		$post              = get_post( $post_id );
+		$fields_update     = $this->update_additional_fields_for_object( $post, $request );
+
+		if ( is_wp_error( $fields_update ) ) {
+			return $fields_update;
+		}
+
+		$request->set_param( 'context', 'edit' );
+
+		$response = $this->prepare_item_for_response( $post, $request );
+
+		return rest_ensure_response( $response );
+	}
 	/**
 	 * Get the autosave, if the ID is valid.
 	 *
