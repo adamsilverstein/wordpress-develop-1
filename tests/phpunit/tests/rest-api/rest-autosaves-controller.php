@@ -108,19 +108,53 @@ class WP_Test_REST_Autosaves_Controller extends WP_Test_REST_Controller_Testcase
 	}
 
 	public function test_get_items_no_permission() {
-
+		wp_set_current_user( 0 );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/autosaves' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read', $response, 401 );
+		wp_set_current_user( self::$contributor_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read', $response, 403 );
 	}
 
 	public function test_get_items_missing_parent() {
-
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER . '/autosaves' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_post_invalid_parent', $response, 404 );
 	}
 
 	public function test_get_items_invalid_parent_post_type() {
-
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$page_id . '/autosaves' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_post_invalid_parent', $response, 404 );
 	}
 
 	public function test_get_item() {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertEquals( 200, $response->get_status() );
+		$data     = $response->get_data();
 
+		$this->check_get_autosave_response( $response, $this->post_autosave );
+		$fields = array(
+			'author',
+			'date',
+			'date_gmt',
+			'modified',
+			'modified_gmt',
+			'guid',
+			'id',
+			'parent',
+			'slug',
+			'title',
+			'excerpt',
+			'content',
+		);
+		$this->assertEqualSets( $fields, array_keys( $data ) );
+		$this->assertSame( self::$editor_id, $data['author'] );
 	}
 
 	public function test_get_item_embed_context() {
