@@ -20,6 +20,37 @@ class WP_Test_REST_Autosaves_Controller extends WP_Test_REST_Controller_Testcase
 	protected static $editor_id;
 	protected static $contributor_id;
 
+	protected function set_post_data( $args = array() ) {
+		$defaults = array(
+			'title'   => 'Post Title',
+			'content' => 'Post content',
+			'excerpt' => 'Post excerpt',
+			'name'    => 'test',
+			'author'  => get_current_user_id(),
+		);
+
+		return wp_parse_args( $args, $defaults );
+	}
+
+	protected function check_create_autosave_response( $response ) {
+		$this->assertNotInstanceOf( 'WP_Error', $response );
+		$response = rest_ensure_response( $response );
+
+		$this->assertEquals( 201, $response->get_status() );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Location', $headers );
+	}
+
+	protected function check_update_autosave_response( $response ) {
+		$this->assertNotInstanceOf( 'WP_Error', $response );
+		$response = rest_ensure_response( $response );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$headers = $response->get_headers();
+		$this->assertArrayNotHasKey( 'Location', $headers );
+	}
+
+
 	public static function wpSetUpBeforeClass( $factory ) {
 		self::$post_id = $factory->post->create();
 		self::$page_id = $factory->post->create( array( 'post_type' => 'page' ) );
@@ -158,35 +189,82 @@ class WP_Test_REST_Autosaves_Controller extends WP_Test_REST_Controller_Testcase
 	}
 
 	public function test_get_item_embed_context() {
-
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+		$request->set_param( 'context', 'embed' );
+		$response = rest_get_server()->dispatch( $request );
+		$fields   = array(
+			'author',
+			'date',
+			'id',
+			'parent',
+			'slug',
+			'title',
+			'excerpt',
+		);
+		$data     = $response->get_data();
+		$this->assertEqualSets( $fields, array_keys( $data ) );
 	}
 
 	public function test_get_item_no_permission() {
-
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+		wp_set_current_user( self::$contributor_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read', $response, 403 );
 	}
 
 	public function test_get_item_missing_parent() {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER . '/autosaves/' . self::$autosave_post_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_post_invalid_parent', $response, 404 );
 
 	}
 
 	public function test_get_item_invalid_parent_post_type() {
-
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$page_id . '/autosaves' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_post_invalid_parent', $response, 404 );
 	}
 
 	public function test_delete_item() {
-
+		wp_set_current_user( self::$editor_id );
+		$request = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+		$request->set_param( 'force', true );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertNull( get_post( self::$autosave_post_id ) );
 	}
 
 	public function test_delete_item_no_trash() {
+		wp_set_current_user( self::$editor_id );
 
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_trash_not_supported', $response, 501 );
+
+		$request->set_param( 'force', 'false' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_trash_not_supported', $response, 501 );
+
+		// Ensure the revision still exists
+		$this->assertNotNull( get_post( self::$autosave_post_id ) );
 	}
 
 	public function test_delete_item_no_permission() {
-
+		wp_set_current_user( self::$contributor_id );
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read', $response, 403 );
 	}
 
 	public function test_prepare_item() {
-
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->check_get_autosave_response( $response, $this->post_autosave );
 	}
 
 	public function test_get_item_schema() {
@@ -211,20 +289,69 @@ class WP_Test_REST_Autosaves_Controller extends WP_Test_REST_Controller_Testcase
 
 	public function test_create_item() {
 
+		wp_set_current_user( self::$editor_id );
+
+		$request  = new WP_REST_Request( 'POST', '/wp/v2/posts/' . self::$post_id . '/autosaves' );
+		$request->add_header( 'content-type', 'application/x-www-form-urlencoded' );
+		$params = $this->set_post_data();
+		$request->set_body_params( $params );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->check_create_autosave_response( $response );
 	}
 
 	public function test_update_item() {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'POST', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+		$request->add_header( 'content-type', 'application/x-www-form-urlencoded' );
+		$params = $this->set_post_data();
+		$request->set_body_params( $params );
+		$response = rest_get_server()->dispatch( $request );
 
+		$this->check_update_autosave_response( $response );
 	}
 
 	public function test_get_additional_field_registration() {
+		$schema = array(
+			'type'        => 'integer',
+			'description' => 'Some integer of mine',
+			'enum'        => array( 1, 2, 3, 4 ),
+			'context'     => array( 'view', 'edit' ),
+		);
 
+		register_rest_field(
+			'post-revision', 'my_custom_int', array(
+				'schema'          => $schema,
+				'get_callback'    => array( $this, 'additional_field_get_callback' ),
+				'update_callback' => array( $this, 'additional_field_update_callback' ),
+			)
+		);
+
+		$request = new WP_REST_Request( 'OPTIONS', '/wp/v2/posts/' . self::$post_id . '/autosaves' );
+
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertArrayHasKey( 'my_custom_int', $data['schema']['properties'] );
+		$this->assertEquals( $schema, $data['schema']['properties']['my_custom_int'] );
+
+		wp_set_current_user( 1 );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertArrayHasKey( 'my_custom_int', $response->data );
+
+		global $wp_rest_additional_fields;
+		$wp_rest_additional_fields = array();
 	}
 
 	public function additional_field_get_callback( $object ) {
+		return get_post_meta( $object['id'], 'my_custom_int', true );
 	}
 
 	public function additional_field_update_callback( $value, $post ) {
+		update_post_meta( $post->ID, 'my_custom_int', $value );
 	}
 
 	protected function check_get_autosave_response( $response, $autosave ) {
@@ -263,6 +390,15 @@ class WP_Test_REST_Autosaves_Controller extends WP_Test_REST_Controller_Testcase
 	}
 
 	public function test_get_item_sets_up_postdata() {
+		wp_set_current_user( self::$editor_id );
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+		rest_get_server()->dispatch( $request );
+
+		$post           = get_post();
+		$parent_post_id = wp_is_post_revision( $post->ID );
+
+		$this->assertEquals( $post->ID, self::$autosave_post_id );
+		$this->assertEquals( $parent_post_id, self::$post_id );
 	}
 
 }
