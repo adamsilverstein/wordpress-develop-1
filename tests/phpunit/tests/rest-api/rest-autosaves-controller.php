@@ -41,16 +41,6 @@ class WP_Test_REST_Autosaves_Controller extends WP_Test_REST_Controller_Testcase
 		$this->assertArrayHasKey( 'Location', $headers );
 	}
 
-	protected function check_update_autosave_response( $response ) {
-		$this->assertNotInstanceOf( 'WP_Error', $response );
-		$response = rest_ensure_response( $response );
-
-		$this->assertEquals( 200, $response->get_status() );
-		$headers = $response->get_headers();
-		$this->assertArrayNotHasKey( 'Location', $headers );
-	}
-
-
 	public static function wpSetUpBeforeClass( $factory ) {
 		self::$post_id = $factory->post->create();
 		self::$page_id = $factory->post->create( array( 'post_type' => 'page' ) );
@@ -298,17 +288,6 @@ class WP_Test_REST_Autosaves_Controller extends WP_Test_REST_Controller_Testcase
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->check_create_autosave_response( $response );
-	}
-
-	public function test_update_item() {
-		wp_set_current_user( self::$editor_id );
-		$request  = new WP_REST_Request( 'POST', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
-		$request->add_header( 'content-type', 'application/x-www-form-urlencoded' );
-		$params = $this->set_post_data();
-		$request->set_body_params( $params );
-		$response = rest_get_server()->dispatch( $request );
-
-		$this->check_update_autosave_response( $response );
 	}
 
 	public function test_get_additional_field_registration() {

@@ -118,12 +118,6 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 					),
 				),
 				array(
-					'methods'             => WP_REST_Server::EDITABLE,
-					'callback'            => array( $this, 'update_item' ),
-					'permission_callback' => '__return_true', //array( $this->parent_controller, 'update_item_permissions_check' ),
-					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
-				),
-				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'delete_item' ),
 					'permission_callback' => array( $this->revision_controller, 'delete_item_permissions_check' ),
