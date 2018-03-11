@@ -142,6 +142,17 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	}
 
 	/**
+	 * Get the parent post, if the ID is valid.
+	 *
+	 * @since 4.7.2
+	 *
+	 * @param int $id Supplied ID.
+	 * @return WP_Post|WP_Error Post object if ID is valid, WP_Error otherwise.
+	 */
+	protected function get_parent( $parent ) {
+		return $this->revision_controller->get_parent( $parent );
+	}
+	/**
 	 * Creates a single autosave.
 	 *
 	 * @since 5.0.0
@@ -152,7 +163,7 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	public function create_item( $request ) {
 
 		// Map new fields onto the existing post data.
-		$parent            = $this->revision_controller->get_parent( $request->get_param( 'parent' ) );
+		$parent            = $this->get_parent( $request->get_param( 'parent' ) );
 		$prepared_post     = $this->parent_controller->prepare_item_for_database( $request );
 		$prepared_post->ID = $parent->ID;
 
@@ -202,8 +213,10 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		if ( empty( $autosave ) || empty( $autosave->ID ) || 'revision' !== $autosave->post_type ) {
 			return $error;
 		}
+		$autosave->post_parent = $parent;
+		$response = $this->prepare_item_for_response( $autosave, $request );
 
-		return $autosave;
+		return $response;
 	}
 
 	/**
@@ -217,7 +230,7 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function get_items( $request ) {
-		$parent = $this->revision_controller->get_parent( $request->get_param( 'parent' ) );
+		$parent = $this->get_parent( $request->get_param( 'parent' ) );
 		if ( is_wp_error( $parent ) ) {
 			return $parent;
 		}
@@ -306,14 +319,12 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	 *
 	 * @param WP_Post         $post    Post revision object.
 	 * @param WP_REST_Request $request Request object.
+	 *
 	 * @return WP_REST_Response Response object.
 	 */
 	public function prepare_item_for_response( $post, $request ) {
 		$data = array();
 		$response = $this->revision_controller->prepare_item_for_response( $post, $request );
-
-		// Adjust the link from revision to autosave
-		$response->add_link( 'parent', rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->parent_base, (int) $post->post_parent ) ) );
 
 		/**
 		 * Filters a revision returned from the API.
