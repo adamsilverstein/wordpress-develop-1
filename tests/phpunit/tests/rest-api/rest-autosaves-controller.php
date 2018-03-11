@@ -290,6 +290,16 @@ class WP_Test_REST_Autosaves_Controller extends WP_Test_REST_Controller_Testcase
 		$this->check_create_autosave_response( $response );
 	}
 
+	public function test_update_item() {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'POST', '/wp/v2/posts/' . self::$post_id . '/autosaves/' . self::$autosave_post_id );
+		$request->add_header( 'content-type', 'application/x-www-form-urlencoded' );
+		$params = $this->set_post_data();
+		$request->set_body_params( $params );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_post_exists', $response, 400 );
+	}
+
 	public function test_get_additional_field_registration() {
 		$schema = array(
 			'type'        => 'integer',
