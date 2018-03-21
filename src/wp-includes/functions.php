@@ -4727,6 +4727,38 @@ function global_terms_enabled() {
 }
 
 /**
+ * Determines whether site meta is enabled.
+ *
+ * This function checks whether the 'blogmeta' database table exists. The result is saved as
+ * a setting for the main network, making it essentially a global setting. Subsequent requests
+ * will refer to this setting instead of running the query.
+ *
+ * @since 5.0.0
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @return bool True if site meta is supported, false otherwise.
+ */
+function is_site_meta_supported() {
+	global $wpdb;
+
+	if ( ! is_multisite() ) {
+		return false;
+	}
+
+	$network_id = get_main_network_id();
+
+	$supported = get_network_option( $network_id, 'site_meta_supported', false );
+	if ( false === $supported ) {
+		$supported = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->blogmeta}'" ) ? 1 : 0;
+
+		update_network_option( $network_id, 'site_meta_supported', $supported );
+	}
+
+	return (bool) $supported;
+}
+
+/**
  * gmt_offset modification for smart timezone handling.
  *
  * Overrides the gmt_offset option if we have a timezone_string available.
@@ -5407,10 +5439,11 @@ function wp_debug_backtrace_summary( $ignore_class = null, $skip_frames = 0, $pr
 
 			$caller[] = "{$call['class']}{$call['type']}{$call['function']}";
 		} else {
-			if ( in_array( $call['function'], array( 'do_action', 'apply_filters' ) ) ) {
+			if ( in_array( $call['function'], array( 'do_action', 'apply_filters', 'do_action_ref_array', 'apply_filters_ref_array' ) ) ) {
 				$caller[] = "{$call['function']}('{$call['args'][0]}')";
 			} elseif ( in_array( $call['function'], array( 'include', 'include_once', 'require', 'require_once' ) ) ) {
-				$caller[] = $call['function'] . "('" . str_replace( $truncate_paths, '', wp_normalize_path( $call['args'][0] ) ) . "')";
+				$filename = isset( $call['args'][0] ) ? $call['args'][0] : '';
+				$caller[] = $call['function'] . "('" . str_replace( $truncate_paths, '', wp_normalize_path( $filename ) ) . "')";
 			} else {
 				$caller[] = $call['function'];
 			}

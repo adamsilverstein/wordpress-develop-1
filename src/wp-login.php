@@ -871,25 +871,25 @@ switch ( $action ) {
 		if ( is_wp_error( $result ) ) {
 			/**
 			 * Fires an action hook when the account action was not confirmed.
-			 * 
+			 *
 			 * After running this action hook the page will die.
-			 * 
+			 *
 			 * @param WP_Error $result Error object.
 			 */
 			do_action( 'account_action_failed', $result );
 
 			wp_die( $result );
 		}
-		
+
 		/**
 		 * Fires an action hook when the account action has been confirmed by the user.
-		 * 
+		 *
 		 * Using this you can assume the user has agreed to perform the action by
 		 * clicking on the link in the confirmation email.
-		 * 
-		 * After firing this action hook the page will redirect to wp-login a callback 
+		 *
+		 * After firing this action hook the page will redirect to wp-login a callback
 		 * redirects or exits first.
-		 * 
+		 *
 		 * @param array $result {
 		 *     Data about the action which was confirmed.
 		 *
@@ -954,7 +954,7 @@ switch ( $action ) {
 				);
 			} elseif ( isset( $_POST['testcookie'] ) && empty( $_COOKIE[ TEST_COOKIE ] ) ) {
 				// If cookies are disabled we can't log in even with a valid user+pass
-				/* translators: 1: Browser cookie documentation URL */
+				/* translators: %s: Browser cookie documentation URL */
 				$user = new WP_Error(
 					'test_cookie', sprintf(
 						__( '<strong>ERROR</strong>: Cookies are blocked or not supported by your browser. You must <a href="%s">enable cookies</a> to use WordPress.' ),

@@ -487,7 +487,7 @@ function wp_set_wpdb_vars() {
 	if ( is_wp_error( $prefix ) ) {
 		wp_load_translations_early();
 		wp_die(
-			/* translators: 1: $table_prefix 2: wp-config.php */
+			/* translators: 1: $table_prefix, 2: wp-config.php */
 			sprintf(
 				__( '<strong>ERROR</strong>: %1$s in %2$s can only contain numbers, letters, and underscores.' ),
 				'<code>$table_prefix</code>',
@@ -581,7 +581,7 @@ function wp_start_object_cache() {
 	}
 
 	if ( function_exists( 'wp_cache_add_global_groups' ) ) {
-		wp_cache_add_global_groups( array( 'users', 'userlogins', 'usermeta', 'user_meta', 'useremail', 'userslugs', 'site-transient', 'site-options', 'blog-lookup', 'blog-details', 'site-details', 'rss', 'global-posts', 'blog-id-cache', 'networks', 'sites' ) );
+		wp_cache_add_global_groups( array( 'users', 'userlogins', 'usermeta', 'user_meta', 'useremail', 'userslugs', 'site-transient', 'site-options', 'blog-lookup', 'blog-details', 'site-details', 'rss', 'global-posts', 'blog-id-cache', 'networks', 'sites', 'blog_meta' ) );
 		wp_cache_add_non_persistent_groups( array( 'counts', 'plugins' ) );
 	}
 
@@ -774,8 +774,8 @@ function wp_clone( $object ) {
  * for checking roles and capabilities.
  *
  * For more information on this and similar theme functions, check out
- * the {@link https://developer.wordpress.org/themes/basics/conditional-tags/ 
- * Conditional Tags} article in the Theme Developer Handbook. 
+ * the {@link https://developer.wordpress.org/themes/basics/conditional-tags/
+ * Conditional Tags} article in the Theme Developer Handbook.
  *
  * @since 1.5.1
  *

@@ -297,6 +297,7 @@ class wpdb {
 	 */
 	var $ms_global_tables = array(
 		'blogs',
+		'blogmeta',
 		'signups',
 		'site',
 		'sitemeta',
@@ -412,6 +413,14 @@ class wpdb {
 	 * @var string
 	 */
 	public $blogs;
+
+	/**
+	 * Multisite Blog Metadata table
+	 *
+	 * @since 5.0.0
+	 * @var string
+	 */
+	public $blogmeta;
 
 	/**
 	 * Multisite Blog Versions table
@@ -1648,7 +1657,7 @@ class wpdb {
 			$message = '<h1>' . __( 'Error establishing a database connection' ) . "</h1>\n";
 
 			$message .= '<p>' . sprintf(
-				/* translators: 1: wp-config.php. 2: database host */
+				/* translators: 1: wp-config.php, 2: database host */
 				__( 'This either means that the username and password information in your %1$s file is incorrect or we can&#8217;t contact the database server at %2$s. This could mean your host&#8217;s database server is down.' ),
 				'<code>wp-config.php</code>',
 				'<code>' . htmlspecialchars( $this->dbhost, ENT_QUOTES ) . '</code>'
