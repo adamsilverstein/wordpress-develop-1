@@ -335,10 +335,10 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 			do_action( 'wp_creating_autosave', $new_autosave );
 
 			// If the autosave content is significantly different, create a revision.
-			$autosave_size_change     = strlen( $new_autosave['content'] ) - strlen( $old_autosave['content'] );
-			$autosave_create_revision = $autosave_size_change > 250;
+			$autosave_sizediff        = strlen( $new_autosave['content'] ) - strlen( $old_autosave['content'] );
+			$autosave_create_revision = $autosave_sizediff > 250;
 
-			if ( apply_filters( 'wp_create_revision_for_autosave', $autosave_create_revision, $post_data, $autosave_size_change
+			if ( apply_filters( 'wp_create_revision_for_autosave', $autosave_create_revision, $post_data, $autosave_sizediff
 			) ) {
 				_wp_put_post_revision( $new_autosave );
 			}
