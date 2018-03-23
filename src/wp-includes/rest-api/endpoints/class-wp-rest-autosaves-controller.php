@@ -335,10 +335,19 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 			do_action( 'wp_creating_autosave', $new_autosave );
 
 			// If the autosave content is significantly different, create a revision.
-			$autosave_sizediff        = strlen( $new_autosave['content'] ) - strlen( $old_autosave['content'] );
-			$autosave_create_revision = $autosave_sizediff > 250;
+			$autosave_sizediff = strlen( $new_autosave['content'] ) - strlen( $old_autosave['content'] );
+			$create_revision   = $autosave_sizediff > 250;
 
-			if ( apply_filters( 'wp_create_revision_for_autosave', $autosave_create_revision, $post_data, $autosave_sizediff
+			/**
+			 * Filter whether a revision is created when an autosave is made via the REST API.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param bool  $create_revision   Create a revision?
+			 * @param array $post_data         The autosave post data.
+			 * @param int   $autosave_sizediff The calculated autosave difference.
+			 */
+			if ( apply_filters( 'wp_create_revision_for_api_autosave', $create_revision, $post_data, $autosave_sizediff
 			) ) {
 				_wp_put_post_revision( $new_autosave );
 			}
