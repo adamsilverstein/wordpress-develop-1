@@ -267,16 +267,16 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 			return $parent;
 		}
 
-		$autosave = wp_get_post_autosave( $request->get_param( 'parent' ) );
+		$response = array();
+		$post_id   = $request->get_param( 'parent' );
+		$revisions = wp_get_post_revisions( $post_id, array( 'check_enabled' => false ) );
 
-		if ( ! $autosave ) {
-			return array();
+		foreach ( $revisions as $revision ) {
+			if ( false !== strpos( $revision->post_name, "{$post_id}-autosave" ) ) {
+				$data       = $this->prepare_item_for_response( $revision, $request );
+				$response[] = $this->prepare_response_for_collection( $data );
+			}
 		}
-
-		$response   = array();
-		$data       = $this->prepare_item_for_response( $autosave, $request );
-		$response[] = $this->prepare_response_for_collection( $data );
-
 		return rest_ensure_response( $response );
 	}
 
