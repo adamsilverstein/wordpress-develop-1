@@ -165,8 +165,9 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		}
 
 		$post_data = get_object_vars( $post );
-		
+
 		if ( $post_data['post_type'] === 'revision' ) {
+
 			// If the old post is a revision, need to merge it with the actual post.
 			$parent_post = $this->get_parent( $post_data['post_parent'] );
 			foreach ( array_keys( _wp_post_revision_fields( $parent_post ) ) as $field ) {
@@ -176,7 +177,7 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 			}
 			$post_data = get_object_vars( $parent_post );
 		}
-		
+
 		$old_length = strlen( $post_data['post_content'] );
 
 		if ( $old_length > 1000 ) {
@@ -189,8 +190,8 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 			$difference = (int) $old_length * 0.5;
 		}
 
-		$size_diff = strlen( $autosave_data['content'] ) - $old_length;
-		$create_revision   = absint( $size_diff ) > $difference;
+		$size_diff = strlen( $autosave_data['post_content'] ) - $old_length;
+		$create_revision = absint( $size_diff ) > $difference;
 		$revision_id = 0;
 
 		/**
@@ -232,9 +233,11 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		$user_id           = get_current_user_id();
 
 		if ( ( 'draft' === $post->post_status || 'auto-draft' === $post->post_status ) && $post->post_author == $user_id ) {
-			// Optionaly create a revision if the autosave data is significantly different.
+
+			// Optionally create a revision if the autosave data is significantly different.
 			// This protects the user from errors when editing, accidental deletes, etc.
 			$this->create_revision_for_autosave( $post, (array) $prepared_post );
+
 			// Draft posts for the same author: autosaving updates the post and does not create a revision.
 			// Convert the post object to an array and add slashes, wp_update_post expects escaped array.
 			$autosave_id = wp_update_post( wp_slash( (array) $prepared_post ), true );
@@ -283,8 +286,6 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 
 	/**
 	 * Gets a collection of autosaves using wp_get_post_autosave.
-	 *
-	 * Contains the user's autosave, for empty if it doesn't exist.
 	 *
 	 * @since 5.0.0
 	 *
