@@ -251,7 +251,8 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		$user_id           = get_current_user_id();
 
 		if ( ( 'draft' === $post->post_status || 'auto-draft' === $post->post_status ) && $post->post_author == $user_id ) {
-			// Optionaly create a revision if the autosave data is significantly different.
+
+			// Optionally create a revision if the autosave data is significantly different.
 			// This protects the user from errors when editing, accidental deletes, etc.
 			$this->create_revision_for_autosave( $post, (array) $prepared_post );
 
@@ -259,6 +260,7 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 			// Convert the post object to an array and add slashes, wp_update_post expects escaped array.
 			$autosave_id = wp_update_post( wp_slash( (array) $prepared_post ), true );
 		} else {
+
 			// Non-draft posts: create or update the post autosave.
 			$autosave_id = $this->create_post_autosave( (array) $prepared_post );
 		}
