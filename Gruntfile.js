@@ -499,7 +499,6 @@ module.exports = function(grunt) {
 					'wp-includes/js/mediaelement/mediaelement-migrate.js',
 					'wp-includes/js/tinymce/plugins/wordpress/plugin.js',
 					'wp-includes/js/tinymce/plugins/wp*/plugin.js',
-					'wp-includes/js/imgareaselect/jquery.imgareaselect.js',
 
 					// Exceptions
 					'!wp-admin/js/custom-header.js', // Why? We should minify this.
@@ -555,6 +554,10 @@ module.exports = function(grunt) {
 				},
 				src: SOURCE_DIR + 'wp-includes/js/jquery/jquery.masonry.js',
 				dest: SOURCE_DIR + 'wp-includes/js/jquery/jquery.masonry.min.js'
+			},
+			imgareaselect: {
+				src: SOURCE_DIR + 'wp-includes/js/imgareaselect/jquery.imgareaselect.js',
+				dest: SOURCE_DIR + 'wp-includes/js/imgareaselect/jquery.imgareaselect.min.js'
 			}
 		},
 		webpack: {
