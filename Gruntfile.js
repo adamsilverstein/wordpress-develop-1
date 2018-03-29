@@ -499,6 +499,7 @@ module.exports = function(grunt) {
 					'wp-includes/js/mediaelement/mediaelement-migrate.js',
 					'wp-includes/js/tinymce/plugins/wordpress/plugin.js',
 					'wp-includes/js/tinymce/plugins/wp*/plugin.js',
+					'wp-includes/js/imgareaselect/jquery.imgareaselect.js',
 
 					// Exceptions
 					'!wp-admin/js/custom-header.js', // Why? We should minify this.
