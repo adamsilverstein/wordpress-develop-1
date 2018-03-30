@@ -261,7 +261,7 @@ class WP_REST_Revisions_Controller extends WP_REST_Controller {
 			$revisions       = array();
 			$total_revisions = 0;
 			$max_pages       = 0;
-			$page            = $request['page'];
+			$page            = (int) $request['page'];
 		}
 
 		$response = array();
