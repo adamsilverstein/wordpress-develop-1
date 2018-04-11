@@ -188,6 +188,12 @@ wpList = {
 	},
 
 	/**
+	 * Track XHR connections.
+	 * @type {Object}
+	 */
+	xhrs: wp.xhrs(),
+
+	/**
 	 * Finds a nonce.
 	 *
 	 * 1. Nonce in settings.
@@ -384,9 +390,10 @@ wpList = {
 					parsed: parsedResponse
 				}, settings ) );
 			}
+			wpList.xhrs.clear();
 		};
 
-		$.ajax( settings );
+		wpList.xhrs.setXhrs( settings.element, $.ajax( settings ) );
 
 		return false;
 	},
@@ -409,6 +416,11 @@ wpList = {
 
 		settings.element  = data[2] || settings.element || null;
 		settings.delColor = data[3] ? '#' + data[3] : settings.delColor;
+
+		// Return if there is already an AJAX request in progress involving the same element.
+		if ( wpList.xhrs.inProgress( settings.element ) ) {
+			return false;
+		}
 
 		if ( ! settings || ! settings.element ) {
 			return false;
@@ -473,7 +485,7 @@ wpList = {
 			}
 		};
 
-		$.ajax( settings );
+		wpList.xhrs.setXhrs( settings.element, $.ajax( settings ) );
 
 		return false;
 	},
@@ -503,6 +515,11 @@ wpList = {
 		settings.dimClass    = data[3] || settings.dimClass || null;
 		settings.dimAddColor = data[4] ? '#' + data[4] : settings.dimAddColor;
 		settings.dimDelColor = data[5] ? '#' + data[5] : settings.dimDelColor;
+
+		// Return if there is already an AJAX request in progress involving the same element.
+		if ( wpList.xhrs.inProgress( settings.element ) ) {
+			return false;
+		}
 
 		if ( ! settings || ! settings.element || ! settings.dimClass ) {
 			return true;
@@ -587,6 +604,10 @@ wpList = {
 		};
 
 		settings.complete = function( jqXHR, status ) {
+
+			// Clear all finished AJAX requests from xhrs object.
+			wpList.xhrs.clear();
+
 			if ( $.isFunction( settings.dimAfter ) ) {
 				$eventTarget.queue( function() {
 					settings.dimAfter( returnedResponse, $.extend( {
@@ -598,7 +619,7 @@ wpList = {
 			}
 		};
 
-		$.ajax( settings );
+		wpList.xhrs.setXhrs( settings.element, $.ajax( settings ) );
 
 		return false;
 	},
@@ -836,7 +857,7 @@ wpList = {
 $.fn.wpList = function( settings ) {
 	this.each( function( index, list ) {
 		list.wpList = {
-			settings: $.extend( {}, wpList.settings, { what: wpList.parseData( list, 'list' )[1] || '' }, settings )
+			settings: $.extend( {}, wpList.settings, { what: wpList.parseData( list, 'list' )[1] || '' }, { xhrs: wpList.xhrs }, settings )
 		};
 
 		$.each( functions, function( func, callback ) {

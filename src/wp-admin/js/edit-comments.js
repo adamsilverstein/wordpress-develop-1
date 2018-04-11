@@ -288,6 +288,11 @@ setCommentsList = function() {
 			$('.avatar', el).first().clone().prependTo('#undo-' + id + ' .' + action + '-undo-inside');
 
 			a.click(function( e ){
+
+				// Abort undo if there is an unfinished AJAX request involving the same comment.
+				if ( wpList.xhrs.inProgress( 'comment-' + id ) ) {
+					return false;
+				}
 				e.preventDefault();
 				e.stopPropagation(); // ticket #35904
 				list.wpList.del(this);
