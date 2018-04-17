@@ -1,5 +1,5 @@
 /* global wp */
-jQuery( window ).load( function (){
+jQuery( window ).on( 'load', function (){
 
 	var api = wp.customize,
 		primaryMenuId = 3,
@@ -79,10 +79,10 @@ jQuery( window ).load( function (){
 		control = section.controls()[0];
 		ok( control.extended( api.Menus.MenuNameControl ), 'control is a MenuNameControl' );
 		equal( control.setting().name, 'Primary menu' );
-		ok( ! control.setting._dirty );
+		ok( ! control.setting.dirty, 'control not dirty' );
 		control.container.find( 'input[type=text]:first' ).val( 'Main menu' ).trigger( 'change' );
 		equal( control.setting().name, 'Main menu' );
-		ok( control.setting._dirty );
+		ok( control.setting.dirty, 'control dirty' );
 	} );
 	// @todo Add more tests for api.Menus.MenuNameControl
 

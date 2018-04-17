@@ -221,7 +221,7 @@
 			});
 
 			// Load available items if it looks like we'll need them.
-			api.panel( 'nav_menus' ).container.bind( 'expanded', function() {
+			api.panel( 'nav_menus' ).container.on( 'expanded', function() {
 				if ( ! self.rendered ) {
 					self.initList();
 					self.rendered = true;
