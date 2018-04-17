@@ -198,9 +198,9 @@ function wp_localize_script( $handle, $object_name, $l10n ) {
 /**
  * Pass data from PHP to a registered JavaScript file.
  *
- * Accepts a scalar value or and associative array and creates a JavaScript object.
+ * Accepts a scalar value or an associative array and creates a JavaScript object. Passes strings through html_entity_decode.
  *
- * @since 4.8.0
+ * @since 5.0.0
  *
  * @param string $handle      Script handle the data will be attached to.
  * @param string $object_name Name for the JavaScript object. Passed directly, so it should be qualified JS variable.

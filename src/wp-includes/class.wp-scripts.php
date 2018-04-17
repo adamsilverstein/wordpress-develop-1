@@ -453,12 +453,12 @@ class WP_Scripts extends WP_Dependencies {
 	/**
 	 * Pass data to a script if the script has already been added.
 	 *
-	 * @since 4.8.0
+	 * @since 5.0.0
 	 * @access public
 	 *
 	 * @param string $handle
 	 * @param string $object_name
-	 * @param array $data
+	 * @param array  $data
 	 * @return bool
 	 */
 	public function pass_data( $handle, $object_name, $data ) {
@@ -491,14 +491,11 @@ class WP_Scripts extends WP_Dependencies {
 		}
 
 		$script = "var $object_name = " . wp_json_encode( $data ) . ';';
-
-		if ( ! empty( $after ) )
-			$script .= "\n$after;";
-
 		$data = $this->get_data( $handle, 'data' );
 
-		if ( ! empty( $data ) )
+		if ( ! empty( $data ) ) {
 			$script = "$data\n$script";
+		}
 
 		return $this->add_data( $handle, 'data', $script );
 	}
@@ -506,7 +503,7 @@ class WP_Scripts extends WP_Dependencies {
 	/**
 	* Handles recursively HTML entity decoding multi-dimensional array values.
 	*
-	* @since 4.8.0
+	* @since 5.0.0
 	*
 	* @param  array $data_array Array of data which should be decoded.
 	*
@@ -527,7 +524,7 @@ class WP_Scripts extends WP_Dependencies {
 				continue;
 			}
 
-			// Pass strings through html_entity_decode, pass other scalar untouched.
+			// Pass strings through html_entity_decode, pass other scalars untouched.
 			if ( is_string( $value ) ) {
 				$data[ $key ] = html_entity_decode( $value, ENT_QUOTES, 'UTF-8');
 			} else {
