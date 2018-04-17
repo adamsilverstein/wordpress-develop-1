@@ -451,6 +451,94 @@ class WP_Scripts extends WP_Dependencies {
 	}
 
 	/**
+	 * Pass data to a script if the script has already been added.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @param string $handle
+	 * @param string $object_name
+	 * @param array $data
+	 * @return bool
+	 */
+	public function pass_data( $handle, $object_name, $data ) {
+
+		// Pass scalar values untouched; pass strings through html_entity_decode.
+		if ( is_scalar( $data ) ) {
+
+			// Pass strings through html_entity_decode, pass other scalar untouched.
+			if ( is_string( $data ) ) {
+				$data = html_entity_decode( $data, ENT_QUOTES, 'UTF-8');
+			}
+		} else {
+			// Recurse over passed arrays. Cast objects to arrays.
+			foreach ( (array) $data as $key => $value ) {
+
+				// Pass scalar values untouched; pass strings through html_entity_decode.
+				if ( is_scalar( $value ) ) {
+
+					// Pass strings through html_entity_decode, pass other scalar values untouched.
+					if ( is_string( $value ) ) {
+						$data[ $key ] = html_entity_decode( $value, ENT_QUOTES, 'UTF-8');
+					} else {
+						$data[$key] = $value;
+					}
+				} else {
+
+					$data = $this->entity_decode_array_values( $data );
+				}
+			}
+		}
+
+		$script = "var $object_name = " . wp_json_encode( $data ) . ';';
+
+		if ( ! empty( $after ) )
+			$script .= "\n$after;";
+
+		$data = $this->get_data( $handle, 'data' );
+
+		if ( ! empty( $data ) )
+			$script = "$data\n$script";
+
+		return $this->add_data( $handle, 'data', $script );
+	}
+
+	/**
+	* Handles recursively HTML entity decoding multi-dimensional array values.
+	*
+	* @since 4.8.0
+	*
+	* @param  array $data_array Array of data which should be decoded.
+	*
+	* @return array Array with decoded values.
+	*/
+	public function entity_decode_array_values( $data_array ) {
+
+		// Begin a new array so that non-decoded values do not get added.
+		$data = array();
+
+		foreach ( (array) $data_array as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$data[ $key ] = $this->entity_decode_array_values( $value );
+			}
+
+			// Non-array, non-scalar values should not be added.
+			if ( ! is_scalar( $value ) ) {
+				continue;
+			}
+
+			// Pass strings through html_entity_decode, pass other scalar untouched.
+			if ( is_string( $value ) ) {
+				$data[ $key ] = html_entity_decode( $value, ENT_QUOTES, 'UTF-8');
+			} else {
+				$data[ $key ] = $value;
+			}
+		}
+
+		return $data;
+	}
+
+	/**
 	 * Sets handle group.
 	 *
 	 * @since 2.8.0

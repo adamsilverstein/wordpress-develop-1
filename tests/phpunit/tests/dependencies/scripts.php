@@ -1090,4 +1090,63 @@ class Tests_Dependencies_Scripts extends WP_UnitTestCase {
 			array_keys( $wp_enqueue_code_editor['htmlhint'] )
 		);
 	}
+
+	/**
+	 * Testing `wp_pass_data_to_script` with scalar and array values.
+	 * @ticket 25280
+	 */
+	function test_wp_pass_data_to_script_with_scalar_and_multidimensional_arrays() {
+		// Enqueue & localize variables
+		wp_enqueue_script( 'test-l10n-data', 'example.com', array(), null );
+		wp_pass_data_to_script( 'test-l10n-data', 'data', true );
+
+		$test_array = array( 'var' => 'string' );
+		wp_pass_data_to_script( 'test-l10n-data', 'dataArray', $test_array );
+
+		$test_multidimensional = array(
+			'first-level' => array(
+				'second-level' => array(
+					'index' => "I'll \"walk\" the <b>dog</b> now",
+				),
+			),
+		);
+		wp_pass_data_to_script( 'test-l10n-data', 'dataMultiDimensionalArray', $test_multidimensional );
+
+
+		// Boolean output.
+		$expected = "var data = true;\n";
+		// One-dimensional array output.
+		$expected .= "var dataArray = {\"var\":\"string\"};\n";
+		// Multi-dimensional array output with odd characters.
+		$string = '\"walk\"';
+		$expected .= "var dataMultiDimensionalArray = {\"first-level\":{\"second-level\":{\"index\":\"I'll " .
+			$string . " the <b>dog<\/b> now\"}}};\n";
+		// var script wrapper output
+		$expected = "<script type='text/javascript'>\n/* <![CDATA[ */\n$expected/* ]]> */\n</script>\n";
+		// script link output
+		$expected .= "<script type='text/javascript' src='http://example.com'></script>\n";
+		$this->assertEquals( $expected, get_echo( 'wp_print_scripts' ) );
+		// No scripts left to print
+		$this->assertEquals( '', get_echo( 'wp_print_scripts' ) );
+	}
+
+	/**
+	 * Test passing data to scripts via `wp_pass_data_to_script`.
+	 *
+	 * @ticket 25280
+	 */
+	function test_wp_pass_data_to_script_doesnt_convert_types_unexpectedly() {
+		global $wp_scripts;
+		$array_to_pass = array(
+			'a_string'  => __( 'Some String' ),
+			'a_number'  => 10,
+			'a_boolean' => true,
+		);
+		wp_enqueue_script( 'localize_test','localize_script.js', array(), '1.0.0', true );
+		wp_pass_data_to_script( 'localize_test', 'localized_variable', $array_to_pass );
+		$this->assertEquals(
+			'var localized_variable = {"a_string":"Some String","a_number":10,"a_boolean":true};',
+			$wp_scripts->print_extra_script( 'localize_test', false )
+		);
+	}
 }

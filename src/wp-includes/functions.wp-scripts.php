@@ -196,6 +196,29 @@ function wp_localize_script( $handle, $object_name, $l10n ) {
 }
 
 /**
+ * Pass data from PHP to a registered JavaScript file.
+ *
+ * Accepts a scalar value or and associative array and creates a JavaScript object.
+ *
+ * @since 4.8.0
+ *
+ * @param string $handle      Script handle the data will be attached to.
+ * @param string $object_name Name for the JavaScript object. Passed directly, so it should be qualified JS variable.
+ * @param array  $data        The data itself. The data can be either a scalar value, or a single or multi-dimensional array.
+ *
+ * @return bool True if the script was successfully localized, false otherwise.
+ */
+function wp_pass_data_to_script( $handle, $object_name, $data ) {
+	global $wp_scripts;
+	if ( ! ( $wp_scripts instanceof WP_Scripts ) ) {
+		_wp_scripts_maybe_doing_it_wrong( __FUNCTION__ );
+		return false;
+	}
+
+	return $wp_scripts->pass_data( $handle, $object_name, $data );
+}
+
+/**
  * Remove a registered script.
  *
  * Note: there are intentional safeguards in place to prevent critical admin scripts,
