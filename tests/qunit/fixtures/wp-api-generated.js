@@ -12,7 +12,6 @@ mockedApiResponse.Schema = {
     "home": "http://example.org",
     "gmt_offset": "0",
     "timezone_string": "",
-    "permalink_structure": false,
     "namespaces": [
         "oembed/1.0",
         "wp/v2"
@@ -2513,6 +2512,14 @@ mockedApiResponse.Schema = {
                             "items": {
                                 "type": "string"
                             }
+                        },
+                        "who": {
+                            "required": false,
+                            "enum": [
+                                "authors"
+                            ],
+                            "description": "Limit result set to users who are considered authors.",
+                            "type": "string"
                         }
                     }
                 },
