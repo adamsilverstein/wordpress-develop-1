@@ -1115,9 +1115,21 @@ table.form-table td .updated p {
 	box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1);
 }
 
+.privacy_requests tbody .has-request-results th {
+	box-shadow: none;
+}
+
+.privacy_requests tbody .request-results th .notice {
+	margin: 0 0 5px;
+}
+
 .privacy_requests tbody td {
 	background: #fff;
 	box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1);
+}
+
+.privacy_requests tbody .has-request-results td {
+	box-shadow: none;
 }
 
 .privacy_requests .status-request-confirmed th,
@@ -1130,6 +1142,10 @@ table.form-table td .updated p {
 .privacy_requests .status-request-failed td {
 	background-color: #fef7f1;
 	border-left-color: #d64d21;
+}
+
+.privacy_requests .export_personal_data_failed a {
+	vertical-align: baseline;
 }
 
 .status-label {
@@ -1465,6 +1481,12 @@ table.form-table td .updated p {
 	.options-general-php input[type="text"].small-text {
 		max-width: 6.25em;
 		margin: 0;
+	}
+
+	/* Privacy Policy settings screen */
+ 	.tools-privacy-policy-page input#set-page,
+	.tools-privacy-policy-page select {
+		margin: 10px 0 0;
 	}
 }
 

@@ -2298,6 +2298,9 @@ a.comment-reply-link > span {
 #respond p {
 	font-size: 12px;
 }
+#respond #wp-comment-cookies-consent {
+	margin: 0 10px 0 0;
+}
 p.comment-form-comment {
 	margin: 0;
 }
@@ -2351,6 +2354,12 @@ p.comment-form-comment {
 #site-generator a {
 	color: #555;
 	font-weight: bold;
+}
+#site-generator span[role=separator] {
+	padding: 0 0.25em 0 0.5em
+}
+#site-generator span[role=separator]::before {
+	content: '\007c';
 }
 
 

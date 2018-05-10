@@ -662,7 +662,7 @@ function install_plugin_information() {
 										if ( $api->active_installs >= 1000000 ) {
 											$active_installs_millions = floor( $api->active_installs / 1000000 );
 											printf(
-												_nx( '%s+ Million', '%s+ Million', 'Active plugin installations', $active_installs_millions ),
+												_nx( '%s+ Million', '%s+ Million', $active_installs_millions, 'Active plugin installations' ),
 												number_format_i18n( $active_installs_millions )
 											);
 										} elseif ( 0 == $api->active_installs ) {
@@ -706,7 +706,7 @@ if ( ! empty( $api->ratings ) && array_sum( (array) $api->ratings ) > 0 ) {
 				/* translators: 1: number of stars (used to determine singular/plural), 2: number of reviews */
 				$aria_label = esc_attr(
 					sprintf(
-						_n( 'Reviews with %1$d star: %2$s. Opens in a new window.', 'Reviews with %1$d stars: %2$s. Opens in a new window.', $key ),
+						_n( 'Reviews with %1$d star: %2$s. Opens in a new tab.', 'Reviews with %1$d stars: %2$s. Opens in a new tab.', $key ),
 						$key,
 						number_format_i18n( $ratecount )
 					)

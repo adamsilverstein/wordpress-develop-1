@@ -1976,9 +1976,15 @@ function wp_privacy_generate_personal_data_export_group_html( $group_data ) {
 		$group_html .= '<tbody>';
 
 		foreach ( (array) $group_item_data as $group_item_datum ) {
+			$value = $group_item_datum['value'];
+			// If it looks like a link, make it a link
+			if ( false === strpos( $value, ' ' ) && ( 0 === strpos( $value, 'http://' ) || 0 === strpos( $value, 'https://' ) ) ) {
+				$value = '<a href="' . esc_url( $value ) . '">' . esc_html( $value ) . '</a>';
+			}
+
 			$group_html .= '<tr>';
 			$group_html .= '<th>' . esc_html( $group_item_datum['name'] ) . '</th>';
-			$group_html .= '<td>' . wp_kses( $group_item_datum['value'], $allowed_tags, $allowed_protocols ) . '</td>';
+			$group_html .= '<td>' . wp_kses( $value, $allowed_tags, $allowed_protocols ) . '</td>';
 			$group_html .= '</tr>';
 		}
 
@@ -1999,9 +2005,6 @@ function wp_privacy_generate_personal_data_export_group_html( $group_data ) {
  * @param int  $request_id  The export request ID.
  */
 function wp_privacy_generate_personal_data_export_file( $request_id ) {
-	// Maybe make this a cron job instead.
-	wp_privacy_delete_old_export_files();
-
 	if ( ! class_exists( 'ZipArchive' ) ) {
 		wp_send_json_error( __( 'Unable to generate export file. ZipArchive not available.' ) );
 	}
@@ -2010,13 +2013,13 @@ function wp_privacy_generate_personal_data_export_file( $request_id ) {
 	$request = wp_get_user_request_data( $request_id );
 
 	if ( ! $request || 'export_personal_data' !== $request->action_name ) {
-		wp_send_json_error( __( 'Invalid request ID when generating export file' ) );
+		wp_send_json_error( __( 'Invalid request ID when generating export file.' ) );
 	}
 
 	$email_address = $request->email;
 
 	if ( ! is_email( $email_address ) ) {
-		wp_send_json_error( __( 'Invalid email address when generating export file' ) );
+		wp_send_json_error( __( 'Invalid email address when generating export file.' ) );
 	}
 
 	// Create the exports folder if needed.
@@ -2034,7 +2037,7 @@ function wp_privacy_generate_personal_data_export_file( $request_id ) {
 	if ( ! file_exists( $index_pathname ) ) {
 		$file = fopen( $index_pathname, 'w' );
 		if ( false === $file ) {
-			wp_send_json_error( __( 'Unable to protect export folder from browsing' ) );
+			wp_send_json_error( __( 'Unable to protect export folder from browsing.' ) );
 		}
 		fwrite( $file, 'Silence is golden.' );
 		fclose( $file );
@@ -2042,17 +2045,17 @@ function wp_privacy_generate_personal_data_export_file( $request_id ) {
 
 	$stripped_email       = str_replace( '@', '-at-', $email_address );
 	$stripped_email       = sanitize_title( $stripped_email ); // slugify the email address
-	$obscura              = md5( rand() );
+	$obscura              = wp_generate_password( 32, false, false );
 	$file_basename        = 'wp-personal-data-file-' . $stripped_email . '-' . $obscura;
 	$html_report_filename = $file_basename . '.html';
 	$html_report_pathname = $exports_dir . $html_report_filename;
 	$file = fopen( $html_report_pathname, 'w' );
 	if ( false === $file ) {
-		wp_send_json_error( __( 'Unable to open export file (HTML report) for writing' ) );
+		wp_send_json_error( __( 'Unable to open export file (HTML report) for writing.' ) );
 	}
 
 	$title = sprintf(
-		// translators: %s Users e-mail address.
+		/* translators: %s: user's e-mail address */
 		__( 'Personal Data Export for %s' ),
 		$email_address
 	);
@@ -2091,19 +2094,19 @@ function wp_privacy_generate_personal_data_export_file( $request_id ) {
 		'items'       => array(
 			'about-1' => array(
 				array(
-					'name'  => __( 'Report generated for' ),
+					'name'  => _x( 'Report generated for', 'email address' ),
 					'value' => $email_address,
 				),
 				array(
-					'name'  => __( 'For site' ),
+					'name'  => _x( 'For site', 'website name' ),
 					'value' => get_bloginfo( 'name' ),
 				),
 				array(
-					'name'  => __( 'At URL' ),
+					'name'  => _x( 'At URL', 'website URL' ),
 					'value' => get_bloginfo( 'url' ),
 				),
 				array(
-					'name'  => __( 'On' ),
+					'name'  => _x( 'On', 'date/time' ),
 					'value' => current_time( 'mysql' ),
 				),
 			),
@@ -2124,26 +2127,61 @@ function wp_privacy_generate_personal_data_export_file( $request_id ) {
 	fwrite( $file, "</html>\n" );
 	fclose( $file );
 
-	// Now, generate the ZIP.
-	$archive_filename = $file_basename . '.zip';
-	$archive_pathname = $exports_dir . $archive_filename;
-	$archive_url      = $exports_url . $archive_filename;
+	/*
+	 * Now, generate the ZIP.
+	 *
+	 * If an archive has already been generated, then remove it and reuse the
+	 * filename, to avoid breaking any URLs that may have been previously sent
+	 * via email.
+	 */
+	$error            = false;
+	$archive_url      = get_post_meta( $request_id, '_export_file_url', true );
+	$archive_pathname = get_post_meta( $request_id, '_export_file_path', true );
+
+	if ( empty( $archive_pathname ) || empty( $archive_url ) ) {
+		$archive_filename = $file_basename . '.zip';
+		$archive_pathname = $exports_dir . $archive_filename;
+		$archive_url      = $exports_url . $archive_filename;
+
+		update_post_meta( $request_id, '_export_file_url', $archive_url );
+		update_post_meta( $request_id, '_export_file_path', $archive_pathname );
+	}
+
+	if ( ! empty( $archive_pathname ) && file_exists( $archive_pathname ) ) {
+		wp_delete_file( $archive_pathname );
+	}
 
 	$zip = new ZipArchive;
+	if ( true === $zip->open( $archive_pathname, ZipArchive::CREATE ) ) {
+		if ( ! $zip->addFile( $html_report_pathname, 'index.html' ) ) {
+			$error = __( 'Unable to add data to export file.' );
+		}
 
-	if ( TRUE === $zip->open( $archive_pathname, ZipArchive::CREATE ) ) {
-		$zip->addFile( $html_report_pathname, 'index.html' );
 		$zip->close();
+
+		if ( ! $error ) {
+			/**
+			 * Fires right after all personal data has been written to the export file.
+			 *
+			 * @since 4.9.6
+			 *
+			 * @param string $archive_pathname     The full path to the export file on the filesystem.
+			 * @param string $archive_url          The URL of the archive file.
+			 * @param string $html_report_pathname The full path to the personal data report on the filesystem.
+			 * @param string $request_id           The export request ID.
+			 */
+			do_action( 'wp_privacy_personal_data_export_file_created', $archive_pathname, $archive_url, $html_report_pathname, $request_id );
+		}
 	} else {
-		wp_send_json_error( __( 'Unable to open export file (archive) for writing' ) );
+		$error = __( 'Unable to open export file (archive) for writing.' );
 	}
 
 	// And remove the HTML file.
 	unlink( $html_report_pathname );
 
-	// Save the export file in the request.
-	update_post_meta( $request_id, '_export_file_url', $archive_url );
-	update_post_meta( $request_id, '_export_file_path', $archive_pathname );
+	if ( $error ) {
+		wp_send_json_error( $error );
+	}
 }
 
 /**
@@ -2162,13 +2200,18 @@ function wp_privacy_send_personal_data_export_email( $request_id ) {
 		return new WP_Error( 'invalid', __( 'Invalid request ID when sending personal data export email.' ) );
 	}
 
-/* translators: Do not translate LINK, EMAIL, SITENAME, SITEURL: those are placeholders. */
+	/** This filter is documented in wp-admin/includes/file.php */
+	$expiration      = apply_filters( 'wp_privacy_export_expiration', 3 * DAY_IN_SECONDS );
+	$expiration_date = date_i18n( get_option( 'date_format' ), time() + $expiration );
+
+/* translators: Do not translate EXPIRATION, LINK, EMAIL, SITENAME, SITEURL: those are placeholders. */
 $email_text = __(
 'Howdy,
 
 Your request for an export of personal data has been completed. You may
-download your personal data by clicking on the link below. This link is
-good for the next 3 days.
+download your personal data by clicking on the link below. For privacy
+and security, we will automatically delete the file on ###EXPIRATION###,
+so please download it before then.
 
 ###LINK###
 
@@ -2183,6 +2226,7 @@ All at ###SITENAME###
 	 * Filters the text of the email sent with a personal data export file.
 	 *
 	 * The following strings have a special meaning and will get replaced dynamically:
+	 * ###EXPIRATION###         The date when the URL will be automatically deleted.
 	 * ###LINK###               URL of the personal data export file for the user.
 	 * ###EMAIL###              The email we are sending to.
 	 * ###SITENAME###           The name of the site.
@@ -2200,6 +2244,7 @@ All at ###SITENAME###
 	$site_name = is_multisite() ? get_site_option( 'site_name' ) : get_option( 'blogname' );
 	$site_url = network_home_url();
 
+	$content = str_replace( '###EXPIRATION###', $expiration_date, $content );
 	$content = str_replace( '###LINK###', esc_url_raw( $export_file_url ), $content );
 	$content = str_replace( '###EMAIL###', $email_address, $content );
 	$content = str_replace( '###SITENAME###', wp_specialchars_decode( $site_name, ENT_QUOTES ), $content );
@@ -2232,9 +2277,10 @@ All at ###SITENAME###
  * @param int    $page            The page of personal data for this exporter. Begins at 1.
  * @param int    $request_id      The request ID for this personal data export.
  * @param bool   $send_as_email   Whether the final results of the export should be emailed to the user.
+ * @param string $exporter_key    The slug (key) of the exporter.
  * @return array The filtered response.
  */
-function wp_privacy_process_personal_data_export_page( $response, $exporter_index, $email_address, $page, $request_id, $send_as_email ) {
+function wp_privacy_process_personal_data_export_page( $response, $exporter_index, $email_address, $page, $request_id, $send_as_email, $exporter_key ) {
 	/* Do some simple checks on the shape of the response from the exporter.
 	 * If the exporter response is malformed, don't attempt to consume it - let it
 	 * pass through to generate a warning to the user by default ajax processing.
@@ -2259,7 +2305,7 @@ function wp_privacy_process_personal_data_export_page( $response, $exporter_inde
 	$request = wp_get_user_request_data( $request_id );
 
 	if ( ! $request || 'export_personal_data' !== $request->action_name ) {
-		wp_send_json_error( __( 'Invalid request ID when merging exporter data' ) );
+		wp_send_json_error( __( 'Invalid request ID when merging exporter data.' ) );
 	}
 
 	$export_data = array();
@@ -2311,14 +2357,6 @@ function wp_privacy_process_personal_data_export_page( $response, $exporter_inde
 	delete_post_meta( $request_id, '_export_data_raw' );
 	update_post_meta( $request_id, '_export_data_grouped', $groups );
 
-	// And now, generate the export file, cleaning up any previous file
-	$export_path = get_post_meta( $request_id, '_export_file_path', true );
-	if ( ! empty( $export_path ) ) {
-		delete_post_meta( $request_id, '_export_file_path' );
-		@unlink( $export_path );
-	}
-	delete_post_meta( $request_id, '_export_file_url' );
-
 	// Generate the export file from the collected, grouped personal data.
 	do_action( 'wp_privacy_personal_data_export_file', $request_id );
 
@@ -2343,23 +2381,4 @@ function wp_privacy_process_personal_data_export_page( $response, $exporter_inde
 	_wp_privacy_completed_request( $request_id );
 
 	return $response;
-}
-
-/**
- * Cleans up export files older than three days old.
- *
- * @since 4.9.6
- */
-function wp_privacy_delete_old_export_files() {
-	$upload_dir   = wp_upload_dir();
-	$exports_dir  = trailingslashit( $upload_dir['basedir'] . '/exports' );
-	$export_files = list_files( $exports_dir );
-
-	foreach( (array) $export_files as $export_file ) {
-		$file_age_in_seconds = time() - filemtime( $export_file );
-
-		if ( 3 * DAY_IN_SECONDS < $file_age_in_seconds ) {
-			@unlink( $export_file );
-		}
-	}
 }

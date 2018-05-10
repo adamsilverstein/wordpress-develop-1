@@ -2378,6 +2378,14 @@ body:not(.twentyseventeen-front-page) .entry-header {
 	width: 100%;
 }
 
+.site-info span[role=separator] {
+	padding: 0 0.2em 0 0.4em;
+}
+
+.site-info span[role=separator]::before {
+	content: '\002f';
+}
+
 /*--------------------------------------------------------------
 14.0 Comments
 --------------------------------------------------------------*/
@@ -2495,6 +2503,14 @@ body:not(.twentyseventeen-front-page) .entry-header {
 
 .form-submit {
 	text-align: right;
+}
+
+.comment-form #wp-comment-cookies-consent {
+	margin: 0 10px 0 0;
+}
+
+.comment-form .comment-form-cookies-consent label {
+	display: inline;
 }
 
 /*--------------------------------------------------------------

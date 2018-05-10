@@ -609,13 +609,13 @@ function _wp_privacy_resend_request( $request_id ) {
 }
 
 /**
- * Marks a request as completed by the admin and logs the datetime.
+ * Marks a request as completed by the admin and logs the current timestamp.
  *
  * @since 4.9.6
  * @access private
  *
- * @param int $request_id Request ID.
- * @return int|WP_Error Request ID on succes or WP_Error.
+ * @param  int          $request_id Request ID.
+ * @return int|WP_Error $request    Request ID on success or WP_Error.
  */
 function _wp_privacy_completed_request( $request_id ) {
 	$request_id   = absint( $request_id );
@@ -625,11 +625,11 @@ function _wp_privacy_completed_request( $request_id ) {
 		return new WP_Error( 'privacy_request_error', __( 'Invalid request.' ) );
 	}
 
-	update_post_meta( $request_id, '_wp_user_request_confirmed_timestamp', time() );
+	update_post_meta( $request_id, '_wp_user_request_completed_timestamp', time() );
 
 	$request = wp_update_post( array(
 		'ID'          => $request_id,
-		'post_status' => 'request-confirmed',
+		'post_status' => 'request-completed',
 	) );
 
 	return $request;
@@ -659,11 +659,10 @@ function _wp_personal_data_handle_actions() {
 			add_settings_error(
 				'privacy_action_email_retry',
 				'privacy_action_email_retry',
-				__( 'Confirmation request re-resent successfully.' ),
+				__( 'Confirmation request sent again successfully.' ),
 				'updated'
 			);
 		}
-
 	} elseif ( isset( $_POST['action'] ) ) {
 		$action = isset( $_POST['action'] ) ? sanitize_key( wp_unslash( $_POST['action'] ) ) : ''; // WPCS: input var ok, CSRF ok.
 
@@ -753,13 +752,14 @@ function _wp_personal_data_handle_actions() {
  * @access private
  */
 function _wp_personal_data_cleanup_requests() {
+	/** This filter is documented in wp-includes/user.php */
 	$expires        = (int) apply_filters( 'user_request_key_expiration', DAY_IN_SECONDS );
 	$requests_query = new WP_Query( array(
 		'post_type'      => 'user_request',
 		'posts_per_page' => -1,
 		'post_status'    => 'request-pending',
 		'fields'         => 'ids',
-		'date_query' => array(
+		'date_query'     => array(
 			array(
 				'column' => 'post_modified_gmt',
 				'before' => $expires . ' seconds ago',
@@ -785,8 +785,8 @@ function _wp_personal_data_cleanup_requests() {
  * @access private
  */
 function _wp_personal_data_export_page() {
-	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_die( esc_html__( 'Sorry, you are not allowed to manage privacy on this site.' ) );
+	if ( ! current_user_can( 'export_others_personal_data' ) ) {
+		wp_die( __( 'Sorry, you are not allowed to export personal data on this site.' ) );
 	}
 
 	_wp_personal_data_handle_actions();
@@ -850,8 +850,14 @@ function _wp_personal_data_export_page() {
  * @access private
  */
 function _wp_personal_data_removal_page() {
-	if ( ! current_user_can( 'delete_users' ) ) {
-		wp_die( esc_html__( 'Sorry, you are not allowed to manage privacy on this site.' ) );
+	/*
+	 * Require both caps in order to make it explicitly clear that delegating
+	 * erasure from network admins to single-site admins will give them the
+	 * ability to affect global users, rather than being limited to the site
+	 * that they administer.
+	 */
+	if ( ! current_user_can( 'erase_others_personal_data' ) || ! current_user_can( 'delete_users' ) ) {
+		wp_die( __( 'Sorry, you are not allowed to erase data on this site.' ) );
 	}
 
 	_wp_personal_data_handle_actions();
@@ -870,13 +876,13 @@ function _wp_personal_data_removal_page() {
 
 	?>
 	<div class="wrap nosubsub">
-		<h1><?php esc_html_e( 'Remove Personal Data' ); ?></h1>
+		<h1><?php esc_html_e( 'Erase Personal Data' ); ?></h1>
 		<hr class="wp-header-end" />
 
 		<?php settings_errors(); ?>
 
 		<form method="post" class="wp-privacy-request-form">
-			<h2><?php esc_html_e( 'Add Data Removal Request' ); ?></h2>
+			<h2><?php esc_html_e( 'Add Data Erasure Request' ); ?></h2>
 			<p><?php esc_html_e( 'An email will be sent to the user at this email address asking them to verify the request.' ); ?></p>
 
 			<div class="wp-privacy-request-form-field">
@@ -911,14 +917,82 @@ function _wp_personal_data_removal_page() {
 }
 
 /**
+ * Mark erasure requests as completed after processing is finished.
+ *
+ * This intercepts the Ajax responses to personal data eraser page requests, and
+ * monitors the status of a request. Once all of the processing has finished, the
+ * request is marked as completed.
+ *
+ * @since 4.9.6
+ *
+ * @see wp_privacy_personal_data_erasure_page
+ *
+ * @param array  $response      The response from the personal data eraser for
+ *                              the given page.
+ * @param int    $eraser_index  The index of the personal data eraser. Begins
+ *                              at 1.
+ * @param string $email_address The email address of the user whose personal
+ *                              data this is.
+ * @param int    $page          The page of personal data for this eraser.
+ *                              Begins at 1.
+ * @param int    $request_id    The request ID for this personal data erasure.
+ * @return array The filtered response.
+ */
+function wp_privacy_process_personal_data_erasure_page( $response, $eraser_index, $email_address, $page, $request_id ) {
+	/*
+	 * If the eraser response is malformed, don't attempt to consume it; let it
+	 * pass through, so that the default Ajax processing will generate a warning
+	 * to the user.
+	 */
+	if ( ! is_array( $response ) ) {
+		return $response;
+	}
+
+	if ( ! array_key_exists( 'done', $response ) ) {
+		return $response;
+	}
+
+	if ( ! array_key_exists( 'items_removed', $response ) ) {
+		return $response;
+	}
+
+	if ( ! array_key_exists( 'items_retained', $response ) ) {
+		return $response;
+	}
+
+	if ( ! array_key_exists( 'messages', $response ) ) {
+		return $response;
+	}
+
+	$request = wp_get_user_request_data( $request_id );
+
+	if ( ! $request || 'remove_personal_data' !== $request->action_name ) {
+		wp_send_json_error( __( 'Invalid request ID when processing eraser data.' ) );
+	}
+
+	/** This filter is documented in wp-admin/includes/ajax-actions.php */
+	$erasers        = apply_filters( 'wp_privacy_personal_data_erasers', array() );
+	$is_last_eraser = count( $erasers ) === $eraser_index;
+	$eraser_done    = $response['done'];
+
+	if ( ! $is_last_eraser || ! $eraser_done ) {
+		return $response;
+	}
+
+	_wp_privacy_completed_request( $request_id );
+
+	return $response;
+}
+
+/**
  * Add requests pages.
  *
  * @since 4.9.6
  * @access private
  */
 function _wp_privacy_hook_requests_page() {
-	add_submenu_page( 'tools.php', __( 'Export Personal Data' ), __( 'Export Personal Data' ), 'manage_options', 'export_personal_data', '_wp_personal_data_export_page' );
-	add_submenu_page( 'tools.php', __( 'Remove Personal Data' ), __( 'Remove Personal Data' ), 'manage_options', 'remove_personal_data', '_wp_personal_data_removal_page' );
+	add_submenu_page( 'tools.php', __( 'Export Personal Data' ), __( 'Export Personal Data' ), 'export_others_personal_data', 'export_personal_data', '_wp_personal_data_export_page' );
+	add_submenu_page( 'tools.php', __( 'Erase Personal Data' ), __( 'Erase Personal Data' ), 'erase_others_personal_data', 'remove_personal_data', '_wp_personal_data_removal_page' );
 }
 
 // TODO: move the following classes in new files.
@@ -1009,8 +1083,8 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 		}
 
 		$query = "
-			SELECT post_status, COUNT( * ) AS num_posts 
-			FROM {$wpdb->posts} 
+			SELECT post_status, COUNT( * ) AS num_posts
+			FROM {$wpdb->posts}
 			WHERE post_type = %s
 			AND post_name = %s
 			GROUP BY post_status";
@@ -1037,7 +1111,7 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 	 * @return array
 	 */
 	protected function get_views() {
-		$current_status = isset( $_REQUEST['filter-status'] ) ? sanitize_text_field( $_REQUEST['filter-status'] ): '';
+		$current_status = isset( $_REQUEST['filter-status'] ) ? sanitize_text_field( $_REQUEST['filter-status'] ) : '';
 		$statuses       = _wp_privacy_statuses();
 		$views          = array();
 		$admin_url      = admin_url( 'tools.php?page=' . $this->request_type );
@@ -1076,7 +1150,7 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 	public function process_bulk_action() {
 		$action      = $this->current_action();
 		$request_ids = isset( $_REQUEST['request_id'] ) ? wp_parse_id_list( wp_unslash( $_REQUEST['request_id'] ) ) : array(); // WPCS: input var ok, CSRF ok.
-		$count = 0;
+		$count       = 0;
 
 		if ( $request_ids ) {
 			check_admin_referer( 'bulk-privacy_requests' );
@@ -1093,6 +1167,7 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 				add_settings_error(
 					'bulk_action',
 					'bulk_action',
+					/* translators: %d: number of requests */
 					sprintf( _n( 'Deleted %d request', 'Deleted %d requests', $count ), $count ),
 					'updated'
 				);
@@ -1109,6 +1184,7 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 				add_settings_error(
 					'bulk_action',
 					'bulk_action',
+					/* translators: %d: number of requests */
 					sprintf( _n( 'Re-sent %d request', 'Re-sent %d requests', $count ), $count ),
 					'updated'
 				);
@@ -1138,7 +1214,7 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 			'post_type'      => $this->post_type,
 			'post_name__in'  => array( $this->request_type ),
 			'posts_per_page' => $posts_per_page,
-			'offset'         => isset( $_REQUEST['paged'] ) ? max( 0, absint( $_REQUEST['paged'] ) - 1 ) * $posts_per_page: 0,
+			'offset'         => isset( $_REQUEST['paged'] ) ? max( 0, absint( $_REQUEST['paged'] ) - 1 ) * $posts_per_page : 0,
 			'post_status'    => 'any',
 			's'              => isset( $_REQUEST['s'] ) ? sanitize_text_field( $_REQUEST['s'] ) : '',
 		);
@@ -1230,6 +1306,7 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 		$time_diff = current_time( 'timestamp', true ) - $timestamp;
 
 		if ( $time_diff >= 0 && $time_diff < DAY_IN_SECONDS ) {
+			/* translators: human readable timestamp */
 			return sprintf( __( '%s ago' ), human_time_diff( $timestamp ) );
 		}
 
@@ -1264,7 +1341,7 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 	 * @return string
 	 */
 	public function column_email( $item ) {
-		return sprintf( '%1$s %2$s', $item->email, $this->row_actions( array() ) );
+		return sprintf( '<a href="%1$s">%2$s</a> %3$s', esc_url( 'mailto:' . $item->email ), $item->email, $this->row_actions( array() ) );
 	}
 
 	/**
@@ -1286,7 +1363,7 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 	public function single_row( $item ) {
 		$status = $item->status;
 
-		echo '<tr class="status-' . esc_attr( $status ) . '">';
+		echo '<tr id="request-' . esc_attr( $item->ID ) . '" class="status-' . esc_attr( $status ) . '">';
 		$this->single_row_columns( $item );
 		echo '</tr>';
 	}
@@ -1337,24 +1414,24 @@ class WP_Privacy_Data_Export_Requests_Table extends WP_Privacy_Requests_Table {
 		$request_id      = $item->ID;
 		$nonce           = wp_create_nonce( 'wp-privacy-export-personal-data-' . $request_id );
 
-		$download_data_markup = '<div class="export_personal_data" ' .
+		$download_data_markup = '<div class="export-personal-data" ' .
 			'data-exporters-count="' . esc_attr( $exporters_count ) . '" ' .
 			'data-request-id="' . esc_attr( $request_id ) . '" ' .
 			'data-nonce="' . esc_attr( $nonce ) .
 			'">';
 
-		$download_data_markup .= '<span class="export_personal_data_idle"><a href="#" >' . __( 'Download Personal Data' ) . '</a></span>' .
-			'<span style="display:none" class="export_personal_data_processing" >' . __( 'Downloading Data...' ) . '</span>' .
-			'<span style="display:none" class="export_personal_data_success"><a href="#" >' . __( 'Download Personal Data Again' ) . '</a></span>' .
-			'<span style="display:none" class="export_personal_data_failed">' . __( 'Download Failed!' ) . ' <a href="#" >' . __( 'Retry' ) . '</a></span>';
+		$download_data_markup .= '<span class="export-personal-data-idle"><button type="button" class="button-link export-personal-data-handle">' . __( 'Download Personal Data' ) . '</button></span>' .
+			'<span style="display:none" class="export-personal-data-processing" >' . __( 'Downloading Data...' ) . '</span>' .
+			'<span style="display:none" class="export-personal-data-success"><button type="button" class="button-link export-personal-data-handle">' . __( 'Download Personal Data Again' ) . '</button></span>' .
+			'<span style="display:none" class="export-personal-data-failed">' . __( 'Download has failed.' ) . ' <button type="button" class="button-link">' . __( 'Retry' ) . '</button></span>';
 
 		$download_data_markup .= '</div>';
 
 		$row_actions = array(
-			'download_data' => $download_data_markup,
+			'download-data' => $download_data_markup,
 		);
 
-		return sprintf( '%1$s %2$s', $item->email, $this->row_actions( $row_actions ) );
+		return sprintf( '<a href="%1$s">%2$s</a> %3$s', esc_url( 'mailto:' . $item->email ), $item->email, $this->row_actions( $row_actions ) );
 	}
 
 	/**
@@ -1377,7 +1454,7 @@ class WP_Privacy_Data_Export_Requests_Table extends WP_Privacy_Requests_Table {
 				$request_id      = $item->ID;
 				$nonce           = wp_create_nonce( 'wp-privacy-export-personal-data-' . $request_id );
 
-				echo '<div class="export_personal_data" ' .
+				echo '<div class="export-personal-data" ' .
 					'data-send-as-email="1" ' .
 					'data-exporters-count="' . esc_attr( $exporters_count ) . '" ' .
 					'data-request-id="' . esc_attr( $request_id ) . '" ' .
@@ -1385,10 +1462,10 @@ class WP_Privacy_Data_Export_Requests_Table extends WP_Privacy_Requests_Table {
 					'">';
 
 				?>
-				<span class="export_personal_data_idle"><a class="button" href="#" ><?php _e( 'Email Data' ); ?></a></span>
-				<span style="display:none" class="export_personal_data_processing button updating-message" ><?php _e( 'Sending Email...' ); ?></span>
-				<span style="display:none" class="export_personal_data_success success-message" ><?php _e( 'Email Sent!' ); ?></span>
-				<span style="display:none" class="export_personal_data_failed"><?php _e( 'Email Failed!' ); ?> <a class="button" href="#" ><?php _e( 'Retry' ); ?></a></span>
+				<span class="export-personal-data-idle"><button type="button" class="button export-personal-data-handle"><?php _e( 'Email Data' ); ?></button></span>
+				<span style="display:none" class="export-personal-data-processing button updating-message" ><?php _e( 'Sending Email...' ); ?></span>
+				<span style="display:none" class="export-personal-data-success success-message" ><?php _e( 'Email sent.' ); ?></span>
+				<span style="display:none" class="export-personal-data-failed"><?php _e( 'Email could not be sent.' ); ?> <button type="button" class="button export-personal-data-handle"><?php _e( 'Retry' ); ?></button></span>
 				<?php
 
 				echo '</div>';
@@ -1398,9 +1475,9 @@ class WP_Privacy_Data_Export_Requests_Table extends WP_Privacy_Requests_Table {
 				break;
 			case 'request-completed':
 				echo '<a href="' . esc_url( wp_nonce_url( add_query_arg( array(
-					'action' => 'delete',
-					'request_id' => array( $item->ID )
-				), admin_url( 'tools.php?page=export_personal_data' ) ), 'bulk-privacy_requests' ) ) . '">' . esc_html__( 'Remove request' ) . '</a>';
+					'action'     => 'delete',
+					'request_id' => array( $item->ID ),
+				), admin_url( 'tools.php?page=export_personal_data' ) ), 'bulk-privacy_requests' ) ) . '" class="button">' . esc_html__( 'Remove request' ) . '</a>';
 				break;
 		}
 	}
@@ -1449,24 +1526,24 @@ class WP_Privacy_Data_Removal_Requests_Table extends WP_Privacy_Requests_Table {
 			$request_id    = $item->ID;
 			$nonce         = wp_create_nonce( 'wp-privacy-erase-personal-data-' . $request_id );
 
-			$remove_data_markup = '<div class="remove_personal_data force_remove_personal_data" ' .
+			$remove_data_markup = '<div class="remove-personal-data force-remove-personal-data" ' .
 				'data-erasers-count="' . esc_attr( $erasers_count ) . '" ' .
 				'data-request-id="' . esc_attr( $request_id ) . '" ' .
 				'data-nonce="' . esc_attr( $nonce ) .
 				'">';
 
-			$remove_data_markup .= '<span class="remove_personal_data_idle"><a href="#" >' . __( 'Force Remove Personal Data' ) . '</a></span>' .
-				'<span style="display:none" class="remove_personal_data_processing" >' . __( 'Removing Data...' ) . '</span>' .
-				'<span style="display:none" class="remove_personal_data_failed">' . __( 'Force Remove Failed!' ) . ' <a href="#" >' . __( 'Retry' ) . '</a></span>';
+			$remove_data_markup .= '<span class="remove-personal-data-idle"><button type="button" class="button-link remove-personal-data-handle">' . __( 'Force Erase Personal Data' ) . '</button></span>' .
+				'<span style="display:none" class="remove-personal-data-processing" >' . __( 'Erasing Data...' ) . '</span>' .
+				'<span style="display:none" class="remove-personal-data-failed">' . __( 'Force Erase has failed.' ) . ' <button type="button" class="button-link remove-personal-data-handle">' . __( 'Retry' ) . '</button></span>';
 
 			$remove_data_markup .= '</div>';
 
 			$row_actions = array(
-				'remove_data' => $remove_data_markup,
+				'remove-data' => $remove_data_markup,
 			);
 		}
 
-		return sprintf( '%1$s %2$s', $item->email, $this->row_actions( $row_actions ) );
+		return sprintf( '<a href="%1$s">%2$s</a> %3$s', esc_url( 'mailto:' . $item->email ), $item->email, $this->row_actions( $row_actions ) );
 	}
 
 	/**
@@ -1489,7 +1566,7 @@ class WP_Privacy_Data_Removal_Requests_Table extends WP_Privacy_Requests_Table {
 				$request_id    = $item->ID;
 				$nonce         = wp_create_nonce( 'wp-privacy-erase-personal-data-' . $request_id );
 
-				echo '<div class="remove_personal_data" ' .
+				echo '<div class="remove-personal-data" ' .
 					'data-force-erase="1" ' .
 					'data-erasers-count="' . esc_attr( $erasers_count ) . '" ' .
 					'data-request-id="' . esc_attr( $request_id ) . '" ' .
@@ -1497,9 +1574,9 @@ class WP_Privacy_Data_Removal_Requests_Table extends WP_Privacy_Requests_Table {
 					'">';
 
 				?>
-				<span class="remove_personal_data_idle"><a class="button" href="#" ><?php _e( 'Remove Personal Data' ); ?></a></span>
-				<span style="display:none" class="remove_personal_data_processing button updating-message" ><?php _e( 'Removing Data...' ); ?></span>
-				<span style="display:none" class="remove_personal_data_failed"><?php _e( 'Removing Data Failed!' ); ?> <a class="button" href="#" ><?php _e( 'Retry' ); ?></a></span>
+				<span class="remove-personal-data-idle"><button type="button" class="button remove-personal-data-handle"><?php _e( 'Erase Personal Data' ); ?></button></span>
+				<span style="display:none" class="remove-personal-data-processing button updating-message" ><?php _e( 'Erasing Data...' ); ?></span>
+				<span style="display:none" class="remove-personal-data-failed"><?php _e( 'Erasing Data has failed.' ); ?> <button type="button" class="button remove-personal-data-handle"><?php _e( 'Retry' ); ?></button></span>
 				<?php
 
 				echo '</div>';
@@ -1510,9 +1587,9 @@ class WP_Privacy_Data_Removal_Requests_Table extends WP_Privacy_Requests_Table {
 				break;
 			case 'request-completed':
 				echo '<a href="' . esc_url( wp_nonce_url( add_query_arg( array(
-					'action' => 'delete',
+					'action'     => 'delete',
 					'request_id' => array( $item->ID ),
-				), admin_url( 'tools.php?page=remove_personal_data' ) ), 'bulk-privacy_requests' ) ) . '">' . esc_html__( 'Remove request' ) . '</a>';
+				), admin_url( 'tools.php?page=remove_personal_data' ) ), 'bulk-privacy_requests' ) ) . '" class="button">' . esc_html__( 'Remove request' ) . '</a>';
 				break;
 		}
 	}

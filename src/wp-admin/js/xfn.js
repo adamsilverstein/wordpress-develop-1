@@ -25,71 +25,86 @@ jQuery( document ).ready(function( $ ) {
 jQuery( document ).ready( function( $ ) {
 	var strings = window.privacyToolsL10n || {};
 
-	function set_action_state( $action, state ) {
+	function setActionState( $action, state ) {
 		$action.children().hide();
 		$action.children( '.' + state ).show();
 	}
 
 	function clearResultsAfterRow( $requestRow ) {
+		$requestRow.removeClass( 'has-request-results' );
+
 		if ( $requestRow.next().hasClass( 'request-results' ) ) {
 			$requestRow.next().remove();
 		}
 	}
 
 	function appendResultsAfterRow( $requestRow, classes, summaryMessage, additionalMessages ) {
+		var itemList = '',
+			resultRowClasses = 'request-results';
+
 		clearResultsAfterRow( $requestRow );
 
-		var itemList = '';
 		if ( additionalMessages.length ) {
 			$.each( additionalMessages, function( index, value ) {
 				itemList = itemList + '<li>' + value + '</li>';
-			} );
+			});
 			itemList = '<ul>' + itemList + '</ul>';
 		}
 
+		$requestRow.addClass( 'has-request-results' );
+
+		if ( $requestRow.hasClass( 'status-request-confirmed' ) ) {
+			resultRowClasses = resultRowClasses + ' status-request-confirmed';
+		}
+
+		if ( $requestRow.hasClass( 'status-request-failed' ) ) {
+			resultRowClasses = resultRowClasses + ' status-request-failed';
+		}
+
 		$requestRow.after( function() {
-			return '<tr class="request-results"><td colspan="5">' +
+			return '<tr class="' + resultRowClasses + '"><th colspan="5">' +
 				'<div class="notice inline notice-alt ' + classes + '">' +
 				'<p>' + summaryMessage + '</p>' +
 				itemList +
 				'</div>' +
 				'</td>' +
 				'</tr>';
-		} );
+		});
 	}
 
-	$( '.export_personal_data a' ).click( function( event ) {
+	$( '.export-personal-data-handle' ).click( function( event ) {
+
+		var $this          = $( this ),
+			$action        = $this.parents( '.export-personal-data' ),
+			$requestRow    = $this.parents( 'tr' ),
+			requestID      = $action.data( 'request-id' ),
+			nonce          = $action.data( 'nonce' ),
+			exportersCount = $action.data( 'exporters-count' ),
+			sendAsEmail    = $action.data( 'send-as-email' ) ? true : false;
+
 		event.preventDefault();
 		event.stopPropagation();
-
-		var $this          = $( this );
-		var $action        = $this.parents( '.export_personal_data' );
-		var $requestRow    = $this.parents( 'tr' );
-		var requestID      = $action.data( 'request-id' );
-		var nonce          = $action.data( 'nonce' );
-		var exportersCount = $action.data( 'exporters-count' );
-		var sendAsEmail    = $action.data( 'send-as-email' ) ? true : false;
 
 		$action.blur();
 		clearResultsAfterRow( $requestRow );
 
-		function on_export_done_success( zipUrl ) {
-			set_action_state( $action, 'export_personal_data_success' );
+		function onExportDoneSuccess( zipUrl ) {
+			setActionState( $action, 'export-personal-data-success' );
 			if ( 'undefined' !== typeof zipUrl ) {
 				window.location = zipUrl;
 			} else if ( ! sendAsEmail ) {
-				on_export_failure( strings.noExportFile );
+				onExportFailure( strings.noExportFile );
 			}
 		}
 
-		function on_export_failure( errorMessage ) {
-			set_action_state( $action, 'export_personal_data_failed' );
+		function onExportFailure( errorMessage ) {
+			setActionState( $action, 'export-personal-data-failed' );
 			if ( errorMessage ) {
 				appendResultsAfterRow( $requestRow, 'notice-error', strings.exportError, [ errorMessage ] );
 			}
 		}
 
-		function do_next_export( exporterIndex, pageIndex ) {
+		function doNextExport( exporterIndex, pageIndex ) {
 			$.ajax(
 				{
 					url: window.ajaxurl,
@@ -104,79 +119,84 @@ jQuery( document ).ready( function( $ ) {
 					method: 'post'
 				}
 			).done( function( response ) {
+				var responseData = response.data;
+
 				if ( ! response.success ) {
+
 					// e.g. invalid request ID
-					on_export_failure( response.data );
+					onExportFailure( response.data );
 					return;
 				}
-				var responseData = response.data;
+
 				if ( ! responseData.done ) {
-					setTimeout( do_next_export( exporterIndex, pageIndex + 1 ) );
+					setTimeout( doNextExport( exporterIndex, pageIndex + 1 ) );
 				} else {
 					if ( exporterIndex < exportersCount ) {
-						setTimeout( do_next_export( exporterIndex + 1, 1 ) );
+						setTimeout( doNextExport( exporterIndex + 1, 1 ) );
 					} else {
-						on_export_done_success( responseData.url );
+						onExportDoneSuccess( responseData.url );
 					}
 				}
-			} ).fail( function( jqxhr, textStatus, error ) {
+			}).fail( function( jqxhr, textStatus, error ) {
+
 				// e.g. Nonce failure
-				on_export_failure( error );
-			} );
+				onExportFailure( error );
+			});
 		}
 
 		// And now, let's begin
-		set_action_state( $action, 'export_personal_data_processing' );
-		do_next_export( 1, 1 );
-	} );
+		setActionState( $action, 'export-personal-data-processing' );
+		doNextExport( 1, 1 );
+	});
 
-	$( '.remove_personal_data a' ).click( function( event ) {
-		event.preventDefault();
+	$( '.remove-personal-data-handle' ).click( function( event ) {
+
+		var $this         = $( this ),
+			$action       = $this.parents( '.remove-personal-data' ),
+			$requestRow   = $this.parents( 'tr' ),
+			requestID     = $action.data( 'request-id' ),
+			nonce         = $action.data( 'nonce' ),
+			erasersCount  = $action.data( 'erasers-count' ),
+			hasRemoved    = false,
+			hasRetained   = false,
+			messages      = [];
+
 		event.stopPropagation();
-
-		var $this         = $( this );
-		var $action       = $this.parents( '.remove_personal_data' );
-		var $requestRow   = $this.parents( 'tr' );
-		var requestID     = $action.data( 'request-id' );
-		var nonce         = $action.data( 'nonce' );
-		var erasersCount  = $action.data( 'erasers-count' );
-
-		var removedCount  = 0;
-		var retainedCount = 0;
-		var messages      = [];
 
 		$action.blur();
 		clearResultsAfterRow( $requestRow );
 
-		function on_erasure_done_success() {
-			set_action_state( $action, 'remove_personal_data_idle' );
+		function onErasureDoneSuccess() {
 			var summaryMessage = strings.noDataFound;
 			var classes = 'notice-success';
-			if ( 0 === removedCount ) {
-				if ( 0 === retainedCount ) {
+
+			setActionState( $action, 'remove-personal-data-idle' );
+
+			if ( false === hasRemoved ) {
+				if ( false === hasRetained ) {
 					summaryMessage = strings.noDataFound;
 				} else {
 					summaryMessage = strings.noneRemoved;
 					classes = 'notice-warning';
 				}
 			} else {
-				if ( 0 === retainedCount ) {
+				if ( false === hasRetained ) {
 					summaryMessage = strings.foundAndRemoved;
 				} else {
 					summaryMessage = strings.someNotRemoved;
 					classes = 'notice-warning';
 				}
 			}
-			appendResultsAfterRow( $requestRow, 'notice-success', summaryMessage, [] );
+			appendResultsAfterRow( $requestRow, 'notice-success', summaryMessage, messages );
 		}
 
-		function on_erasure_failure() {
-			set_action_state( $action, 'remove_personal_data_failed' );
+		function onErasureFailure() {
+			setActionState( $action, 'remove-personal-data-failed' );
 			appendResultsAfterRow( $requestRow, 'notice-error', strings.removalError, [] );
 		}
 
-		function do_next_erasure( eraserIndex, pageIndex ) {
-			$.ajax( {
+		function doNextErasure( eraserIndex, pageIndex ) {
+			$.ajax({
 				url: window.ajaxurl,
 				data: {
 					action: 'wp-privacy-erase-personal-data',
@@ -186,38 +206,73 @@ jQuery( document ).ready( function( $ ) {
 					security: nonce
 				},
 				method: 'post'
-			} ).done( function( response ) {
+			}).done( function( response ) {
+				var responseData = response.data;
+
 				if ( ! response.success ) {
-					on_erasure_failure();
+					onErasureFailure();
 					return;
 				}
-				var responseData = response.data;
-				if ( responseData.num_items_removed ) {
-					removedCount += responseData.num_items_removed;
+				if ( responseData.items_removed ) {
+					hasRemoved = hasRemoved || responseData.items_removed;
 				}
-				if ( responseData.num_items_retained ) {
-					retainedCount += responseData.num_items_removed;
+				if ( responseData.items_retained ) {
+					hasRetained = hasRetained || responseData.items_retained;
 				}
 				if ( responseData.messages ) {
 					messages = messages.concat( responseData.messages );
 				}
 				if ( ! responseData.done ) {
-					setTimeout( do_next_erasure( eraserIndex, pageIndex + 1 ) );
+					setTimeout( doNextErasure( eraserIndex, pageIndex + 1 ) );
 				} else {
 					if ( eraserIndex < erasersCount ) {
-						setTimeout( do_next_erasure( eraserIndex + 1, 1 ) );
+						setTimeout( doNextErasure( eraserIndex + 1, 1 ) );
 					} else {
-						on_erasure_done_success();
+						onErasureDoneSuccess();
 					}
 				}
-			} ).fail( function() {
-				on_erasure_failure();
-			} );
+			}).fail( function() {
+				onErasureFailure();
+			});
 		}
 
 		// And now, let's begin
-		set_action_state( $action, 'remove_personal_data_processing' );
+		setActionState( $action, 'remove-personal-data-processing' );
 
-		do_next_erasure( 1, 1 );
-	} );
-} );
+		doNextErasure( 1, 1 );
+	});
+});
+
+( function( $ ) {
+
+	// Privacy policy page, copy button.
+	$( document ).on( 'click', function( event ) {
+		var $target = $( event.target );
+		var $parent, $container, range;
+
+		if ( $target.is( 'button.privacy-text-copy' ) ) {
+			$parent = $target.parent().parent();
+			$container = $parent.find( 'div.wp-suggested-text' );
+
+			if ( ! $container.length ) {
+				$container = $parent.find( 'div.policy-text' );
+			}
+
+			if ( $container.length ) {
+				try {
+					window.getSelection().removeAllRanges();
+					range = document.createRange();
+					$container.addClass( 'hide-privacy-policy-tutorial' );
+
+					range.selectNodeContents( $container[0] );
+					window.getSelection().addRange( range );
+					document.execCommand( 'copy' );
+
+					$container.removeClass( 'hide-privacy-policy-tutorial' );
+					window.getSelection().removeAllRanges();
+				} catch ( er ) {}
+			}
+		}
+	});
+
+} ( jQuery ) );

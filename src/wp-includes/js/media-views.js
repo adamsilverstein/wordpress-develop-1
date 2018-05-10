@@ -1252,7 +1252,7 @@ var Library = wp.media.controller.Library,
  *
  * @memberOf wp.media.controller
  *
- * @param {object}                     [attributes]                       The attributes hash passed to the state.
+ * @param {Object}                     [attributes]                       The attributes hash passed to the state.
  * @param {string}                     [attributes.id=gallery-edit]       Unique identifier.
  * @param {string}                     [attributes.title=Edit Gallery]    Title for the state. Displays in the frame's title region.
  * @param {wp.media.model.Attachments} [attributes.library]               The collection of attachments in the gallery.
@@ -1295,7 +1295,14 @@ GalleryEdit = Library.extend(/** @lends wp.media.controller.GalleryEdit.prototyp
 	},
 
 	/**
+	 * Initializes the library.
+	 *
+	 * Creates a selection if a library isn't supplied and creates an attachment
+	 * view if no attachment view is supplied.
+	 *
 	 * @since 3.5.0
+	 *
+	 * @return {void}
 	 */
 	initialize: function() {
 		// If we haven't been provided a `library`, create a `Selection`.
@@ -1312,7 +1319,14 @@ GalleryEdit = Library.extend(/** @lends wp.media.controller.GalleryEdit.prototyp
 	},
 
 	/**
+	 * Activates the library.
+	 *
+	 * Limits the library to images, watches for uploaded attachments. Watches for
+	 * the browse event on the frame and binds it to gallerySettings.
+	 *
 	 * @since 3.5.0
+	 *
+	 * @return {void}
 	 */
 	activate: function() {
 		var library = this.get('library');
@@ -1329,7 +1343,13 @@ GalleryEdit = Library.extend(/** @lends wp.media.controller.GalleryEdit.prototyp
 	},
 
 	/**
+	 * Deactivates the library.
+	 *
+	 * Stops watching for uploaded attachments and browse events.
+	 *
 	 * @since 3.5.0
+	 *
+	 * @return {void}
 	 */
 	deactivate: function() {
 		// Stop watching for uploaded attachments.
@@ -1341,9 +1361,14 @@ GalleryEdit = Library.extend(/** @lends wp.media.controller.GalleryEdit.prototyp
 	},
 
 	/**
+	 * Adds the gallery settings to the sidebar and adds a reverse button to the
+	 * toolbar.
+	 *
 	 * @since 3.5.0
 	 *
-	 * @param browser
+	 * @param {wp.media.view.Frame} browser The file browser.
+	 *
+	 * @return {void}
 	 */
 	gallerySettings: function( browser ) {
 		if ( ! this.get('displaySettings') ) {
@@ -7251,6 +7276,7 @@ Uploaded = wp.media.view.AttachmentFilters.extend(/** @lends wp.media.view.Attac
 	createFilters: function() {
 		var type = this.model.get('type'),
 			types = wp.media.view.settings.mimeTypes,
+			uid = window.userSettings ? parseInt( window.userSettings.uid, 10 ) : 0,
 			text;
 
 		if ( types && type ) {
@@ -7263,7 +7289,8 @@ Uploaded = wp.media.view.AttachmentFilters.extend(/** @lends wp.media.view.Attac
 				props: {
 					uploadedTo: null,
 					orderby: 'date',
-					order:   'DESC'
+					order:   'DESC',
+					author:	 null
 				},
 				priority: 10
 			},
@@ -7273,7 +7300,8 @@ Uploaded = wp.media.view.AttachmentFilters.extend(/** @lends wp.media.view.Attac
 				props: {
 					uploadedTo: wp.media.view.settings.post.id,
 					orderby: 'menuOrder',
-					order:   'ASC'
+					order:   'ASC',
+					author:	 null
 				},
 				priority: 20
 			},
@@ -7283,11 +7311,24 @@ Uploaded = wp.media.view.AttachmentFilters.extend(/** @lends wp.media.view.Attac
 				props: {
 					uploadedTo: 0,
 					orderby: 'menuOrder',
-					order:   'ASC'
+					order:   'ASC',
+					author:	 null
 				},
 				priority: 50
 			}
 		};
+
+		if ( uid ) {
+			this.filters.mine = {
+				text:  l10n.mine,
+				props: {
+					orderby: 'date',
+					order:   'DESC',
+					author:  uid
+				},
+				priority: 50
+			};
+		}
 	}
 });
 
@@ -7314,7 +7355,8 @@ var l10n = wp.media.view.l10n,
  */
 All = wp.media.view.AttachmentFilters.extend(/** @lends wp.media.view.AttachmentFilters.All.prototype */{
 	createFilters: function() {
-		var filters = {};
+		var filters = {},
+			uid = window.userSettings ? parseInt( window.userSettings.uid, 10 ) : 0;
 
 		_.each( wp.media.view.settings.mimeTypes || {}, function( text, key ) {
 			filters[ key ] = {
@@ -7324,7 +7366,8 @@ All = wp.media.view.AttachmentFilters.extend(/** @lends wp.media.view.Attachment
 					type:    key,
 					uploadedTo: null,
 					orderby: 'date',
-					order:   'DESC'
+					order:   'DESC',
+					author:  null
 				}
 			};
 		});
@@ -7336,7 +7379,8 @@ All = wp.media.view.AttachmentFilters.extend(/** @lends wp.media.view.Attachment
 				type:    null,
 				uploadedTo: null,
 				orderby: 'date',
-				order:   'DESC'
+				order:   'DESC',
+				author:  null
 			},
 			priority: 10
 		};
@@ -7349,7 +7393,8 @@ All = wp.media.view.AttachmentFilters.extend(/** @lends wp.media.view.Attachment
 					type:    null,
 					uploadedTo: wp.media.view.settings.post.id,
 					orderby: 'menuOrder',
-					order:   'ASC'
+					order:   'ASC',
+					author:  null
 				},
 				priority: 20
 			};
@@ -7362,10 +7407,26 @@ All = wp.media.view.AttachmentFilters.extend(/** @lends wp.media.view.Attachment
 				uploadedTo: 0,
 				type:       null,
 				orderby:    'menuOrder',
-				order:      'ASC'
+				order:      'ASC',
+				author:     null
 			},
 			priority: 50
 		};
+
+		if ( uid ) {
+			filters.mine = {
+				text:  l10n.mine,
+				props: {
+					status:		null,
+					type:		null,
+					uploadedTo:	null,
+					orderby:	'date',
+					order:		'DESC',
+					author:		uid
+				},
+				priority: 50
+			};
+		}
 
 		if ( wp.media.view.settings.mediaTrash &&
 			this.controller.isModeActive( 'grid' ) ) {
@@ -7377,7 +7438,8 @@ All = wp.media.view.AttachmentFilters.extend(/** @lends wp.media.view.Attachment
 					status:     'trash',
 					type:       null,
 					orderby:    'date',
-					order:      'DESC'
+					order:      'DESC',
+					author:     null
 				},
 				priority: 50
 			};
