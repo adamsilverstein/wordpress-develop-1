@@ -49,6 +49,7 @@ p {
 }
 
 .login .message,
+.login .success,
 .login #login_error {
 	border-left: 4px solid #00a0d2;
 	padding: 12px;
@@ -56,6 +57,10 @@ p {
 	margin-bottom: 20px;
 	background-color: #fff;
 	box-shadow: 0 1px 1px 0 rgba(0,0,0,0.1);
+}
+
+.login .success {
+	border-left-color: #46b450;
 }
 
 .login #login_error {
@@ -197,9 +202,7 @@ p {
 .login .privacy-policy-page-link {
 	text-align: center;
 	width: 100%;
-	position: absolute;
-	bottom: 20px;
-	left: 0;
+	margin: 5em 0 2em;
 }
 
 .login form .input,
@@ -258,13 +261,6 @@ body.interim-login {
 
 @-ms-viewport {
 	width: device-width;
-}
-
-@media ( max-height: 600px ) {
-	.login .privacy-policy-page-link {
-		position: relative;
-		margin: 60px 0 20px 0;
-	}
 }
 
 @media screen and ( max-height: 550px ) {

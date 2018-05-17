@@ -1320,69 +1320,96 @@ final class WP_Privacy_Policy_Content {
 
 		// The site doesn't have a privacy policy.
 		if ( empty( $policy_page_id ) ) {
-			return;
+			return false;
 		}
 
 		if ( ! current_user_can( 'edit_post', $policy_page_id ) ) {
-			return;
-		}
-
-		// Also run when the option doesn't exist yet.
-		if ( get_option( '_wp_privacy_text_change_check' ) === 'no-check' ) {
-			return;
+			return false;
 		}
 
 		$old = (array) get_post_meta( $policy_page_id, '_wp_suggested_privacy_policy_content' );
+
+		// Updates are not relevant if the user has not reviewed any suggestions yet.
+		if ( empty( $old ) ) {
+			return false;
+		}
+
+		$cached = get_option( '_wp_suggested_policy_text_has_changed' );
+
+		/*
+		 * When this function is called before `admin_init`, `self::$policy_content`
+		 * has not been populated yet, so use the cached result from the last
+		 * execution instead.
+		 */
+		if ( ! did_action( 'admin_init' ) ) {
+			return 'changed' === $cached;
+		}
+
 		$new = self::$policy_content;
 
 		// Remove the extra values added to the meta.
 		foreach ( $old as $key => $data ) {
+			if ( ! empty( $data['removed'] ) ) {
+				unset( $old[ $key ] );
+				continue;
+			}
+
 			$old[ $key ] = array(
 				'plugin_name' => $data['plugin_name'],
 				'policy_text' => $data['policy_text'],
 			);
 		}
 
+		// Normalize the order of texts, to facilitate comparison.
+		sort( $old );
+		sort( $new );
+
 		// The == operator (equal, not identical) was used intentionally.
 		// See http://php.net/manual/en/language.operators.array.php
 		if ( $new != $old ) {
 			// A plugin was activated or deactivated, or some policy text has changed.
-			// Show a notice on all screens in wp-admin.
+			// Show a notice on the relevant screens to inform the admin.
 			add_action( 'admin_notices', array( 'WP_Privacy_Policy_Content', 'policy_text_changed_notice' ) );
+			$state = 'changed';
 		} else {
-			// Stop checking.
-			update_option( '_wp_privacy_text_change_check', 'no-check' );
+			$state = 'not-changed';
 		}
+
+		// Cache the result for use before `admin_init` (see above).
+		if ( $cached !== $state ) {
+			update_option( '_wp_suggested_policy_text_has_changed', $state );
+		}
+
+		return 'changed' === $state;
 	}
 
 	/**
-	 * Output an admin notice when some privacy info has changed.
+	 * Output a warning when some privacy info has changed.
 	 *
 	 * @since 4.9.6
 	 */
 	public static function policy_text_changed_notice() {
-		global $post;
-		$policy_page_id = (int) get_option( 'wp_page_for_privacy_policy' );
+		$screen = get_current_screen()->id;
+
+		if ( 'privacy' !== $screen ) {
+			return;
+		}
 
 		?>
-		<div class="policy-text-updated notice notice-warning is-dismissible">
+		<div class="policy-text-updated notice notice-warning">
 			<p><?php
-
-				_e( 'The suggested privacy policy text has changed.' );
-
-				if ( empty( $post ) || $post->ID != $policy_page_id ) {
-					?>
-					<a href="<?php echo get_edit_post_link( $policy_page_id ); ?>"><?php _e( 'Edit the privacy policy.' ); ?></a>
-					<?php
-				}
-
+				printf(
+					/* translators: %s: Privacy Policy Guide URL */
+					__( 'The suggested privacy policy text has changed. Please <a href="%s">review the guide</a> and update your privacy policy.' ),
+					esc_url( admin_url( 'tools.php?wp-privacy-policy-guide=1' ) )
+				);
 			?></p>
 		</div>
 		<?php
 	}
 
 	/**
-	 * Stop checking for changed privacy info when the policy page is updated.
+	 * Update the cached policy info when the policy page is updated.
 	 *
 	 * @since 4.9.6
 	 * @access private
@@ -1393,10 +1420,6 @@ final class WP_Privacy_Policy_Content {
 		if ( ! $policy_page_id || $policy_page_id !== (int) $post_id ) {
 			return;
 		}
-
-		// The policy page was updated.
-		// Stop checking for text changes.
-		update_option( '_wp_privacy_text_change_check', 'no-check' );
 
 		// Remove updated|removed status.
 		$old = (array) get_post_meta( $policy_page_id, '_wp_suggested_privacy_policy_content' );
@@ -1496,7 +1519,7 @@ final class WP_Privacy_Policy_Content {
 			foreach ( $new as $new_data ) {
 				if ( ! empty( $new_data['plugin_name'] ) && ! empty( $new_data['policy_text'] ) ) {
 					$new_data['added'] = $time;
-					array_unshift( $checked, $new_data );
+					$checked[]         = $new_data;
 				}
 			}
 			$update_cache = true;
@@ -1511,7 +1534,8 @@ final class WP_Privacy_Policy_Content {
 						'policy_text' => $old_data['policy_text'],
 						'removed'     => $time,
 					);
-					array_unshift( $checked, $data );
+
+					$checked[] = $data;
 				}
 			}
 			$update_cache = true;
@@ -1523,11 +1547,6 @@ final class WP_Privacy_Policy_Content {
 			foreach ( $checked as $data ) {
 				add_post_meta( $policy_page_id, '_wp_suggested_privacy_policy_content', $data );
 			}
-		}
-
-		// Stop checking for changes after the page has been loaded.
-		if ( get_option( '_wp_privacy_text_change_check' ) !== 'no-check' ) {
-			update_option( '_wp_privacy_text_change_check', 'no-check' );
 		}
 
 		return $checked;
@@ -1542,6 +1561,10 @@ final class WP_Privacy_Policy_Content {
 	 */
 	public static function notice( $post ) {
 		if ( ! ( $post instanceof WP_Post ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_privacy_options' ) ) {
 			return;
 		}
 
@@ -1583,8 +1606,8 @@ final class WP_Privacy_Policy_Content {
 		$content_array = self::get_suggested_policy_text();
 
 		$content = '';
-		$toc = array( '<li><a href="#">' . __( 'Introduction' ) . '</a></li>' );
-		$date_format = get_option( 'date_format' );
+		$toc = array( '<li><a href="#wp-privacy-policy-guide-introduction">' . __( 'Introduction' ) . '</a></li>' );
+		$date_format = __( 'F j, Y' );
 		$copy = __( 'Copy' );
 		$return_to_top = '<a href="#" class="return-to-top">' . __( '&uarr; Return to Top' ) . '</a>';
 
@@ -1609,11 +1632,12 @@ final class WP_Privacy_Policy_Content {
 			}
 
 			$plugin_name = esc_html( $section['plugin_name'] );
-			$toc_id = sanitize_title( $plugin_name );
+			$toc_id = 'wp-privacy-policy-guide-' . sanitize_title( $plugin_name );
 			$toc[] = sprintf( '<li><a href="#%1$s">%2$s</a>' . $meta . '</li>', $toc_id, $plugin_name );
 
 			$content .= '<div class="privacy-text-section' . $class . '">';
 			$content .= '<a id="' . $toc_id . '">&nbsp;</a>';
+			/* translators: %s: plugin name */
 			$content .= '<h2>' . sprintf( __( 'Source: %s' ), $plugin_name ) . '</h2>';
 			$content .= $removed;
 
@@ -1646,6 +1670,7 @@ final class WP_Privacy_Policy_Content {
 		?>
 		<div class="privacy-text-box">
 			<div class="privacy-text-box-head">
+				<a id="wp-privacy-policy-guide-introduction">&nbsp;</a>
 				<h2><?php _e( 'Introduction' ); ?></h2>
 				<p><?php _e( 'Hello,' ); ?></p>
 				<p><?php _e( 'This text template will help you to create your web site&#8217;s privacy policy.' ); ?></p>
@@ -1666,15 +1691,17 @@ final class WP_Privacy_Policy_Content {
 	 *
 	 * @since 4.9.6
 	 *
-	 * @param bool $descr Whether to include the descriptions undet the section headings. Default false.
+	 * @param bool $descr Whether to include the descriptions under the section headings. Default false.
 	 * @return string The default policy content.
 	 */
 	public static function get_default_content( $descr = false ) {
 		$suggested_text = $descr ? '<strong class="privacy-policy-tutorial">' . __( 'Suggested text:' ) . ' </strong>' : '';
+		$content = '';
 
 		// Start of the suggested privacy policy text.
-		$content =
-			'<div class="wp-suggested-text">' .
+		$descr && $content .=
+			'<div class="wp-suggested-text">';
+		$content .=
 			'<h2>' . __( 'Who we are' ) . '</h2>';
 		$descr && $content .=
 			'<p class="privacy-policy-tutorial">' . __( 'In this section you should note your site URL, as well as the name of the company, organization, or individual behind it, and some accurate contact information.' ) . '</p>' .
@@ -1753,7 +1780,7 @@ final class WP_Privacy_Policy_Content {
 			'<p class="privacy-policy-tutorial">' . __( 'In this section you should list all transfers of your site data outside the European Union and describe the means by which that data is safeguarded to European data protection standards. This could include your web hosting, cloud storage, or other third party services.' ) . '</p>' .
 			'<p class="privacy-policy-tutorial">' . __( 'European data protection law requires data about European residents which is transferred outside the European Union to be safeguarded to the same standards as if the data was in Europe. So in addition to listing where data goes, you should describe how you ensure that these standards are met either by yourself or by your third party providers, whether that is through an agreement such as Privacy Shield, model clauses in your contracts, or binding corporate rules.' ) . '</p>';
 		$content .=
-			'<p>' . $suggested_text . __( 'Visitor comments may be checked through an automated spam detection service.' ) . '</p>';
+			'<p>' . $suggested_text . __( 'Visitor comments may be checked through an automated spam detection service.' ) . '</p>' .
 
 			'<h2>' . __( 'Your contact information' ) . '</h2>';
 		$descr && $content .=
@@ -1787,8 +1814,7 @@ final class WP_Privacy_Policy_Content {
 		$content .=
 			'<h3>' . __( 'Industry regulatory disclosure requirements' ) . '</h3>';
 		$descr && $content .=
-			'<p class="privacy-policy-tutorial">' . __( 'If you are a member of a regulated industry, or if you are subject to additional privacy laws, you may be required to disclose that information here.' ) . '</p>';
-		$content .=
+			'<p class="privacy-policy-tutorial">' . __( 'If you are a member of a regulated industry, or if you are subject to additional privacy laws, you may be required to disclose that information here.' ) . '</p>' .
 			'</div>';
 		// End of the suggested privacy policy text.
 

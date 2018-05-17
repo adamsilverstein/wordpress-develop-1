@@ -170,18 +170,20 @@ final class WP_Internal_Pointers {
 		if ( is_rtl() ) {
 			$position = array(
 				'edge'  => 'right',
-				'align' => 'left',
+				'align' => 'bottom',
 			);
 		} else {
 			$position = array(
 				'edge'  => 'left',
-				'align' => 'right',
+				'align' => 'bottom',
 			);
 		}
 
 		$js_args = array(
 			'content'  => $content,
 			'position' => $position,
+			'pointerClass' => 'wp-pointer arrow-bottom',
+			'pointerWidth' => 420,
 		);
 		self::print_js( 'wp496_privacy', '#menu-tools', $js_args );
 	}
@@ -194,6 +196,6 @@ final class WP_Internal_Pointers {
 	 * @param int $user_id User ID.
 	 */
 	public static function dismiss_pointers_for_new_users( $user_id ) {
-		add_user_meta( $user_id, 'dismissed_wp_pointers', '' );
+		add_user_meta( $user_id, 'dismissed_wp_pointers', 'wp496_privacy' );
 	}
 }

@@ -6249,13 +6249,49 @@ function wp_privacy_anonymize_data( $type, $data = '' ) {
 }
 
 /**
- * Trigger the check for policy text changes.
+ * Returns the directory used to store personal data export files.
  *
  * @since 4.9.6
- * @access private
+ *
+ * @see wp_privacy_exports_url
+ *
+ * @return string Exports directory.
  */
-function _wp_privacy_active_plugins_change() {
-	update_option( '_wp_privacy_text_change_check', 'check' );
+function wp_privacy_exports_dir() {
+	$upload_dir  = wp_upload_dir();
+	$exports_dir = trailingslashit( $upload_dir['basedir'] ) . 'wp-personal-data-exports/';
+
+	/**
+	 * Filters the directory used to store personal data export files.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @param string $exports_dir Exports directory.
+	 */
+	return apply_filters( 'wp_privacy_exports_dir', $exports_dir );
+}
+
+/**
+ * Returns the URL of the directory used to store personal data export files.
+ *
+ * @since 4.9.6
+ *
+ * @see wp_privacy_exports_dir
+ *
+ * @return string Exports directory URL.
+ */
+function wp_privacy_exports_url() {
+	$upload_dir  = wp_upload_dir();
+	$exports_url = trailingslashit( $upload_dir['baseurl'] ) . 'wp-personal-data-exports/';
+
+	/**
+	 * Filters the URL of the directory used to store personal data export files.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @param string $exports_url Exports directory URL.
+	 */
+	return apply_filters( 'wp_privacy_exports_url', $exports_url );
 }
 
 /**
@@ -6287,8 +6323,7 @@ function wp_schedule_delete_old_privacy_export_files() {
 function wp_privacy_delete_old_export_files() {
 	require_once( ABSPATH . 'wp-admin/includes/file.php' );
 
-	$upload_dir   = wp_upload_dir();
-	$exports_dir  = trailingslashit( $upload_dir['basedir'] . '/exports' );
+	$exports_dir  = wp_privacy_exports_dir();
 	$export_files = list_files( $exports_dir, 100, array( 'index.html' ) );
 
 	/**

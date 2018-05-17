@@ -98,11 +98,14 @@ if ( ! empty( $privacy_policy_page_id ) ) {
 	}
 }
 
+$title       = __( 'Privacy Settings' );
+$parent_file = 'options-general.php';
+
 require_once( ABSPATH . 'wp-admin/admin-header.php' );
 
 ?>
 <div class="wrap">
-	<h1><?php _e( 'Privacy Settings' ); ?></h1>
+	<h1><?php echo $title; ?></h1>
 	<h2><?php _e( 'Privacy Policy page' ); ?></h2>
 	<p>
 		<?php _e( 'As a website owner, you may need to follow national or international privacy laws. For example, you may need to create and display a privacy policy.' ); ?>
@@ -167,32 +170,50 @@ require_once( ABSPATH . 'wp-admin/admin-header.php' );
 				?>
 			</th>
 			<td>
-				<form method="post" action="">
-					<label for="page_for_privacy_policy">
-						<?php _e( 'Either select an existing page:' ); ?>
-					</label>
-					<input type="hidden" name="action" value="set-privacy-page" />
-					<?php
-					wp_dropdown_pages(
-						array(
-							'name'              => 'page_for_privacy_policy',
-							'show_option_none'  => __( '&mdash; Select &mdash;' ),
-							'option_none_value' => '0',
-							'selected'          => $privacy_policy_page_id,
-							'post_status'       => array( 'draft', 'publish' ),
-						)
-					);
+				<?php
+				$has_pages = (bool) get_posts( array(
+					'post_type' => 'page',
+					'posts_per_page' => 1,
+					'post_status' => array(
+						'publish',
+						'draft',
+					),
+				) );
 
-					wp_nonce_field( 'set-privacy-page' );
+				if ( $has_pages ) : ?>
+					<form method="post" action="">
+						<label for="page_for_privacy_policy">
+							<?php _e( 'Select an existing page:' ); ?>
+						</label>
+						<input type="hidden" name="action" value="set-privacy-page" />
+						<?php
+						wp_dropdown_pages(
+							array(
+								'name'              => 'page_for_privacy_policy',
+								'show_option_none'  => __( '&mdash; Select &mdash;' ),
+								'option_none_value' => '0',
+								'selected'          => $privacy_policy_page_id,
+								'post_status'       => array( 'draft', 'publish' ),
+							)
+						);
 
-					submit_button( __( 'Use This Page' ), 'primary', 'submit', false, array( 'id' => 'set-page' ) );
-					?>
-				</form>
+						wp_nonce_field( 'set-privacy-page' );
 
-				<form method="post" action="">
+						submit_button( __( 'Use This Page' ), 'primary', 'submit', false, array( 'id' => 'set-page' ) );
+						?>
+					</form>
+				<?php endif; ?>
+
+				<form class="wp-create-privacy-page" method="post" action="">
 					<input type="hidden" name="action" value="create-privacy-page" />
 					<span>
-						<?php _e( 'Or create a new page:' ); ?>
+						<?php
+						if ( $has_pages ) {
+							_e( 'Or:' );
+						} else {
+							_e( 'There are no pages.' );
+						}
+						?>
 					</span>
 					<?php
 					wp_nonce_field( 'create-privacy-page' );
