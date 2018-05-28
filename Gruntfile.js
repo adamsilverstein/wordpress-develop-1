@@ -82,7 +82,16 @@ module.exports = function(grunt) {
 			}
 		},
 		clean: {
-			all: [BUILD_DIR],
+			plugins: [BUILD_DIR + 'wp-content/plugins],
+			all: [
+				BUILD_DIR + '*.php',
+				BUILD_DIR + '*.txt',
+				BUILD_DIR + '*.html',
+				BUILD_DIR + 'wp-admin',
+				BUILD_DIR + 'wp-includes',
+				BUILD_DIR + 'wp-content/*.php',
+				BUILD_DIR + 'wp-content/themes',
+			],
 			js: [BUILD_DIR + 'wp-admin/js/', BUILD_DIR + 'wp-includes/js/'],
 			dynamic: {
 				dot: true,
