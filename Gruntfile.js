@@ -91,6 +91,8 @@ module.exports = function(grunt) {
 				BUILD_DIR + 'wp-includes',
 				BUILD_DIR + 'wp-content/*.php',
 				BUILD_DIR + 'wp-content/themes',
+				BUILD_DIR + 'wp-content/plugins/*.php',
+				BUILD_DIR + 'wp-content/plugins/akismet',
 			],
 			js: [BUILD_DIR + 'wp-admin/js/', BUILD_DIR + 'wp-includes/js/'],
 			dynamic: {
