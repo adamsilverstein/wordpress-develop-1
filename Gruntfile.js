@@ -125,14 +125,17 @@ module.exports = function(grunt) {
 						src: [
 							'*.php',
 							'*.html',
-							'wp-includes/**',
-							'wp-admin/**',
-							'wp-content/*.php',
-							'wp-content/themes/**',
-							'wp-content/plugins/*.php',
+							'wp-includes/**', // Include everything in wp-includes.
+							'wp-admin/**', // Include everything in wp-admin.
+							'wp-content/index.php',
+							'wp-content/themes/index.php',
+							'wp-content/themes/twentyfourteen',
+							'wp-content/themes/twentythirteen',
+							'wp-content/themes/twentytwelve',
+							'wp-content/plugins/index.php',
+							'wp-content/plugins/helo.php',
 							'wp-content/plugins/akismet',
 							'!js/**', // JavaScript is extracted into separate copy tasks.
-							'!.{svn,git}/**', // Ignore version control directories.
 							'!wp-includes/version.php', // Exclude version.php
 							'!index.php', '!wp-admin/index.php',
 							'!_index.php', '!wp-admin/_index.php'
