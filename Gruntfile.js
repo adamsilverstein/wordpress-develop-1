@@ -82,7 +82,7 @@ module.exports = function(grunt) {
 			}
 		},
 		clean: {
-			plugins: [BUILD_DIR + 'wp-content/plugins],
+			plugins: [BUILD_DIR + 'wp-content/plugins'],
 			all: [
 				BUILD_DIR + '*.php',
 				BUILD_DIR + '*.txt',
@@ -121,9 +121,16 @@ module.exports = function(grunt) {
 						expand: true,
 						cwd: SOURCE_DIR,
 						src: [
-							'**',
+							'*.php',
+							'*.html',
+							'wp-includes/**',
+							'wp-admin/**',
+							'wp-content/*.php',
+							'wp-content/themes/**',
+							'wp-content/plugins/*.php',
+							'wp-content/plugins/akismet',
 							'!js/**', // JavaScript is extracted into separate copy tasks.
-							'!**/.{svn,git}/**', // Ignore version control directories.
+							'!.{svn,git}/**', // Ignore version control directories.
 							'!wp-includes/version.php', // Exclude version.php
 							'!index.php', '!wp-admin/index.php',
 							'!_index.php', '!wp-admin/_index.php'
