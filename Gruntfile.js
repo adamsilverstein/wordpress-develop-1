@@ -91,6 +91,8 @@ module.exports = function(grunt) {
 				BUILD_DIR + 'wp-includes',
 				BUILD_DIR + 'wp-content/*.php',
 				BUILD_DIR + 'wp-content/themes',
+				BUILD_DIR + 'wp-content/upgrade',
+				BUILD_DIR + 'wp-content/uploads',
 				BUILD_DIR + 'wp-content/plugins/*.php',
 				BUILD_DIR + 'wp-content/plugins/akismet',
 			],
@@ -136,6 +138,7 @@ module.exports = function(grunt) {
 							'wp-content/plugins/helo.php',
 							'wp-content/plugins/akismet',
 							'!js/**', // JavaScript is extracted into separate copy tasks.
+							'!.{svn,git}', // Exclude version control folders.
 							'!wp-includes/version.php', // Exclude version.php
 							'!index.php', '!wp-admin/index.php',
 							'!_index.php', '!wp-admin/_index.php'
