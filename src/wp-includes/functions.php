@@ -5365,9 +5365,11 @@ function send_frame_options_header() {
  *
  * @staticvar array $protocols
  *
- * @return array Array of allowed protocols. Defaults to an array containing 'http', 'https',
- *               'ftp', 'ftps', 'mailto', 'news', 'irc', 'gopher', 'nntp', 'feed', 'telnet',
- *               'mms', 'rtsp', 'svn', 'tel', 'fax', 'xmpp', 'webcal', and 'urn'.
+ * @return string[] Array of allowed protocols. Defaults to an array containing 'http', 'https',
+ *                  'ftp', 'ftps', 'mailto', 'news', 'irc', 'gopher', 'nntp', 'feed', 'telnet',
+ *                  'mms', 'rtsp', 'svn', 'tel', 'fax', 'xmpp', 'webcal', and 'urn'. This covers
+ *                  all common link protocols, except for 'javascript' which should not be
+ *                  allowed for untrusted users.
  */
 function wp_allowed_protocols() {
 	static $protocols = array();
@@ -5630,7 +5632,7 @@ function wp_auth_check_html() {
 	<div class="wp-auth-fallback">
 		<p><b class="wp-auth-fallback-expired" tabindex="0"><?php _e( 'Session expired' ); ?></b></p>
 		<p><a href="<?php echo esc_url( $login_url ); ?>" target="_blank"><?php _e( 'Please log in again.' ); ?></a>
-		<?php _e( 'The login page will open in a new window. After logging in you can close it and return to this page.' ); ?></p>
+		<?php _e( 'The login page will open in a new tab. After logging in you can close it and return to this page.' ); ?></p>
 	</div>
 	</div>
 	</div>
@@ -6131,7 +6133,7 @@ All at ###SITENAME###
 /**
  * Return an anonymized IPv4 or IPv6 address.
  *
- * @since 5.0.0 Abstracted from `WP_Community_Events::get_unsafe_client_ip()`.
+ * @since 4.9.6 Abstracted from `WP_Community_Events::get_unsafe_client_ip()`.
  *
  * @param  string $ip_addr        The IPv4 or IPv6 address to be anonymized.
  * @param  bool   $ipv6_fallback  Optional. Whether to return the original IPv6 address if the needed functions
@@ -6201,7 +6203,7 @@ function wp_privacy_anonymize_ip( $ip_addr, $ipv6_fallback = false ) {
 /**
  * Return uniform "anonymous" data by type.
  *
- * @since 5.0.0
+ * @since 4.9.6
  *
  * @param  string $type The type of data to be anonymized.
  * @param  string $data Optional The data to be anonymized.
@@ -6237,11 +6239,110 @@ function wp_privacy_anonymize_data( $type, $data = '' ) {
 	/**
 	 * Filters the anonymous data for each type.
 	 *
-	 * @since 5.0.0
+	 * @since 4.9.6
 	 *
 	 * @param string $anonymous Anonymized data.
 	 * @param string $type      Type of the data.
 	 * @param string $data      Original data.
 	 */
 	return apply_filters( 'wp_privacy_anonymize_data', $anonymous, $type, $data );
+}
+
+/**
+ * Returns the directory used to store personal data export files.
+ *
+ * @since 4.9.6
+ *
+ * @see wp_privacy_exports_url
+ *
+ * @return string Exports directory.
+ */
+function wp_privacy_exports_dir() {
+	$upload_dir  = wp_upload_dir();
+	$exports_dir = trailingslashit( $upload_dir['basedir'] ) . 'wp-personal-data-exports/';
+
+	/**
+	 * Filters the directory used to store personal data export files.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @param string $exports_dir Exports directory.
+	 */
+	return apply_filters( 'wp_privacy_exports_dir', $exports_dir );
+}
+
+/**
+ * Returns the URL of the directory used to store personal data export files.
+ *
+ * @since 4.9.6
+ *
+ * @see wp_privacy_exports_dir
+ *
+ * @return string Exports directory URL.
+ */
+function wp_privacy_exports_url() {
+	$upload_dir  = wp_upload_dir();
+	$exports_url = trailingslashit( $upload_dir['baseurl'] ) . 'wp-personal-data-exports/';
+
+	/**
+	 * Filters the URL of the directory used to store personal data export files.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @param string $exports_url Exports directory URL.
+	 */
+	return apply_filters( 'wp_privacy_exports_url', $exports_url );
+}
+
+/**
+ * Schedule a `WP_Cron` job to delete expired export files.
+ *
+ * @since 4.9.6
+ */
+function wp_schedule_delete_old_privacy_export_files() {
+	if ( wp_installing() ) {
+		return;
+	}
+
+	if ( ! wp_next_scheduled( 'wp_privacy_delete_old_export_files' ) ) {
+		wp_schedule_event( time(), 'hourly', 'wp_privacy_delete_old_export_files' );
+	}
+}
+
+/**
+ * Cleans up export files older than three days old.
+ *
+ * The export files are stored in `wp-content/uploads`, and are therefore publicly
+ * accessible. A CSPRN is appended to the filename to mitigate the risk of an
+ * unauthorized person downloading the file, but it is still possible. Deleting
+ * the file after the data subject has had a chance to delete it adds an additional
+ * layer of protection.
+ *
+ * @since 4.9.6
+ */
+function wp_privacy_delete_old_export_files() {
+	require_once( ABSPATH . 'wp-admin/includes/file.php' );
+
+	$exports_dir  = wp_privacy_exports_dir();
+	$export_files = list_files( $exports_dir, 100, array( 'index.html' ) );
+
+	/**
+	 * Filters the lifetime, in seconds, of a personal data export file.
+	 *
+	 * By default, the lifetime is 3 days. Once the file reaches that age, it will automatically
+	 * be deleted by a cron job.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @param int $expiration The expiration age of the export, in seconds.
+	 */
+	$expiration = apply_filters( 'wp_privacy_export_expiration', 3 * DAY_IN_SECONDS );
+
+	foreach ( (array) $export_files as $export_file ) {
+		$file_age_in_seconds = time() - filemtime( $export_file );
+
+		if ( $expiration < $file_age_in_seconds ) {
+			unlink( $export_file );
+		}
+	}
 }

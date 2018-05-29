@@ -227,10 +227,10 @@ function create_initial_post_types() {
 	);
 
 	register_post_type(
-		'user_export_request', array(
+		'user_request', array(
 			'labels'           => array(
-				'name'          => __( 'Export Personal Data Requests' ),
-				'singular_name' => __( 'Export Personal Data Request' ),
+				'name'          => __( 'User Requests' ),
+				'singular_name' => __( 'User Request' ),
 			),
 			'public'           => false,
 			'_builtin'         => true, /* internal use only. don't use this when registering your own post type. */
@@ -239,22 +239,7 @@ function create_initial_post_types() {
 			'query_var'        => false,
 			'can_export'       => false,
 			'delete_with_user' => false,
-		)
-	);
-
-	register_post_type(
-		'user_remove_request', array(
-			'labels'           => array(
-				'name'          => __( 'Remove Personal Data Requests' ),
-				'singular_name' => __( 'Remove Personal Data Request' ),
-			),
-			'public'           => false,
-			'_builtin'         => true, /* internal use only. don't use this when registering your own post type. */
-			'hierarchical'     => false,
-			'rewrite'          => false,
-			'query_var'        => false,
-			'can_export'       => false,
-			'delete_with_user' => false,
+			'supports'         => array(),
 		)
 	);
 
@@ -3995,7 +3980,7 @@ function check_and_publish_future_post( $post_id ) {
  * @return string Unique slug for the post, based on $post_name (with a -1, -2, etc. suffix)
  */
 function wp_unique_post_slug( $slug, $post_ID, $post_status, $post_type, $post_parent ) {
-	if ( in_array( $post_status, array( 'draft', 'pending', 'auto-draft' ) ) || ( 'inherit' == $post_status && 'revision' == $post_type ) ) {
+	if ( in_array( $post_status, array( 'draft', 'pending', 'auto-draft' ) ) || ( 'inherit' == $post_status && 'revision' == $post_type ) || 'user_request' === $post_type ) {
 		return $slug;
 	}
 
