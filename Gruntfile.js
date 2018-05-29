@@ -11,7 +11,32 @@ module.exports = function(grunt) {
 		BUILD_DIR = 'build/',
  		BANNER_TEXT = '/*! This file is auto-generated */',
 		autoprefixer = require( 'autoprefixer' ),
-		phpUnitWatchGroup = grunt.option( 'group' );
+		phpUnitWatchGroup = grunt.option( 'group' ),
+		buildFiles = [
+			'*.php',
+			'*.txt',
+			'*.html',
+			'wp-includes/**', // Include everything in wp-includes.
+			'wp-admin/**', // Include everything in wp-admin.
+			'wp-content/index.php',
+			'wp-content/themes/index.php',
+			'wp-content/themes/twentyten',
+			'wp-content/themes/twentyeleven',
+			'wp-content/themes/twentytwelve',
+			'wp-content/themes/twentythirteen',
+			'wp-content/themes/twentyfourteen',
+			'wp-content/themes/twentyfifteen',
+			'wp-content/themes/twentysixteen',
+			'wp-content/themes/twentyseventeen',
+			'wp-content/plugins/index.php',
+			'wp-content/plugins/hello.php',
+			'wp-content/plugins/akismet'
+		],
+		cleanFiles = [];
+
+	buildFiles.forEach( function( buildFile ) {
+		cleanFiles.push( BUILD_DIR + buildFile );
+	} );
 
 	if ( 'watch:phpunit' === grunt.cli.tasks[ 0 ] && ! phpUnitWatchGroup ) {
 		grunt.log.writeln();
@@ -84,26 +109,7 @@ module.exports = function(grunt) {
 		clean: {
 			plugins: [BUILD_DIR + 'wp-content/plugins'],
 			themes: [BUILD_DIR + 'wp-content/themes'],
-			all: [
-				BUILD_DIR + '*.php',
-				BUILD_DIR + '*.txt',
-				BUILD_DIR + '*.html',
-				BUILD_DIR + 'wp-admin',
-				BUILD_DIR + 'wp-includes',
-				BUILD_DIR + 'wp-content/index.php',
-				BUILD_DIR + 'wp-content/themes/twentyten',
-				BUILD_DIR + 'wp-content/themes/twentyeleven',
-				BUILD_DIR + 'wp-content/themes/twentytwelve',
-				BUILD_DIR + 'wp-content/themes/twentythirteen',
-				BUILD_DIR + 'wp-content/themes/twentyfourteen',
-				BUILD_DIR + 'wp-content/themes/twentyfifteen',
-				BUILD_DIR + 'wp-content/themes/twentysixteen',
-				BUILD_DIR + 'wp-content/themes/twentyseventeen',
-				BUILD_DIR + 'wp-content/upgrade',
-				BUILD_DIR + 'wp-content/uploads',
-				BUILD_DIR + 'wp-content/plugins/index.php',
-				BUILD_DIR + 'wp-content/plugins/akismet',
-			],
+			all: cleanFiles,
 			js: [BUILD_DIR + 'wp-admin/js/', BUILD_DIR + 'wp-includes/js/'],
 			dynamic: {
 				dot: true,
@@ -132,31 +138,13 @@ module.exports = function(grunt) {
 						dot: true,
 						expand: true,
 						cwd: SOURCE_DIR,
-						src: [
-							'*.php',
-							'*.txt',
-							'*.html',
-							'wp-includes/**', // Include everything in wp-includes.
-							'wp-admin/**', // Include everything in wp-admin.
-							'wp-content/index.php',
-							'wp-content/themes/index.php',
-							'wp-content/themes/twentyten',
-							'wp-content/themes/twentyeleven',
-							'wp-content/themes/twentytwelve',
-							'wp-content/themes/twentythirteen',
-							'wp-content/themes/twentyfourteen',
-							'wp-content/themes/twentyfifteen',
-							'wp-content/themes/twentysixteen',
-							'wp-content/themes/twentyseventeen',
-							'wp-content/plugins/index.php',
-							'wp-content/plugins/hello.php',
-							'wp-content/plugins/akismet',
+						src: buildFiles.concat( [
 							'!js/**', // JavaScript is extracted into separate copy tasks.
 							'!.{svn,git}', // Exclude version control folders.
 							'!wp-includes/version.php', // Exclude version.php
 							'!index.php', '!wp-admin/index.php',
 							'!_index.php', '!wp-admin/_index.php'
-						],
+						] ),
 						dest: BUILD_DIR
 					},
 					{
