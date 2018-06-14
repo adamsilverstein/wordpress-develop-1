@@ -93,7 +93,7 @@
 					});
 
 			} else {
-				siteNavigation.find( '.menu-item-has-children > a, .page_item_has_children > a' ).unbind( 'touchstart.twentyseventeen' );
+				siteNavigation.find( '.menu-item-has-children > a, .page_item_has_children > a' ).off( 'touchstart.twentyseventeen' );
 			}
 		}
 

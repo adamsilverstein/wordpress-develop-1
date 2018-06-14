@@ -1050,7 +1050,7 @@ var wpNavMenu;
 				};
 			} else {
 				// Make the post boxes read-only, as they can't be used yet
-				$( '#menu-settings-column' ).find( 'input,select' ).end().find( 'a' ).attr( 'href', '#' ).unbind( 'click' );
+				$( '#menu-settings-column' ).find( 'input,select' ).end().find( 'a' ).attr( 'href', '#' ).off( 'click' );
 			}
 		},
 

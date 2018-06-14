@@ -390,15 +390,15 @@
 				if ( ! getModel.get( embedCheckField ) ) {
 					getModel.fetch( {
 						success: function( getModel ) {
-							deferred.resolve( getModel );
+							deferred.resolveWith( deferred, getModel );
 						},
 						error: function( getModel, response ) {
-							deferred.reject( response );
+							deferred.rejectWith( deferred, response );
 						}
 					} );
 				} else {
 					// Resolve with the embedded model.
-					deferred.resolve( getModel );
+					deferred.resolveWith( deferred, getModel );
 				}
 
 				// Return a promise.

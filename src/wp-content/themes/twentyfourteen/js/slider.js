@@ -72,7 +72,7 @@
 
 				// KEYBOARD
 				if ( $( slider.containerSelector ).length === 1 ) {
-					$( document ).bind( 'keyup', function( event ) {
+					$( document ).on( 'keyup', function( event ) {
 						var keycode = event.keyCode,
 							target = false;
 						if ( ! slider.animating && ( keycode === 39 || keycode === 37 ) ) {
@@ -92,7 +92,7 @@
 					methods.touch();
 				}
 
-				$( window ).bind( 'resize orientationchange focus', methods.resize );
+				$( window ).on( 'resize orientationchange focus', methods.resize );
 
 				slider.find( 'img' ).attr( 'draggable', 'false' );
 			},
@@ -423,8 +423,8 @@
 						slider.animating = false;
 						slider.currentSlide = slider.animatingTo;
 					}
-					slider.container.unbind( 'webkitTransitionEnd transitionend' );
-					slider.container.bind( 'webkitTransitionEnd transitionend', function() {
+					slider.container.off( 'webkitTransitionEnd transitionend' );
+					slider.container.on( 'webkitTransitionEnd transitionend', function() {
 						slider.wrapup( dimension );
 					} );
 				} else {

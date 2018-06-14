@@ -20,7 +20,7 @@
 				var close  = ( wpPointerL10n ) ? wpPointerL10n.dismiss : 'Dismiss',
 					button = $('<a class="close" href="#">' + close + '</a>');
 
-				return button.bind( 'click.pointer', function(e) {
+				return button.on( 'click.pointer', function(e) {
 					e.preventDefault();
 					t.element.pointer('close');
 				});
