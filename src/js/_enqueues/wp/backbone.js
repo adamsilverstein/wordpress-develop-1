@@ -496,7 +496,8 @@ window.wp = window.wp || {};
 		 */
 		constructor: function( options ) {
 			this.views = new this.Subviews( this, this.views );
-			this.on( 'ready', this.ready, this );
+			this.ready.bind( this );
+			$( this.ready() );
 
 			this.options = options || {};
 

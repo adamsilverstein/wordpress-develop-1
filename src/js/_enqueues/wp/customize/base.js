@@ -596,7 +596,7 @@ window.wp = window.wp || {};
 			};
 
 			this.bind( this.update );
-			this.element.on( this.events, this.refresh );
+			this.element.bind( this.events, this.refresh );
 		},
 
 		find: function( selector ) {

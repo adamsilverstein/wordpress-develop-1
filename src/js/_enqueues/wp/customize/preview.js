@@ -130,7 +130,7 @@
 					preview.send( 'scroll', preview.window.scrollTop() );
 				}, 200 ) );
 
-				preview.bind( 'scroll', function( distance ) {
+				preview.on( 'scroll', function( distance ) {
 					preview.window.scrollTop( distance );
 				});
 			}

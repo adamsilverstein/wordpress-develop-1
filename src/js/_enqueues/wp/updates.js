@@ -2423,7 +2423,7 @@
 			}
 
 			try {
-				message = $.parseJSON( originalEvent.data );
+				message = JSON.parse( originalEvent.data );
 			} catch ( e ) {
 				return;
 			}

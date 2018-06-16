@@ -50,7 +50,7 @@ jQuery( document ).ready( function( $ ) {
 		});
 	};
 
-	$( window ).resize( function() {
+	$( window ).on( 'resize', function() {
 		tb_position();
 	});
 
