@@ -822,7 +822,7 @@ var wpNavMenu;
 
 		attachMenuEditListeners : function() {
 			var that = this;
-			$('#update-nav-menu').bind('click', function(e) {
+			$('#update-nav-menu').on('click', function(e) {
 				if ( e.target && e.target.className ) {
 					if ( -1 != e.target.className.indexOf('item-edit') ) {
 						return that.eventOnClickEditLink(e.target);
@@ -1051,7 +1051,7 @@ var wpNavMenu;
 				};
 			} else {
 				// Make the post boxes read-only, as they can't be used yet
-				$( '#menu-settings-column' ).find( 'input,select' ).end().find( 'a' ).attr( 'href', '#' ).unbind( 'click' );
+				$( '#menu-settings-column' ).find( 'input,select' ).end().find( 'a' ).attr( 'href', '#' ).off( 'click' );
 			}
 		},
 
@@ -1060,7 +1060,7 @@ var wpNavMenu;
 		},
 
 		attachTabsPanelListeners : function() {
-			$('#menu-settings-column').bind('click', function(e) {
+			$('#menu-settings-column').on('click', function(e) {
 				var selectAreaMatch, panelId, wrapper, items,
 					target = $(e.target);
 

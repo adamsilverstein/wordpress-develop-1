@@ -379,14 +379,14 @@ var tagBox, array_unique_noempty;
 			 *
 			 * @return {void}
 			 */
-			$( 'input.newtag', ajaxtag ).keypress( function( event ) {
+			$( 'input.newtag', ajaxtag ).on( 'keypress', function( event ) {
 				if ( 13 == event.which ) {
 					tagBox.userAction = 'add';
 					tagBox.flushTags( $( this ).closest( '.tagsdiv' ) );
 					event.preventDefault();
 					event.stopPropagation();
 				}
-			}).keypress( function( event ) {
+			}).on( 'keypress', function( event ) {
 				if ( 13 == event.which ) {
 					event.preventDefault();
 					event.stopPropagation();
@@ -403,7 +403,7 @@ var tagBox, array_unique_noempty;
 			 *
 			 * @return {void}
 			 */
-			$('#post').submit(function(){
+			$('#post').on( 'submit', function(){
 				$('div.tagsdiv').each( function() {
 					tagBox.flushTags(this, false, 1);
 				});
@@ -424,7 +424,7 @@ var tagBox, array_unique_noempty;
 				// Update button state, remove previous click event and attach a new one to toggle the cloud.
 				$( this )
 					.attr( 'aria-expanded', 'true' )
-					.unbind()
+					.off()
 					.click( function() {
 						$( this )
 							.attr( 'aria-expanded', 'false' === $( this ).attr( 'aria-expanded' ) ? 'true' : 'false' )

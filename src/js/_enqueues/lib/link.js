@@ -50,9 +50,9 @@ var wpLink;
 			inputs.queryNoticeTextHint = inputs.queryNotice.find( '.query-notice-hint' );
 
 			// Bind event handlers
-			inputs.dialog.keydown( wpLink.keydown );
-			inputs.dialog.keyup( wpLink.keyup );
-			inputs.submit.click( function( event ) {
+			inputs.dialog.on( 'keydown', wpLink.keydown );
+			inputs.dialog.on( 'keyup', wpLink.keyup );
+			inputs.submit.on( 'click', function( event ) {
 				event.preventDefault();
 				wpLink.update();
 			});
@@ -622,7 +622,7 @@ var wpLink;
 		this.change( search );
 		this.refresh();
 
-		$( '#wp-link .query-results, #wp-link #link-selector' ).scroll( function() {
+		$( '#wp-link .query-results, #wp-link #link-selector' ).on( 'scroll', function() {
 			self.maybeLoad();
 		});
 		element.on( 'click', 'li', function( event ) {

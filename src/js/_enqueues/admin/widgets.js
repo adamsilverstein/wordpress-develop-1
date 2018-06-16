@@ -126,7 +126,7 @@ wpWidgets = {
 			$document.triggerHandler( 'wp-pin-menu' );
 		});
 
-		$(document.body).bind('click.widgets-toggle', function(e) {
+		$(document.body).on('click.widgets-toggle', function(e) {
 			var target = $(e.target),
 				css = { 'z-index': 100 },
 				widget, inside, targetWidth, widgetWidth, margin, saveButton, widgetId,

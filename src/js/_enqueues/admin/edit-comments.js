@@ -566,7 +566,7 @@ setCommentsList = function() {
 
 	theExtraList = $('#the-extra-comment-list').wpList( { alt: '', delColor: 'none', addColor: 'none' } );
 	theList = $('#the-comment-list').wpList( { alt: '', delBefore: delBefore, dimAfter: dimAfter, delAfter: delAfter, addColor: 'none' } )
-		.bind('wpListDelEnd', function(e, s){
+		.on('wpListDelEnd', function(e, s){
 			var wpListsData = $(s.target).attr('data-wp-lists'), id = s.element.replace(/[^0-9]+/g, '');
 
 			if ( wpListsData.indexOf(':trash=1') != -1 || wpListsData.indexOf(':spam=1') != -1 )
@@ -582,9 +582,9 @@ commentReply = {
 	init : function() {
 		var row = $('#replyrow');
 
-		$('a.cancel', row).click(function() { return commentReply.revert(); });
-		$('a.save', row).click(function() { return commentReply.send(); });
-		$( 'input#author-name, input#author-email, input#author-url', row ).keypress( function( e ) {
+		$('a.cancel', row).on( 'click', function() { return commentReply.revert(); });
+		$('a.save', row).on( 'click', function() { return commentReply.send(); });
+		$( 'input#author-name, input#author-email, input#author-url', row ).on( 'keypress', function( e ) {
 			if ( e.which == 13 ) {
 				commentReply.send();
 				e.preventDefault();
@@ -593,11 +593,11 @@ commentReply = {
 		});
 
 		// add events
-		$('#the-comment-list .column-comment > p').dblclick(function(){
+		$('#the-comment-list .column-comment > p').on( 'dblclick', function(){
 			commentReply.toggle($(this).parent());
 		});
 
-		$('#doaction, #doaction2, #post-query-submit').click(function(){
+		$('#doaction, #doaction2, #post-query-submit').on( 'click', function(){
 			if ( $('#the-comment-list #replyrow').length > 0 )
 				commentReply.close();
 		});

@@ -133,11 +133,11 @@ if ( typeof(jQuery) != 'undefined' ) {
 		 *
 		 * @return {void}
 		 **/
-		$('#wp-admin-bar-get-shortlink').click(function(e){
+		$('#wp-admin-bar-get-shortlink').on( 'click', function(e){
 			e.preventDefault();
 			$(this).addClass('selected').children('.shortlink-input').blur(function(){
 				$(this).parents('#wp-admin-bar-get-shortlink').removeClass('selected');
-			}).focus().select();
+			}).trigger( 'focus' ).trigger( 'select' );
 		});
 
 		/**
@@ -150,7 +150,7 @@ if ( typeof(jQuery) != 'undefined' ) {
 		 *
 		 * @return {void}
 		 */
-		$('#wpadminbar li.menupop > .ab-item').bind('keydown.adminbar', function(e){
+		$('#wpadminbar li.menupop > .ab-item').on('keydown.adminbar', function(e){
 			// Key code 13 is the enter key.
 			if ( e.which != 13 )
 				return;
@@ -184,7 +184,7 @@ if ( typeof(jQuery) != 'undefined' ) {
 		 *
 		 * @return {void}
 		 */
-		$('#wpadminbar .ab-item').bind('keydown.adminbar', function(e){
+		$('#wpadminbar .ab-item').on('keydown.adminbar', function(e){
 			// Key code 27 is the escape key.
 			if ( e.which != 27 )
 				return;
@@ -205,7 +205,7 @@ if ( typeof(jQuery) != 'undefined' ) {
 		 *
 		 * @return {void}
 		 */
-		adminbar.click( function(e) {
+		adminbar.on( 'click', function(e) {
 			if ( e.target.id != 'wpadminbar' && e.target.id != 'wp-admin-bar-top-secondary' ) {
 				return;
 			}
@@ -224,7 +224,7 @@ if ( typeof(jQuery) != 'undefined' ) {
 		 *
 		 * @return {void}
 		 */
-		$('.screen-reader-shortcut').keydown( function(e) {
+		$('.screen-reader-shortcut').on( 'keydown', function(e) {
 			var id, ua;
 
 			if ( 13 != e.which )
@@ -265,7 +265,7 @@ if ( typeof(jQuery) != 'undefined' ) {
 			 *
 			 * @return {void}
 			 */
-			$('#wp-admin-bar-logout a').click( function() {
+			$('#wp-admin-bar-logout a').on( 'click', function() {
 				try {
 					for ( var key in sessionStorage ) {
 						if ( key.indexOf('wp-autosave-') != -1 )

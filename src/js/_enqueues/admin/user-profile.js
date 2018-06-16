@@ -343,7 +343,7 @@
 		});
 
 		if ( select.length ) {
-			$('#first_name, #last_name, #nickname').bind( 'blur.user_profile', function() {
+			$('#first_name, #last_name, #nickname').on( 'blur.user_profile', function() {
 				var dub = [],
 					inputs = {
 						display_nickname  : $('#nickname').val() || '',

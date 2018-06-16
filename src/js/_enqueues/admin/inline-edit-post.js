@@ -93,7 +93,7 @@ var inlineEditPost;
 		 *
 		 * @returns {boolean} The result of save.
 		 */
-		$('td', qeRow).keydown(function(e){
+		$('td', qeRow).on( 'keydown', function(e){
 			if ( e.which === 13 && ! $( e.target ).hasClass( 'cancel' ) ) {
 				return inlineEditPost.save(this);
 			}
