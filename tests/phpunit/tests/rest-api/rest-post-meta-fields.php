@@ -278,6 +278,22 @@ class WP_Test_REST_Post_Meta_Fields extends WP_Test_REST_TestCase {
 				'type'         => 'boolean',
 			)
 		);
+		register_meta(
+			'post', 'test_boolean_update', array(
+				'single'            => true,
+				'type'              => 'boolean',
+				'sanitize_callback' => 'absint',
+				'show_in_rest'      => true,
+			)
+		);
+		register_meta(
+			'post', 'test_textured_text_update', array(
+				'single'            => true,
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'show_in_rest'      => true,
+			)
+		);
 
 		/** @var WP_REST_Server $wp_rest_server */
 		global $wp_rest_server;
@@ -1197,6 +1213,76 @@ class WP_Test_REST_Post_Meta_Fields extends WP_Test_REST_TestCase {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * @ticket 42069
+	 * @dataProvider data_update_value_return_success_with_same_value
+	 */
+	public function test_update_value_return_success_with_same_value( $meta_key, $meta_value ) {
+		add_post_meta( self::$post_id, $meta_key, $meta_value );
+
+		$this->grant_write_permission();
+
+		$data = array(
+			'meta' => array(
+				$meta_key => $meta_value,
+			),
+		);
+
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/posts/%d', self::$post_id ) );
+		$request->set_body_params( $data );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function data_update_value_return_success_with_same_value() {
+		return array(
+			array( 'test_boolean_update', 0 ),
+			array( 'test_boolean_update', 1 ),
+			array( 'test_boolean_update', false ),
+			array( 'test_boolean_update', true ),
+			array( 'test_boolean_update', '' ),
+			array( 'test_boolean_update', '1' ),
+			array( 'test_textured_text_update', 'She said, "What about the > 10,000 penguins in the kitchen?"' ),
+			array( 'test_textured_text_update', "He's about to do something rash..." ),
+		);
+	}
+
+	/**
+	 * @ticket 42069
+	 * @dataProvider data_update_value_return_success_with_similar_value
+	 */
+	public function test_update_value_return_success_with_similar_value( $meta_key, $meta_value, $update_meta_value ) {
+		add_post_meta( self::$post_id, $meta_key, $meta_value );
+
+		$this->grant_write_permission();
+
+		$data = array(
+			'meta' => array(
+				$meta_key => $update_meta_value,
+			),
+		);
+
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/posts/%d', self::$post_id ) );
+		$request->set_body_params( $data );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function data_update_value_return_success_with_similar_value() {
+		return array(
+			array( 'test_boolean_update', 0, '' ),
+			array( 'test_boolean_update', 1, '1' ),
+			array( 'test_boolean_update', false, 0 ),
+			array( 'test_boolean_update', true, 1 ),
+			array( 'test_boolean_update', '', false ),
+			array( 'test_boolean_update', '1', true ),
+		);
 	}
 
 	/**
