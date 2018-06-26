@@ -318,11 +318,17 @@ abstract class WP_REST_Meta_Fields {
 		$meta_key   = wp_slash( $meta_key );
 		$meta_value = wp_slash( $value );
 
-		// Do the exact same check for a duplicate value as in update_metadata() to avoid update_metadata() returning false.
+		/*
+		 * The function update_metadata() has a surprising behavior: it returns false
+		 * if the new value matches the existing value. To avoid returning a server error
+		 * response when updating meta, we must check for values that will be interpreted
+		 * as equivalent by update_metadata() and its underlying function, $wpdb->query().
+		 */
 		$old_value = get_metadata( $meta_type, $object_id, $meta_key );
-
 		if ( 1 === count( $old_value ) ) {
-			if ( $old_value[0] === $meta_value ) {
+			$old_check_value  = sanitize_meta( $meta_key, $old_value[0], $meta_type );
+			$meta_check_value = sanitize_meta( $meta_key, $value, $meta_type );
+			if ( $old_check_value === $meta_check_value ) {
 				return true;
 			}
 		}

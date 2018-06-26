@@ -278,6 +278,22 @@ class WP_Test_REST_Post_Meta_Fields extends WP_Test_REST_TestCase {
 				'type'         => 'boolean',
 			)
 		);
+		register_meta(
+			'post', 'test_boolean_update', array(
+				'single'            => true,
+				'type'              => 'boolean',
+				'sanitize_callback' => 'absint',
+				'show_in_rest'      => true,
+			)
+		);
+		register_meta(
+			'post', 'test_textured_text_update', array(
+				'single'            => true,
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'show_in_rest'      => true,
+			)
+		);
 
 		/** @var WP_REST_Server $wp_rest_server */
 		global $wp_rest_server;
@@ -918,6 +934,75 @@ class WP_Test_REST_Post_Meta_Fields extends WP_Test_REST_TestCase {
 		// Ensure the post content update was not processed.
 		$post_updated = get_post( self::$post_id );
 		$this->assertEquals( $post_original->post_content, $post_updated->post_content );
+	}
+
+	/**
+	 * @ticket 42069
+	 */
+	public function test_update_value_return_success_response_when_updating_boolean_values_no_change() {
+		add_post_meta( self::$post_id, 'test_boolean_update', 0);
+		$post_original = get_post( self::$post_id );
+
+		$this->grant_write_permission();
+
+		$data = array(
+			'meta' => array(
+				'test_boolean_update' => 0,
+			),
+		);
+
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/posts/%d', self::$post_id ) );
+		$request->set_body_params( $data );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	/**
+	 * @ticket 42069
+	 */
+	public function test_update_value_return_success_response_when_updating_textured_string_values_no_change() {
+		add_post_meta( self::$post_id, 'test_textured_text_update', 'She said, "What about the > 10,000 penguins in the kitchen?"' );
+		$post_original = get_post( self::$post_id );
+
+		$this->grant_write_permission();
+
+		$data = array(
+			'meta' => array(
+				'test_textured_text_update' => 'She said, "What about the > 10,000 penguins in the kitchen?"',
+			),
+		);
+
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/posts/%d', self::$post_id ) );
+		$request->set_body_params( $data );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	/**
+	 * @ticket 42069
+	 */
+	public function test_update_value_return_success_response_when_updating_textured_string_values_slashed_no_change() {
+		add_post_meta( self::$post_id, 'test_textured_text_update', "He's about to do something rash..." );
+		$post_original = get_post( self::$post_id );
+
+		$this->grant_write_permission();
+
+		$data = array(
+			'meta' => array(
+				'test_textured_text_update' => "He's about to do something rash...",
+			),
+		);
+
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/posts/%d', self::$post_id ) );
+		$request->set_body_params( $data );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_remove_multi_value_db_error() {
