@@ -341,7 +341,7 @@ function human_readable_duration( $filelength = '' ) {
 		return false;
 	}
 
-	$human_readable_duration = [];
+	$human_readable_duration = array();
 
 	// Extract duration.
 	$durations      = array_reverse( explode( ':', $filelength ) );
