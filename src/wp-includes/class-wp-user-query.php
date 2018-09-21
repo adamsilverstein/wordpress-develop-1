@@ -598,8 +598,8 @@ class WP_User_Query {
 		 * Return a non-null value to bypass WordPress's default user queries.
 		 *
 		 * Filtering functions that require pagination information are encouraged to set
-		 * the `total_users` properties of the WP_User_Query object, passed to the filter 
-		 * by reference. If WP_User_Query does not perform a database query, it will not 
+		 * the `total_users` property of the WP_User_Query object, passed to the filter
+		 * by reference. If WP_User_Query does not perform a database query, it will not
 		 * have enough information to generate these values itself.
 		 *
 		 * @since 5.0.0
