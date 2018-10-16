@@ -877,6 +877,70 @@ mockedApiResponse.Schema = {
                             ],
                             "description": "Scope under which the request is made; determines fields present in response.",
                             "type": "string"
+                        },
+                        "page": {
+                            "required": false,
+                            "default": 1,
+                            "description": "Current page of the collection.",
+                            "type": "integer"
+                        },
+                        "per_page": {
+                            "required": false,
+                            "description": "Maximum number of items to be returned in result set.",
+                            "type": "integer"
+                        },
+                        "search": {
+                            "required": false,
+                            "description": "Limit results to those matching a string.",
+                            "type": "string"
+                        },
+                        "exclude": {
+                            "required": false,
+                            "default": [],
+                            "description": "Ensure result set excludes specific IDs.",
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "include": {
+                            "required": false,
+                            "default": [],
+                            "description": "Limit result set to specific IDs.",
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "offset": {
+                            "required": false,
+                            "description": "Offset the result set by a specific number of items.",
+                            "type": "integer"
+                        },
+                        "order": {
+                            "required": false,
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "description": "Order sort attribute ascending or descending.",
+                            "type": "string"
+                        },
+                        "orderby": {
+                            "required": false,
+                            "default": "date",
+                            "enum": [
+                                "date",
+                                "id",
+                                "include",
+                                "relevance",
+                                "slug",
+                                "include_slugs",
+                                "title"
+                            ],
+                            "description": "Sort collection by object attribute.",
+                            "type": "string"
                         }
                     }
                 },
@@ -1612,6 +1676,70 @@ mockedApiResponse.Schema = {
                                 "edit"
                             ],
                             "description": "Scope under which the request is made; determines fields present in response.",
+                            "type": "string"
+                        },
+                        "page": {
+                            "required": false,
+                            "default": 1,
+                            "description": "Current page of the collection.",
+                            "type": "integer"
+                        },
+                        "per_page": {
+                            "required": false,
+                            "description": "Maximum number of items to be returned in result set.",
+                            "type": "integer"
+                        },
+                        "search": {
+                            "required": false,
+                            "description": "Limit results to those matching a string.",
+                            "type": "string"
+                        },
+                        "exclude": {
+                            "required": false,
+                            "default": [],
+                            "description": "Ensure result set excludes specific IDs.",
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "include": {
+                            "required": false,
+                            "default": [],
+                            "description": "Limit result set to specific IDs.",
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "offset": {
+                            "required": false,
+                            "description": "Offset the result set by a specific number of items.",
+                            "type": "integer"
+                        },
+                        "order": {
+                            "required": false,
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "description": "Order sort attribute ascending or descending.",
+                            "type": "string"
+                        },
+                        "orderby": {
+                            "required": false,
+                            "default": "date",
+                            "enum": [
+                                "date",
+                                "id",
+                                "include",
+                                "relevance",
+                                "slug",
+                                "include_slugs",
+                                "title"
+                            ],
+                            "description": "Sort collection by object attribute.",
                             "type": "string"
                         }
                     }
@@ -3983,7 +4111,7 @@ mockedApiResponse.PostsCollection = [
             ],
             "version-history": [
                 {
-                    "count": 1,
+                    "count": 2,
                     "href": "http://example.org/index.php?rest_route=/wp/v2/posts/4/revisions"
                 }
             ],
@@ -4086,22 +4214,22 @@ mockedApiResponse.postRevisions = [
         "_links": {
             "parent": [
                 {
-                    "href": "http://example.org/index.php?rest_route=/wp/v2/posts/3"
+                    "href": "http://example.org/index.php?rest_route=/wp/v2/posts/4"
                 }
             ]
         }
     },
     {
-        "author": 2,
+        "author": 67,
         "date": "2017-02-14T00:00:00",
         "date_gmt": "2017-02-14T00:00:00",
-        "id": 4,
+        "id": 456,
         "modified": "2017-02-14T00:00:00",
         "modified_gmt": "2017-02-14T00:00:00",
-        "parent": 3,
-        "slug": "3-revision-v1",
+        "parent": 455,
+        "slug": "455-revision-v1",
         "guid": {
-            "rendered": "http://example.org/?p=4"
+            "rendered": "http://example.org/?p=456"
         },
         "title": {
             "rendered": "REST API Client Fixture: Post"
@@ -4115,7 +4243,7 @@ mockedApiResponse.postRevisions = [
         "_links": {
             "parent": [
                 {
-                    "href": "http://example.org/index.php?rest_route=/wp/v2/posts/4"
+                    "href": "http://example.org/index.php?rest_route=/wp/v2/posts/455"
                 }
             ]
         }
@@ -4147,16 +4275,16 @@ mockedApiResponse.revision = {
 
 mockedApiResponse.postAutosaves = [
     {
-        "author": 2,
+        "author": 67,
         "date": "2017-02-14T00:00:00",
         "date_gmt": "2017-02-14T00:00:00",
-        "id": 5,
+        "id": 457,
         "modified": "2017-02-14T00:00:00",
         "modified_gmt": "2017-02-14T00:00:00",
-        "parent": 3,
-        "slug": "3-autosave-v1",
+        "parent": 455,
+        "slug": "455-autosave-v1",
         "guid": {
-            "rendered": "http://example.org/?p=5"
+            "rendered": "http://example.org/?p=457"
         },
         "title": {
             "rendered": ""
@@ -4170,7 +4298,7 @@ mockedApiResponse.postAutosaves = [
         "_links": {
             "parent": [
                 {
-                    "href": "http://example.org/index.php?rest_route=/wp/v2/posts/3"
+                    "href": "http://example.org/index.php?rest_route=/wp/v2/posts/455"
                 }
             ]
         }
@@ -4178,16 +4306,16 @@ mockedApiResponse.postAutosaves = [
 ];
 
 mockedApiResponse.autosave = {
-    "author": 2,
+    "author": 67,
     "date": "2017-02-14T00:00:00",
     "date_gmt": "2017-02-14T00:00:00",
-    "id": 5,
+    "id": 457,
     "modified": "2017-02-14T00:00:00",
     "modified_gmt": "2017-02-14T00:00:00",
-    "parent": 3,
-    "slug": "3-autosave-v1",
+    "parent": 455,
+    "slug": "455-autosave-v1",
     "guid": {
-        "rendered": "http://example.org/?p=5"
+        "rendered": "http://example.org/?p=457"
     },
     "title": {
         "rendered": ""
@@ -4259,7 +4387,7 @@ mockedApiResponse.PagesCollection = [
             ],
             "version-history": [
                 {
-                    "count": 1,
+                    "count": 2,
                     "href": "http://example.org/index.php?rest_route=/wp/v2/pages/6/revisions"
                 }
             ],
@@ -4346,22 +4474,22 @@ mockedApiResponse.pageRevisions = [
         "_links": {
             "parent": [
                 {
-                    "href": "http://example.org/index.php?rest_route=/wp/v2/pages/5"
+                    "href": "http://example.org/index.php?rest_route=/wp/v2/pages/6"
                 }
             ]
         }
     },
     {
-        "author": 2,
+        "author": 67,
         "date": "2017-02-14T00:00:00",
         "date_gmt": "2017-02-14T00:00:00",
-        "id": 7,
+        "id": 459,
         "modified": "2017-02-14T00:00:00",
         "modified_gmt": "2017-02-14T00:00:00",
-        "parent": 6,
-        "slug": "6-revision-v1",
+        "parent": 458,
+        "slug": "458-revision-v1",
         "guid": {
-            "rendered": "http://example.org/?p=7"
+            "rendered": "http://example.org/?p=459"
         },
         "title": {
             "rendered": "REST API Client Fixture: Page"
@@ -4375,7 +4503,7 @@ mockedApiResponse.pageRevisions = [
         "_links": {
             "parent": [
                 {
-                    "href": "http://example.org/index.php?rest_route=/wp/v2/pages/6"
+                    "href": "http://example.org/index.php?rest_route=/wp/v2/pages/458"
                 }
             ]
         }
@@ -4407,16 +4535,16 @@ mockedApiResponse.pageRevision = {
 
 mockedApiResponse.pageAutosaves = [
     {
-        "author": 2,
+        "author": 67,
         "date": "2017-02-14T00:00:00",
         "date_gmt": "2017-02-14T00:00:00",
-        "id": 8,
+        "id": 460,
         "modified": "2017-02-14T00:00:00",
         "modified_gmt": "2017-02-14T00:00:00",
-        "parent": 6,
-        "slug": "6-autosave-v1",
+        "parent": 458,
+        "slug": "458-autosave-v1",
         "guid": {
-            "rendered": "http://example.org/?p=8"
+            "rendered": "http://example.org/?p=460"
         },
         "title": {
             "rendered": ""
@@ -4430,7 +4558,7 @@ mockedApiResponse.pageAutosaves = [
         "_links": {
             "parent": [
                 {
-                    "href": "http://example.org/index.php?rest_route=/wp/v2/pages/6"
+                    "href": "http://example.org/index.php?rest_route=/wp/v2/pages/458"
                 }
             ]
         }
@@ -4438,16 +4566,16 @@ mockedApiResponse.pageAutosaves = [
 ];
 
 mockedApiResponse.pageAutosave = {
-    "author": 2,
+    "author": 67,
     "date": "2017-02-14T00:00:00",
     "date_gmt": "2017-02-14T00:00:00",
-    "id": 8,
+    "id": 460,
     "modified": "2017-02-14T00:00:00",
     "modified_gmt": "2017-02-14T00:00:00",
-    "parent": 6,
-    "slug": "6-autosave-v1",
+    "parent": 458,
+    "slug": "458-autosave-v1",
     "guid": {
-        "rendered": "http://example.org/?p=8"
+        "rendered": "http://example.org/?p=460"
     },
     "title": {
         "rendered": ""
