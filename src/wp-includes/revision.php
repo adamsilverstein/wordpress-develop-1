@@ -110,7 +110,7 @@ function _wp_post_revision_data( $post = array(), $autosave = false ) {
  * @return int|WP_Error|void Void or 0 if error, new revision ID, if success.
  */
 function wp_save_post_revision( $post_id ) {
-	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+	if ( apply_filters( 'wp_doing_autosave', defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) )
 		return;
 
 	if ( ! $post = get_post( $post_id ) )
