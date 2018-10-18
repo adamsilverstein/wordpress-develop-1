@@ -173,7 +173,7 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	 */
 	public function create_item( $request ) {
 
-		add_filter( 'wp_doing_autosave', 'return_true' );
+		add_filter( 'wp_doing_autosave', '__return_true' );
 
 		$post = get_post( $request->get_param( 'id' ) );
 
@@ -204,7 +204,7 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		$response = $this->prepare_item_for_response( $autosave, $request );
 		$response = rest_ensure_response( $response );
 
-		remove_filter( 'wp_doing_autosave', 'return_true' );
+		remove_filter( 'wp_doing_autosave', '__return_true' );
 
 		return $response;
 	}
