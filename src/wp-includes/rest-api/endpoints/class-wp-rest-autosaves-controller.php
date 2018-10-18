@@ -173,10 +173,6 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 	 */
 	public function create_item( $request ) {
 
-		if ( ! defined( 'DOING_AUTOSAVE' ) ) {
-			define( 'DOING_AUTOSAVE', true );
-		}
-
 		$post = get_post( $request->get_param( 'id' ) );
 
 		if ( is_wp_error( $post ) ) {
@@ -206,7 +202,6 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		$response = $this->prepare_item_for_response( $autosave, $request );
 		$response = rest_ensure_response( $response );
 
-		define( 'DOING_AUTOSAVE', false );
 		return $response;
 	}
 
