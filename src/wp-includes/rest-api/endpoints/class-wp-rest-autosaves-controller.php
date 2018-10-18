@@ -206,6 +206,7 @@ class WP_REST_Autosaves_Controller extends WP_REST_Revisions_Controller {
 		$response = $this->prepare_item_for_response( $autosave, $request );
 		$response = rest_ensure_response( $response );
 
+		define( 'DOING_AUTOSAVE', false );
 		return $response;
 	}
 
