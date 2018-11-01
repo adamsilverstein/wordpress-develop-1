@@ -357,7 +357,6 @@ add_action( 'transition_post_status',     '_transition_post_status',            
 add_action( 'transition_post_status',     '_update_term_count_on_transition_post_status', 10, 3 );
 add_action( 'comment_form',               'wp_comment_form_unfiltered_html_nonce'          );
 add_action( 'admin_init',                 'send_frame_options_header',               10, 0 );
-add_action( 'try_gutenberg_panel',        'wp_try_gutenberg_panel'                         );
 add_action( 'welcome_panel',              'wp_welcome_panel'                               );
 
 // Privacy
@@ -496,6 +495,10 @@ add_action( 'wp_default_scripts', 'wp_default_packages' );
 
 add_action( 'wp_enqueue_scripts', 'wp_localize_jquery_ui_datepicker', 1000 );
 add_action( 'admin_enqueue_scripts', 'wp_localize_jquery_ui_datepicker', 1000 );
+add_action( 'wp_enqueue_scripts', 'wp_common_block_scripts_and_styles' );
+add_action( 'admin_enqueue_scripts', 'wp_common_block_scripts_and_styles' );
+add_action( 'enqueue_block_assets', 'wp_enqueue_registered_block_scripts_and_styles' );
+add_action( 'enqueue_block_editor_assets', 'wp_enqueue_registered_block_scripts_and_styles' );
 add_action( 'admin_print_scripts-index.php', 'wp_localize_community_events' );
 add_filter( 'wp_print_scripts', 'wp_just_in_time_script_localization' );
 add_filter( 'print_scripts_array', 'wp_prototype_before_jquery' );

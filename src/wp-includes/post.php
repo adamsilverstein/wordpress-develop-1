@@ -225,6 +225,60 @@ function create_initial_post_types() {
 		'supports'         => array(),
 	) );
 
+	register_post_type(
+		'wp_block',
+		array(
+			'labels'                => array(
+				'name'                     => _x( 'Blocks', 'post type general name' ),
+				'singular_name'            => _x( 'Block', 'post type singular name' ),
+				'menu_name'                => _x( 'Blocks', 'admin menu' ),
+				'name_admin_bar'           => _x( 'Block', 'add new on admin bar' ),
+				'add_new'                  => _x( 'Add New', 'Block' ),
+				'add_new_item'             => __( 'Add New Block' ),
+				'new_item'                 => __( 'New Block' ),
+				'edit_item'                => __( 'Edit Block' ),
+				'view_item'                => __( 'View Block' ),
+				'all_items'                => __( 'All Blocks' ),
+				'search_items'             => __( 'Search Blocks' ),
+				'not_found'                => __( 'No blocks found.' ),
+				'not_found_in_trash'       => __( 'No blocks found in Trash.' ),
+				'filter_items_list'        => __( 'Filter blocks list' ),
+				'items_list_navigation'    => __( 'Blocks list navigation' ),
+				'items_list'               => __( 'Blocks list' ),
+				'item_published'           => __( 'Block published.' ),
+				'item_published_privately' => __( 'Block published privately.' ),
+				'item_reverted_to_draft'   => __( 'Block reverted to draft.' ),
+				'item_scheduled'           => __( 'Block scheduled.' ),
+				'item_updated'             => __( 'Block updated.' ),
+			),
+			'public'                => false,
+			'_builtin'              => true, /* internal use only. don't use this when registering your own post type. */
+			'show_ui'               => true,
+			'show_in_menu'          => false,
+			'rewrite'               => false,
+			'show_in_rest'          => true,
+			'rest_base'             => 'blocks',
+			'rest_controller_class' => 'WP_REST_Blocks_Controller',
+			'capability_type'       => 'block',
+			'capabilities'          => array(
+				// You need to be able to edit posts, in order to read blocks in their raw form.
+				'read'                   => 'edit_posts',
+				// You need to be able to publish posts, in order to create blocks.
+				'create_posts'           => 'publish_posts',
+				'edit_published_posts'   => 'edit_published_posts',
+				'delete_published_posts' => 'delete_published_posts',
+				'edit_others_posts'      => 'edit_others_posts',
+				'delete_others_posts'    => 'delete_others_posts',
+			),
+			'map_meta_cap'          => true,
+			'supports'              => array(
+				'title',
+				'editor',
+			),
+		)
+	);
+
+
 	register_post_status( 'publish', array(
 		'label'       => _x( 'Published', 'post status' ),
 		'public'      => true,
@@ -963,7 +1017,11 @@ function is_post_type_hierarchical( $post_type ) {
 }
 
 /**
- * Check if a post type is registered.
+ * Determines whether a post type is registered.
+ * 
+ * For more information on this and similar theme functions, check out
+ * the {@link https://developer.wordpress.org/themes/basics/conditional-tags/ 
+ * Conditional Tags} article in the Theme Developer Handbook.
  *
  * @since 3.0.0
  *
@@ -1982,11 +2040,15 @@ function get_post_custom_values( $key = '', $post_id = 0 ) {
 }
 
 /**
- * Check if post is sticky.
+ * Determines whether a post is sticky.
  *
  * Sticky posts should remain at the top of The Loop. If the post ID is not
  * given, then The Loop ID for the current post will be used.
- *
+ * 
+ * For more information on this and similar theme functions, check out
+ * the {@link https://developer.wordpress.org/themes/basics/conditional-tags/ 
+ * Conditional Tags} article in the Theme Developer Handbook.
+ * 
  * @since 2.7.0
  *
  * @param int $post_id Optional. Post ID. Default is ID of the global $post.
@@ -3379,6 +3441,13 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		$post_parent = 0;
 	}
 
+	$new_postarr = array_merge(
+		array(
+			'ID' => $post_ID,
+		),
+		compact( array_diff( array_keys( $defaults ), array( 'context', 'filter' ) ) )
+	);
+
 	/**
 	 * Filters the post parent -- used to check for and prevent hierarchy loops.
 	 *
@@ -3389,7 +3458,7 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 	 * @param array $new_postarr Array of parsed post data.
 	 * @param array $postarr     Array of sanitized, but otherwise unmodified post data.
 	 */
-	$post_parent = apply_filters( 'wp_insert_post_parent', $post_parent, $post_ID, compact( array_keys( $postarr ) ), $postarr );
+	$post_parent = apply_filters( 'wp_insert_post_parent', $post_parent, $post_ID, $new_postarr, $postarr );
 
 	/*
 	 * If the post is being untrashed and it has a desired slug stored in post meta,
@@ -4947,8 +5016,12 @@ function get_pages( $args = array() ) {
 //
 
 /**
- * Check if the attachment URI is local one and is really an attachment.
- *
+ * Determines whether an attachment URI is local and really an attachment.
+ * 
+ * For more information on this and similar theme functions, check out
+ * the {@link https://developer.wordpress.org/themes/basics/conditional-tags/ 
+ * Conditional Tags} article in the Theme Developer Handbook.
+ * 
  * @since 2.0.0
  *
  * @param string $url URL to check
@@ -5444,7 +5517,11 @@ function wp_attachment_is( $type, $post = null ) {
 }
 
 /**
- * Checks if the attachment is an image.
+ * Determines whether an attachment is an image.
+ * 
+ * For more information on this and similar theme functions, check out
+ * the {@link https://developer.wordpress.org/themes/basics/conditional-tags/ 
+ * Conditional Tags} article in the Theme Developer Handbook.
  *
  * @since 2.1.0
  * @since 4.2.0 Modified into wrapper for wp_attachment_is() and

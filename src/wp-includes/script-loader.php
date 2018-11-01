@@ -96,13 +96,13 @@ function wp_default_packages_vendor( &$scripts ) {
 			$dependencies = array();
 		}
 
-		$path     = "/js/dist/vendor/$handle$dev_suffix.js";
+		$path = "/wp-includes/js/dist/vendor/$handle$dev_suffix.js";
 
 		$scripts->add( $handle, $path, $dependencies, false, 1 );
 	}
 
 	$scripts->add( 'wp-polyfill', null, array( 'wp-polyfill-ecmascript' ) );
-	did_action( 'init' ) && $scripts->add_inline_script(
+	did_action( 'init' ) && $scripts->add_data(
 		'wp-polyfill',
 		'data',
 		wp_get_script_polyfill(
@@ -166,7 +166,7 @@ function wp_default_packages_scripts( &$scripts ) {
 	$suffix = wp_scripts_get_suffix();
 
 	$packages_dependencies = array(
-		'api-fetch' => array( 'wp-polyfill', 'wp-hooks', 'wp-i18n' ),
+		'api-fetch' => array( 'wp-polyfill', 'wp-hooks', 'wp-i18n', 'wp-url' ),
 		'a11y' => array( 'wp-dom-ready', 'wp-polyfill' ),
 		'autop' => array( 'wp-polyfill' ),
 		'blob' => array( 'wp-polyfill' ),
@@ -175,7 +175,6 @@ function wp_default_packages_scripts( &$scripts ) {
 			'wp-blob',
 			'wp-block-serialization-default-parser',
 			'wp-data',
-			'wp-deprecated',
 			'wp-dom',
 			'wp-element',
 			'wp-hooks',
@@ -184,7 +183,6 @@ function wp_default_packages_scripts( &$scripts ) {
 			'wp-polyfill',
 			'wp-shortcode',
 			'lodash',
-			'wp-rich-text',
 		),
 		'block-library' => array(
 			'editor',
@@ -225,15 +223,20 @@ function wp_default_packages_scripts( &$scripts ) {
 			'wp-is-shallow-equal',
 			'wp-keycodes',
 			'wp-polyfill',
-			'wp-url',
 			'wp-rich-text',
+			'wp-url',
 		),
-		'compose' => array( 'lodash', 'wp-element', 'wp-is-shallow-equal', 'wp-polyfill' ),
+		'compose' => array(
+			'lodash',
+			'wp-deprecated',
+			'wp-element',
+			'wp-is-shallow-equal',
+			'wp-polyfill'
+		),
 		'core-data' => array( 'wp-data', 'wp-api-fetch', 'wp-polyfill', 'wp-url', 'lodash' ),
 		'data' => array(
 			'lodash',
 			'wp-compose',
-			'wp-deprecated',
 			'wp-element',
 			'wp-is-shallow-equal',
 			'wp-polyfill',
@@ -291,6 +294,7 @@ function wp_default_packages_scripts( &$scripts ) {
 			'wp-i18n',
 			'wp-is-shallow-equal',
 			'wp-keycodes',
+			'wp-notices',
 			'wp-nux',
 			'wp-polyfill',
 			'wp-tinymce',
@@ -302,6 +306,17 @@ function wp_default_packages_scripts( &$scripts ) {
 		),
 		'element' => array( 'wp-polyfill', 'react', 'react-dom', 'lodash', 'wp-escape-html' ),
 		'escape-html' => array( 'wp-polyfill' ),
+		'format-library' => array(
+			'wp-components',
+			'wp-dom',
+			'wp-editor',
+			'wp-element',
+			'wp-i18n',
+			'wp-keycodes',
+			'wp-polyfill',
+			'wp-rich-text',
+			'wp-url',
+		),
 		'hooks' => array( 'wp-polyfill' ),
 		'html-entities' => array( 'wp-polyfill' ),
 		'i18n' => array( 'wp-polyfill' ),
@@ -316,18 +331,31 @@ function wp_default_packages_scripts( &$scripts ) {
 			'wp-i18n',
 			'wp-polyfill',
 		),
+		'notices' => array(
+			'lodash',
+			'wp-a11y',
+			'wp-data',
+			'wp-polyfill-ecmascript',
+		),
 		'nux' => array(
 			'wp-element',
 			'wp-components',
 			'wp-compose',
 			'wp-data',
+			'wp-deprecated',
 			'wp-i18n',
 			'wp-polyfill',
 			'lodash',
 		),
 		'plugins' => array( 'lodash', 'wp-compose', 'wp-element', 'wp-hooks', 'wp-polyfill' ),
 		'redux-routine' => array( 'wp-polyfill' ),
-		'rich-text' => array( 'wp-polyfill', 'wp-escape-html', 'lodash' ),
+		'rich-text' => array(
+			'lodash',
+			'wp-blocks',
+			'wp-data',
+			'wp-escape-html',
+			'wp-polyfill',
+		),
 		'shortcode' => array( 'wp-polyfill', 'lodash' ),
 		'token-list' => array( 'lodash', 'wp-polyfill' ),
 		'url' => array( 'wp-polyfill' ),
@@ -337,7 +365,7 @@ function wp_default_packages_scripts( &$scripts ) {
 
 	foreach ( $packages_dependencies as $package => $dependencies ) {
 		$handle  = 'wp-' . $package;
-		$path    = "/js/dist/$package$suffix.js";
+		$path    = "/wp-includes/js/dist/$package$suffix.js";
 
 		$scripts->add( $handle, $path, $dependencies, false, 1 );
 	}
@@ -380,7 +408,6 @@ function wp_default_packages_inline_scripts( &$scripts ) {
 				'	var storageKey = "WP_DATA_USER_" + userId;',
 				'	wp.data',
 				'		.use( wp.data.plugins.persistence, { storageKey: storageKey } )',
-				'		.use( wp.data.plugins.asyncGenerator )',
 				'		.use( wp.data.plugins.controls );',
 				'} )()',
 			)
@@ -402,15 +429,20 @@ function wp_default_packages_inline_scripts( &$scripts ) {
 						'meridiem'      => (object) $wp_locale->meridiem,
 						'relative'      => array(
 							/* translators: %s: duration */
-							'future' => __( '%s from now', 'default' ),
+							'future' => __( '%s from now' ),
 							/* translators: %s: duration */
-							'past'   => __( '%s ago', 'default' ),
+							'past'   => __( '%s ago' ),
 						),
 					),
 					'formats'  => array(
-						'time'     => get_option( 'time_format', __( 'g:i a', 'default' ) ),
-						'date'     => get_option( 'date_format', __( 'F j, Y', 'default' ) ),
-						'datetime' => __( 'F j, Y g:i a', 'default' ),
+						/* translators: Time format, see https://secure.php.net/date */
+						'time'                => get_option( 'time_format', __( 'g:i a' ) ),
+						/* translators: Date format, see https://secure.php.net/date */
+						'date'                => get_option( 'date_format', __( 'F j, Y' ) ),
+						/* translators: Date/Time format, see https://secure.php.net/date */
+						'datetime'            => __( 'F j, Y g:i a' ),
+						/* translators: Abbreviated date/time format, see https://secure.php.net/date */
+						'datetimeAbbreviated' => __( 'M j, Y g:i a' ),
 					),
 					'timezone' => array(
 						'offset' => get_option( 'gmt_offset', 0 ),
@@ -905,7 +937,7 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'mediaelement-migrate', "/wp-includes/js/mediaelement/mediaelement-migrate$suffix.js", array(), false, 1);
 
 	did_action( 'init' ) && $scripts->add_inline_script( 'mediaelement-core', sprintf( 'var mejsL10n = %s;', wp_json_encode( array(
-		'language' => strtolower( strtok( is_admin() ? get_user_locale() : get_locale(), '_-' ) ),
+		'language' => strtolower( strtok( determine_locale(), '_-' ) ),
 		'strings'  => array(
 			'mejs.install-flash'       => __( 'You are using a browser that does not have Flash player enabled or installed. Please turn on your Flash player plugin or download the latest version from https://get.adobe.com/flashplayer/' ),
 			'mejs.fullscreen-off'      => __( 'Turn off Fullscreen' ),
@@ -1607,12 +1639,12 @@ function wp_default_styles( &$styles ) {
 	}
 	$styles->add( 'wp-editor-font', $fonts_url );
 
-	$styles->add( 'wp-block-library-theme', '/styles/dist/block-library/theme.css' );
+	$styles->add( 'wp-block-library-theme', '/wp-includes/css/dist/block-library/theme.css' );
 	$styles->add_data( 'wp-block-library-theme', 'rtl', 'replace' );
 
 	$styles->add(
 		'wp-edit-blocks',
-		'/styles/dist/block-library/editor.css',
+		'/wp-includes/css/dist/block-library/editor.css',
 		array(
 			'wp-components',
 			'wp-editor',
@@ -1627,13 +1659,14 @@ function wp_default_styles( &$styles ) {
 		'components' => array(),
 		'edit-post' => array( 'wp-components', 'wp-editor', 'wp-edit-blocks', 'wp-block-library', 'wp-nux' ),
 		'editor' => array( 'wp-components', 'wp-editor-font', 'wp-nux' ),
+		'format-library' => array(),
 		'list-reusable-blocks' => array( 'wp-components' ),
 		'nux' => array( 'wp-components' ),
 	);
 
 	foreach ( $package_styles as $package => $dependencies ) {
 		$handle  = 'wp-' . $package;
-		$path     = '/styles/dist/' . $package . '/style.css';
+		$path     = '/wp-includes/css/dist/' . $package . '/style.css';
 
 		$styles->add( $handle, $path, $dependencies );
 		$styles->add_data( $handle, 'rtl', 'replace' );
@@ -2176,5 +2209,76 @@ function script_concat_settings() {
 		$compress_css = defined('COMPRESS_CSS') ? COMPRESS_CSS : true;
 		if ( $compress_css && ( ! get_site_option('can_compress_scripts') || $compressed_output ) )
 			$compress_css = false;
+	}
+}
+
+/**
+ * Handles the enqueueing of block scripts and styles that are common to both
+ * the editor and the front-end.
+ *
+ * @since 5.0.0
+ *
+ * @global WP_Screen $current_screen
+ */
+function wp_common_block_scripts_and_styles() {
+	global $current_screen;
+
+	if ( is_admin() && ! $current_screen->is_block_editor() ) {
+		return;
+	}
+
+	wp_enqueue_style( 'wp-block-library' );
+
+	if ( current_theme_supports( 'wp-block-styles' ) ) {
+		wp_enqueue_style( 'wp-block-library-theme' );
+	}
+
+	/**
+ 	 * Fires after enqueuing block assets for both editor and front-end.
+ 	 *
+ 	 * Call `add_action` on any hook before 'wp_enqueue_scripts'.
+ 	 *
+ 	 * In the function call you supply, simply use `wp_enqueue_script` and
+ 	 * `wp_enqueue_style` to add your functionality to the Gutenberg editor.
+ 	 *
+ 	 * @since 5.0.0
+ 	 */
+	  do_action( 'enqueue_block_assets' );
+}
+
+/**
+ * Enqueues registered block scripts and styles, depending on current rendered
+ * context (only enqueuing editor scripts while in context of the editor).
+ *
+ * @since 5.0.0
+ *
+ * @global WP_Screen $current_screen
+ */
+function wp_enqueue_registered_block_scripts_and_styles() {
+	global $current_screen;
+
+	$is_editor = ( is_admin() && $current_screen->is_block_editor() );
+
+	$block_registry = WP_Block_Type_Registry::get_instance();
+	foreach ( $block_registry->get_all_registered() as $block_name => $block_type ) {
+		// Front-end styles.
+		if ( ! empty( $block_type->style ) ) {
+			wp_enqueue_style( $block_type->style );
+		}
+
+		// Front-end script.
+		if ( ! empty( $block_type->script ) ) {
+			wp_enqueue_script( $block_type->script );
+		}
+
+		// Editor styles.
+		if ( $is_editor && ! empty( $block_type->editor_style ) ) {
+			wp_enqueue_style( $block_type->editor_style );
+		}
+
+		// Editor script.
+		if ( $is_editor && ! empty( $block_type->editor_script ) ) {
+			wp_enqueue_script( $block_type->editor_script );
+		}
 	}
 }
