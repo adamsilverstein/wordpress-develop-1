@@ -199,6 +199,15 @@ module.exports = function(grunt) {
 					'wp-includes/js/mediaelement/wp-mediaelement.css'
 				]
 			},
+			dist: {
+				expand: true,
+				cwd: BUILD_DIR,
+				dest: BUILD_DIR,
+				ext: '.min.css',
+				src: [
+					'wp-includes/css/dist/*/*.css'
+				]
+			},
 			rtl: {
 				expand: true,
 				cwd: BUILD_DIR,
@@ -551,6 +560,7 @@ module.exports = function(grunt) {
 		},
 		webpack: {
 			prod: webpackConfig( { environment: 'production' } ),
+			devProdTarget: webpackConfig( { environment: 'development', forceBuildTarget: 'build/wp-includes' } ),
 			dev: webpackConfig( { environment: 'development' } ),
 			watch: webpackConfig( { environment: 'development', watch: true } )
 		},
@@ -937,7 +947,8 @@ module.exports = function(grunt) {
 		'includes:embed',
 		'usebanner',
 		'webpack:prod',
-		'webpack:dev',
+		'webpack:devProdTarget',
+		'cssmin:dist',
 		'jsvalidate:build'
 	] );
 

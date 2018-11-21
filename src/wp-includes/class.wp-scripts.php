@@ -528,11 +528,13 @@ class WP_Scripts extends WP_Dependencies {
 		$json_translations = load_script_textdomain( $handle, $domain, $path );
 
 		if ( ! $json_translations ) {
-			return false;
+			// Register empty locale data object to ensure the domain still exists.
+			$json_translations = '{ "locale_data": { "messages": { "": {} } } }';
 		}
 
 		$output = '(function( translations ){' .
-		              'wp.i18n.setLocaleData( translations.locale_data, "' . $domain . '" );' .
+		              'translations.locale_data.messages[""].domain = "' . $domain . '";' .
+		              'wp.i18n.setLocaleData( translations.locale_data.messages, "' . $domain . '" );' .
 		          '})(' . $json_translations . ');';
 
 		if ( $echo ) {
