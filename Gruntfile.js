@@ -1,7 +1,6 @@
 /* jshint node:true */
 /* globals Set */
-var webpackConfig = require( './webpack.config.prod' );
-var webpackDevConfig = require( './webpack.config.dev' );
+var webpackConfig = require( './webpack.config' );
 
 module.exports = function(grunt) {
 	var path = require('path'),
@@ -704,8 +703,9 @@ module.exports = function(grunt) {
 			}
 		},
 		webpack: {
-			prod: webpackConfig,
-			dev: webpackDevConfig
+			prod: webpackConfig( { environment: 'production' } ),
+			dev: webpackConfig( { environment: 'development' } ),
+			watch: webpackConfig( { environment: 'development', watch: true } )
 		},
 		concat: {
 			tinymce: {
@@ -945,7 +945,8 @@ module.exports = function(grunt) {
 				files: {
 					src: [
 						BUILD_DIR + 'wp-{admin,includes}/**/*.js',
-						BUILD_DIR + 'wp-content/themes/twenty*/**/*.js'
+						BUILD_DIR + 'wp-content/themes/twenty*/**/*.js',
+						'!' + BUILD_DIR + 'wp-includes/js/dist/vendor/*.js'
 					]
 				}
 			},
@@ -1090,7 +1091,6 @@ module.exports = function(grunt) {
 			config: {
 				files: [
 					'Gruntfile.js',
-					'webpack-dev.config.js',
 					'webpack.config.js'
 				]
 			},
@@ -1346,7 +1346,6 @@ module.exports = function(grunt) {
 
 	grunt.registerTask( 'build', [
 		'clean:all',
-		'webpack:dev',
 		'copy:all',
 		'file_append',
 		'cssmin:core',
@@ -1360,6 +1359,8 @@ module.exports = function(grunt) {
 		'includes:emoji',
 		'includes:embed',
 		'usebanner',
+		'webpack:prod',
+		'webpack:dev',
 		'jsvalidate:build'
 	] );
 

@@ -89,12 +89,20 @@ class WP_Test_REST_Schema_Initialization extends WP_Test_REST_TestCase {
 			'/wp/v2/posts/(?P<id>[\\d]+)',
 			'/wp/v2/posts/(?P<parent>[\\d]+)/revisions',
 			'/wp/v2/posts/(?P<parent>[\\d]+)/revisions/(?P<id>[\\d]+)',
+			'/wp/v2/posts/(?P<parent>[\\d]+)/autosaves',
+			'/wp/v2/posts/(?P<parent>[\\d]+)/autosaves/(?P<id>[\\d]+)',
 			'/wp/v2/pages',
 			'/wp/v2/pages/(?P<id>[\\d]+)',
 			'/wp/v2/pages/(?P<parent>[\\d]+)/revisions',
 			'/wp/v2/pages/(?P<parent>[\\d]+)/revisions/(?P<id>[\\d]+)',
+			'/wp/v2/pages/(?P<parent>[\\d]+)/autosaves',
+			'/wp/v2/pages/(?P<parent>[\\d]+)/autosaves/(?P<id>[\\d]+)',
 			'/wp/v2/media',
 			'/wp/v2/media/(?P<id>[\\d]+)',
+			'/wp/v2/blocks',
+			'/wp/v2/blocks/(?P<id>[\d]+)',
+			'/wp/v2/blocks/(?P<parent>[\d]+)/autosaves',
+			'/wp/v2/blocks/(?P<parent>[\d]+)/autosaves/(?P<id>[\d]+)',
 			'/wp/v2/types',
 			'/wp/v2/types/(?P<type>[\\w-]+)',
 			'/wp/v2/statuses',
@@ -110,7 +118,15 @@ class WP_Test_REST_Schema_Initialization extends WP_Test_REST_TestCase {
 			'/wp/v2/users/me',
 			'/wp/v2/comments',
 			'/wp/v2/comments/(?P<id>[\\d]+)',
+			'/wp/v2/search',
+			'/wp/v2/block-renderer/(?P<name>core/block)',
+			'/wp/v2/block-renderer/(?P<name>core/latest-comments)',
+			'/wp/v2/block-renderer/(?P<name>core/archives)',
+			'/wp/v2/block-renderer/(?P<name>core/categories)',
+			'/wp/v2/block-renderer/(?P<name>core/latest-posts)',
+			'/wp/v2/block-renderer/(?P<name>core/shortcode)',
 			'/wp/v2/settings',
+			'/wp/v2/themes',
 		);
 
 		$this->assertEquals( $expected_routes, $routes );
@@ -159,6 +175,15 @@ class WP_Test_REST_Schema_Initialization extends WP_Test_REST_TestCase {
 		$post_revisions   = array_values( wp_get_post_revisions( $post_id ) );
 		$post_revision_id = $post_revisions[ count( $post_revisions ) - 1 ]->ID;
 
+		// Create an autosave.
+		wp_create_post_autosave(
+			array(
+				'post_ID'      => $post_id,
+				'post_content' => 'Autosave post content.',
+				'post_type'    => 'post',
+			)
+		);
+
 		$page_id = $this->factory->post->create(
 			array(
 				'post_type'     => 'page',
@@ -179,6 +204,15 @@ class WP_Test_REST_Schema_Initialization extends WP_Test_REST_TestCase {
 		);
 		$page_revisions   = array_values( wp_get_post_revisions( $page_id ) );
 		$page_revision_id = $page_revisions[ count( $page_revisions ) - 1 ]->ID;
+
+		// Create an autosave.
+		wp_create_post_autosave(
+			array(
+				'post_ID'      => $page_id,
+				'post_content' => 'Autosave page content.',
+				'post_type'    => 'page',
+			)
+		);
 
 		$tag_id = $this->factory->tag->create(
 			array(
@@ -274,6 +308,14 @@ class WP_Test_REST_Schema_Initialization extends WP_Test_REST_TestCase {
 				'name'  => 'revision',
 			),
 			array(
+				'route' => '/wp/v2/posts/' . $post_id . '/autosaves',
+				'name'  => 'postAutosaves',
+			),
+			array(
+				'route' => '/wp/v2/posts/' . $post_id . '/autosaves/' . $post_revision_id,
+				'name'  => 'autosave',
+			),
+			array(
 				'route' => '/wp/v2/pages',
 				'name'  => 'PagesCollection',
 			),
@@ -288,6 +330,14 @@ class WP_Test_REST_Schema_Initialization extends WP_Test_REST_TestCase {
 			array(
 				'route' => '/wp/v2/pages/' . $page_id . '/revisions/' . $page_revision_id,
 				'name'  => 'pageRevision',
+			),
+			array(
+				'route' => '/wp/v2/pages/' . $page_id . '/autosaves',
+				'name'  => 'pageAutosaves',
+			),
+			array(
+				'route' => '/wp/v2/pages/' . $page_id . '/autosaves/' . $page_revision_id,
+				'name'  => 'pageAutosave',
 			),
 			array(
 				'route' => '/wp/v2/media',

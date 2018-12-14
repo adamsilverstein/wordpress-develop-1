@@ -1079,9 +1079,9 @@ class WP_Test_REST_Attachments_Controller extends WP_Test_REST_Post_Type_Control
 			array(
 				// Raw values.
 				array(
-					'title'       => '<a href="#" target="_blank" data-unfiltered=true>link</a>',
-					'description' => '<a href="#" target="_blank" data-unfiltered=true>link</a>',
-					'caption'     => '<a href="#" target="_blank" data-unfiltered=true>link</a>',
+					'title'       => '<a href="#" target="_blank" unfiltered=true>link</a>',
+					'description' => '<a href="#" target="_blank" unfiltered=true>link</a>',
+					'caption'     => '<a href="#" target="_blank" unfiltered=true>link</a>',
 				),
 				// Expected returned values.
 				array(
@@ -1295,7 +1295,7 @@ class WP_Test_REST_Attachments_Controller extends WP_Test_REST_Post_Type_Control
 		$response   = rest_get_server()->dispatch( $request );
 		$data       = $response->get_data();
 		$properties = $data['schema']['properties'];
-		$this->assertEquals( 24, count( $properties ) );
+		$this->assertEquals( 26, count( $properties ) );
 		$this->assertArrayHasKey( 'author', $properties );
 		$this->assertArrayHasKey( 'alt_text', $properties );
 		$this->assertArrayHasKey( 'caption', $properties );
@@ -1307,6 +1307,7 @@ class WP_Test_REST_Attachments_Controller extends WP_Test_REST_Post_Type_Control
 		$this->assertArrayHasKey( 'comment_status', $properties );
 		$this->assertArrayHasKey( 'date', $properties );
 		$this->assertArrayHasKey( 'date_gmt', $properties );
+		$this->assertArrayHasKey( 'generated_slug', $properties );
 		$this->assertArrayHasKey( 'guid', $properties );
 		$this->assertArrayHasKey( 'id', $properties );
 		$this->assertArrayHasKey( 'link', $properties );
@@ -1318,6 +1319,7 @@ class WP_Test_REST_Attachments_Controller extends WP_Test_REST_Post_Type_Control
 		$this->assertArrayHasKey( 'modified_gmt', $properties );
 		$this->assertArrayHasKey( 'post', $properties );
 		$this->assertArrayHasKey( 'ping_status', $properties );
+		$this->assertArrayHasKey( 'permalink_template', $properties );
 		$this->assertArrayHasKey( 'status', $properties );
 		$this->assertArrayHasKey( 'slug', $properties );
 		$this->assertArrayHasKey( 'source_url', $properties );
@@ -1467,6 +1469,11 @@ class WP_Test_REST_Attachments_Controller extends WP_Test_REST_Post_Type_Control
 		$links    = $response->get_links();
 
 		$this->assertArrayHasKey( 'self', $links );
+		$this->assertArrayHasKey( 'author', $links );
+
+		$this->assertCount( 1, $links['author'] );
+		$this->assertArrayHasKey( 'embeddable', $links['author'][0]['attributes'] );
+		$this->assertTrue( $links['author'][0]['attributes']['embeddable'] );
 	}
 
 	public function test_publish_action_ldo_not_registered() {

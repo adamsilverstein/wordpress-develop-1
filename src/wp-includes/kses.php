@@ -61,11 +61,14 @@ if ( ! CUSTOM_TAGS ) {
 	$allowedposttags = array(
 		'address'    => array(),
 		'a'          => array(
-			'href'   => true,
-			'rel'    => true,
-			'rev'    => true,
-			'name'   => true,
-			'target' => true,
+			'href'     => true,
+			'rel'      => true,
+			'rev'      => true,
+			'name'     => true,
+			'target'   => true,
+			'download' => array(
+				'valueless' => 'y',
+			),
 		),
 		'abbr'       => array(),
 		'acronym'    => array(),
@@ -1076,6 +1079,7 @@ function wp_kses_attr( $element, $attr, $allowed_html, $allowed_protocols ) {
  * Determines whether an attribute is allowed.
  *
  * @since 4.2.3
+ * @since 5.0.0 Add support for `data-*` wildcard attributes.
  *
  * @param string $name         The attribute name. Passed by reference. Returns empty string when not allowed.
  * @param string $value        The attribute value. Passed by reference. Returns a filtered value.
@@ -1090,8 +1094,26 @@ function wp_kses_attr_check( &$name, &$value, &$whole, $vless, $element, $allowe
 
 	$name_low = strtolower( $name );
 	if ( ! isset( $allowed_attr[ $name_low ] ) || '' == $allowed_attr[ $name_low ] ) {
-		$name = $value = $whole = '';
-		return false;
+		/*
+		 * Allow `data-*` attributes.
+		 *
+		 * When specifying `$allowed_html`, the attribute name should be set as
+		 * `data-*` (not to be mixed with the HTML 4.0 `data` attribute, see
+		 * https://www.w3.org/TR/html40/struct/objects.html#adef-data).
+		 *
+		 * Note: the attribute name should only contain `A-Za-z0-9_-` chars,
+		 * double hyphens `--` are not accepted by WordPress.
+		 */
+		if ( strpos( $name_low, 'data-' ) === 0 && ! empty( $allowed_attr['data-*'] ) && preg_match( '/^data(?:-[a-z0-9_]+)+$/', $name_low, $match ) ) {
+			/*
+			 * Add the whole attribute name to the allowed attributes and set any restrictions
+			 * for the `data-*` attribute values for the current element.
+			 */
+			$allowed_attr[ $match[0] ] = $allowed_attr['data-*'];
+		} else {
+			$name = $value = $whole = '';
+			return false;
+		}
 	}
 
 	if ( 'style' == $name_low ) {
@@ -1966,9 +1988,7 @@ function safecss_filter_attr( $css, $deprecated = '' ) {
 	$css = wp_kses_no_null( $css );
 	$css = str_replace( array( "\n", "\r", "\t" ), '', $css );
 
-	if ( preg_match( '%[\\\\(&=}]|/\*%', $css ) ) { // remove any inline css containing \ ( & } = or comments
-		return '';
-	}
+	$allowed_protocols = wp_allowed_protocols();
 
 	$css_array = explode( ';', trim( $css ) );
 
@@ -1979,6 +1999,7 @@ function safecss_filter_attr( $css, $deprecated = '' ) {
 	 * @since 4.4.0 Added support for `min-height`, `max-height`, `min-width`, and `max-width`.
 	 * @since 4.6.0 Added support for `list-style-type`.
 	 * @since 5.0.0 Added support for `text-transform`.
+	 * @since 5.0.0 Added support for `background-image`.
 	 *
 	 * @param string[] $attr Array of allowed CSS attributes.
 	 */
@@ -1987,6 +2008,7 @@ function safecss_filter_attr( $css, $deprecated = '' ) {
 		array(
 			'background',
 			'background-color',
+			'background-image',
 
 			'border',
 			'border-width',
@@ -2057,6 +2079,24 @@ function safecss_filter_attr( $css, $deprecated = '' ) {
 		)
 	);
 
+	/*
+	 * CSS attributes that accept URL data types.
+	 *
+	 * This is in accordance to the CSS spec and unrelated to
+	 * the sub-set of supported attributes above.
+	 *
+	 * See: https://developer.mozilla.org/en-US/docs/Web/CSS/url
+	 */
+	$css_url_data_types = array(
+		'background',
+		'background-image',
+
+		'cursor',
+
+		'list-style',
+		'list-style-image',
+	);
+
 	if ( empty( $allowed_attr ) ) {
 		return $css;
 	}
@@ -2066,20 +2106,55 @@ function safecss_filter_attr( $css, $deprecated = '' ) {
 		if ( $css_item == '' ) {
 			continue;
 		}
-		$css_item = trim( $css_item );
-		$found    = false;
+
+		$css_item        = trim( $css_item );
+		$css_test_string = $css_item;
+		$found           = false;
+		$url_attr        = false;
+
 		if ( strpos( $css_item, ':' ) === false ) {
 			$found = true;
 		} else {
-			$parts = explode( ':', $css_item );
-			if ( in_array( trim( $parts[0] ), $allowed_attr ) ) {
-				$found = true;
+			$parts        = explode( ':', $css_item, 2 );
+			$css_selector = trim( $parts[0] );
+
+			if ( in_array( $css_selector, $allowed_attr, true ) ) {
+				$found    = true;
+				$url_attr = in_array( $css_selector, $css_url_data_types, true );
 			}
 		}
-		if ( $found ) {
+
+		if ( $found && $url_attr ) {
+			// Simplified: matches the sequence `url(*)`.
+			preg_match_all( '/url\([^)]+\)/', $parts[1], $url_matches );
+
+			foreach ( $url_matches[0] as $url_match ) {
+				// Clean up the URL from each of the matches above.
+				preg_match( '/^url\(\s*([\'\"]?)(.*)(\g1)\s*\)$/', $url_match, $url_pieces );
+
+				if ( empty( $url_pieces[2] ) ) {
+					$found = false;
+					break;
+				}
+
+				$url = trim( $url_pieces[2] );
+
+				if ( empty( $url ) || $url !== wp_kses_bad_protocol( $url, $allowed_protocols ) ) {
+					$found = false;
+					break;
+				} else {
+					// Remove the whole `url(*)` bit that was matched above from the CSS.
+					$css_test_string = str_replace( $url_match, '', $css_test_string );
+				}
+			}
+		}
+
+		// Remove any CSS containing containing \ ( & } = or comments, except for url() useage checked above.
+		if ( $found && ! preg_match( '%[\\\(&=}]|/\*%', $css_test_string ) ) {
 			if ( $css != '' ) {
 				$css .= ';';
 			}
+
 			$css .= $css_item;
 		}
 	}
@@ -2091,6 +2166,7 @@ function safecss_filter_attr( $css, $deprecated = '' ) {
  * Helper function to add global attributes to a tag in the allowed html list.
  *
  * @since 3.5.0
+ * @since 5.0.0 Add support for `data-*` wildcard attributes.
  * @access private
  * @ignore
  *
@@ -2099,11 +2175,17 @@ function safecss_filter_attr( $css, $deprecated = '' ) {
  */
 function _wp_add_global_attributes( $value ) {
 	$global_attributes = array(
-		'class' => true,
-		'id'    => true,
-		'style' => true,
-		'title' => true,
-		'role'  => true,
+		'aria-describedby' => true,
+		'aria-details'     => true,
+		'aria-label'       => true,
+		'aria-labelledby'  => true,
+		'aria-hidden'      => true,
+		'class'            => true,
+		'id'               => true,
+		'style'            => true,
+		'title'            => true,
+		'role'             => true,
+		'data-*'           => true,
 	);
 
 	if ( true === $value ) {

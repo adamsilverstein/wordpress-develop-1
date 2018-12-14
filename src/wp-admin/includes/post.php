@@ -867,7 +867,7 @@ function add_meta( $post_ID ) {
 		$metavalue = trim( $metavalue );
 	}
 
-	if ( ( '0' === $metavalue || ! empty( $metavalue ) ) && ( ( ( '#NONE#' != $metakeyselect ) && ! empty( $metakeyselect ) ) || ! empty( $metakeyinput ) ) ) {
+	if ( ( ( '#NONE#' != $metakeyselect ) && ! empty( $metakeyselect ) ) || ! empty( $metakeyinput ) ) {
 		/*
 		 * We have a key/value pair. If both the select and the input
 		 * for the key have data, the input takes precedence.
@@ -2022,4 +2022,296 @@ function taxonomy_meta_box_sanitize_cb_input( $taxonomy, $terms ) {
 	}
 
 	return $clean_terms;
+}
+
+/**
+ * Return whether the post can be edited in the block editor.
+ *
+ * @since 5.0.0
+ *
+ * @param int|WP_Post $post Post ID or WP_Post object.
+ * @return bool Whether the post can be edited in the block editor.
+ */
+function use_block_editor_for_post( $post ) {
+	$post = get_post( $post );
+
+	if ( ! $post ) {
+		return false;
+	}
+
+	// We're in the meta box loader, so don't use the block editor.
+	if ( isset( $_GET['meta-box-loader'] ) ) {
+		check_admin_referer( 'meta-box-loader' );
+		return false;
+	}
+
+	$use_block_editor = use_block_editor_for_post_type( $post->post_type );
+
+	/**
+	 * Filter whether a post is able to be edited in the block editor.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param bool    $use_block_editor Whether the post can be edited or not.
+	 * @param WP_Post $post             The post being checked.
+	 */
+	return apply_filters( 'use_block_editor_for_post', $use_block_editor, $post );
+}
+
+/**
+ * Return whether a post type is compatible with the block editor.
+ *
+ * The block editor depends on the REST API, and if the post type is not shown in the
+ * REST API, then it won't work with the block editor.
+ *
+ * @since 5.0.0
+ *
+ * @param string $post_type The post type.
+ * @return bool Whether the post type can be edited with the block editor.
+ */
+function use_block_editor_for_post_type( $post_type ) {
+	if ( ! post_type_exists( $post_type ) ) {
+		return false;
+	}
+
+	if ( ! post_type_supports( $post_type, 'editor' ) ) {
+		return false;
+	}
+
+	$post_type_object = get_post_type_object( $post_type );
+	if ( $post_type_object && ! $post_type_object->show_in_rest ) {
+		return false;
+	}
+
+	/**
+	 * Filter whether a post is able to be edited in the block editor.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param bool   $use_block_editor  Whether the post type can be edited or not. Default true.
+	 * @param string $post_type         The post type being checked.
+	 */
+	return apply_filters( 'use_block_editor_for_post_type', true, $post_type );
+}
+
+/**
+ * Returns all the block categories that will be shown in the block editor.
+ *
+ * @since 5.0.0
+ *
+ * @param WP_Post $post Post object.
+ * @return array Array of block categories.
+ */
+function get_block_categories( $post ) {
+	$default_categories = array(
+		array(
+			'slug'  => 'common',
+			'title' => __( 'Common Blocks' ),
+			'icon'  => 'screenoptions',
+		),
+		array(
+			'slug'  => 'formatting',
+			'title' => __( 'Formatting' ),
+			'icon'  => null,
+		),
+		array(
+			'slug'  => 'layout',
+			'title' => __( 'Layout Elements' ),
+			'icon'  => null,
+		),
+		array(
+			'slug'  => 'widgets',
+			'title' => __( 'Widgets' ),
+			'icon'  => null,
+		),
+		array(
+			'slug'  => 'embed',
+			'title' => __( 'Embeds' ),
+			'icon'  => null,
+		),
+		array(
+			'slug'  => 'reusable',
+			'title' => __( 'Reusable Blocks' ),
+			'icon'  => null,
+		),
+	);
+
+	/**
+	 * Filter the default array of block categories.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param array   $default_categories Array of block categories.
+	 * @param WP_Post $post               Post being loaded.
+	 */
+	return apply_filters( 'block_categories', $default_categories, $post );
+}
+
+/**
+ * Prepares server-registered blocks for the block editor.
+ *
+ * Returns an associative array of registered block data keyed by block name. Data includes properties
+ * of a block relevant for client registration.
+ *
+ * @since 5.0.0
+ *
+ * @return array An associative array of registered block data.
+ */
+function get_block_editor_server_block_settings() {
+	$block_registry = WP_Block_Type_Registry::get_instance();
+	$blocks         = array();
+	$keys_to_pick   = array( 'title', 'description', 'icon', 'category', 'keywords', 'supports', 'attributes' );
+
+	foreach ( $block_registry->get_all_registered() as $block_name => $block_type ) {
+		foreach ( $keys_to_pick as $key ) {
+			if ( ! isset( $block_type->{ $key } ) ) {
+				continue;
+			}
+
+			if ( ! isset( $blocks[ $block_name ] ) ) {
+				$blocks[ $block_name ] = array();
+			}
+
+			$blocks[ $block_name ][ $key ] = $block_type->{ $key };
+		}
+	}
+
+	return $blocks;
+}
+
+/**
+ * Renders the meta boxes forms.
+ *
+ * @since 5.0.0
+ */
+function the_block_editor_meta_boxes() {
+	global $post, $current_screen, $wp_meta_boxes;
+
+	// Handle meta box state.
+	$_original_meta_boxes = $wp_meta_boxes;
+
+	/**
+	 * Fires right before the meta boxes are rendered.
+	 *
+	 * This allows for the filtering of meta box data, that should already be
+	 * present by this point. Do not use as a means of adding meta box data.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param array $wp_meta_boxes Global meta box state.
+	 */
+	$wp_meta_boxes = apply_filters( 'filter_block_editor_meta_boxes', $wp_meta_boxes );
+	$locations     = array( 'side', 'normal', 'advanced' );
+	$priorities    = array( 'high', 'sorted', 'core', 'default', 'low' );
+
+	// Render meta boxes.
+	?>
+	<form class="metabox-base-form">
+	<?php the_block_editor_meta_box_post_form_hidden_fields( $post ); ?>
+	</form>
+	<?php foreach ( $locations as $location ) : ?>
+		<form class="metabox-location-<?php echo esc_attr( $location ); ?>">
+			<div id="poststuff" class="sidebar-open">
+				<div id="postbox-container-2" class="postbox-container">
+					<?php
+					do_meta_boxes(
+						$current_screen,
+						$location,
+						$post
+					);
+					?>
+				</div>
+			</div>
+		</form>
+	<?php endforeach; ?>
+	<?php
+
+	$meta_boxes_per_location = array();
+	foreach ( $locations as $location ) {
+		$meta_boxes_per_location[ $location ] = array();
+
+		if ( ! isset( $wp_meta_boxes[ $current_screen->id ][ $location ] ) ) {
+			continue;
+		}
+
+		foreach ( $priorities as $priority ) {
+			if ( ! isset( $wp_meta_boxes[ $current_screen->id ][ $location ][ $priority ] ) ) {
+				continue;
+			}
+
+			$meta_boxes = (array) $wp_meta_boxes[ $current_screen->id ][ $location ][ $priority ];
+			foreach ( $meta_boxes as $meta_box ) {
+				if ( false == $meta_box || ! $meta_box['title'] ) {
+					continue;
+				}
+
+				$meta_boxes_per_location[ $location ][] = array(
+					'id'    => $meta_box['id'],
+					'title' => $meta_box['title'],
+				);
+			}
+		}
+	}
+
+	/**
+	 * Sadly we probably can not add this data directly into editor settings.
+	 *
+	 * Some meta boxes need admin_head to fire for meta box registry.
+	 * admin_head fires after admin_enqueue_scripts, which is where we create our
+	 * editor instance.
+	 */
+	$script = 'window._wpLoadBlockEditor.then( function() {
+		wp.data.dispatch( \'core/edit-post\' ).setAvailableMetaBoxesPerLocation( ' . wp_json_encode( $meta_boxes_per_location ) . ' );
+	} );';
+
+	wp_add_inline_script( 'wp-edit-post', $script );
+
+	/**
+	 * When `wp-edit-post` is output in the `<head>`, the inline script needs to be manually printed. Otherwise,
+	 * meta boxes will not display because inline scripts for `wp-edit-post` will not be printed again after this point.
+	 */
+	if ( wp_script_is( 'wp-edit-post', 'done' ) ) {
+		printf( "<script type='text/javascript'>\n%s\n</script>\n", trim( $script ) );
+	}
+
+	// Reset meta box data.
+	$wp_meta_boxes = $_original_meta_boxes;
+}
+
+/**
+ * Renders the hidden form required for the meta boxes form.
+ *
+ * @since 5.0.0
+ *
+ * @param WP_Post $post Current post object.
+ */
+function the_block_editor_meta_box_post_form_hidden_fields( $post ) {
+	$form_extra = '';
+	if ( 'auto-draft' === $post->post_status ) {
+		$form_extra .= "<input type='hidden' id='auto_draft' name='auto_draft' value='1' />";
+	}
+	$form_action  = 'editpost';
+	$nonce_action = 'update-post_' . $post->ID;
+	$form_extra  .= "<input type='hidden' id='post_ID' name='post_ID' value='" . esc_attr( $post->ID ) . "' />";
+	$referer      = wp_get_referer();
+	$current_user = wp_get_current_user();
+	$user_id      = $current_user->ID;
+	wp_nonce_field( $nonce_action );
+	?>
+	<input type="hidden" id="user-id" name="user_ID" value="<?php echo (int) $user_id; ?>" />
+	<input type="hidden" id="hiddenaction" name="action" value="<?php echo esc_attr( $form_action ); ?>" />
+	<input type="hidden" id="originalaction" name="originalaction" value="<?php echo esc_attr( $form_action ); ?>" />
+	<input type="hidden" id="post_type" name="post_type" value="<?php echo esc_attr( $post->post_type ); ?>" />
+	<input type="hidden" id="original_post_status" name="original_post_status" value="<?php echo esc_attr( $post->post_status ); ?>" />
+	<input type="hidden" id="referredby" name="referredby" value="<?php echo $referer ? esc_url( $referer ) : ''; ?>" />
+
+	<?php
+	if ( 'draft' !== get_post_status( $post ) ) {
+		wp_original_referer_field( true, 'previous' );
+	}
+	echo $form_extra;
+	wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
+	wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
+	// Permalink title nonce.
+	wp_nonce_field( 'samplepermalink', 'samplepermalinknonce', false );
 }
