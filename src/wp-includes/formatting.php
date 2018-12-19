@@ -458,11 +458,6 @@ function wpautop( $pee, $br = true ) {
 		return '';
 	}
 
-	// We don't need to autop posts with blocks in them.
-	if ( has_blocks( $pee ) ) {
-		return $pee;
-	}
-
 	// Just to make things a little easier, pad the end.
 	$pee = $pee . "\n";
 
@@ -3640,7 +3635,7 @@ function wp_trim_excerpt( $text = '' ) {
 		$text = get_the_content( '' );
 
 		$text = strip_shortcodes( $text );
-		$text = strip_dynamic_blocks( $text );
+		$text = excerpt_remove_blocks( $text );
 
 		/** This filter is documented in wp-includes/post-template.php */
 		$text = apply_filters( 'the_content', $text );

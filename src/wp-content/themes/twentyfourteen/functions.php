@@ -76,6 +76,9 @@ if ( ! function_exists( 'twentyfourteen_setup' ) ) :
 		// Load default block styles.
 		add_theme_support( 'wp-block-styles' );
 
+		// Add support for responsive embeds.
+		add_theme_support( 'responsive-embeds' );
+
 		// Add support for custom color scheme.
 		add_theme_support(
 			'editor-color-palette',
@@ -386,7 +389,7 @@ function twentyfourteen_resource_hints( $urls, $relation_type ) {
 add_filter( 'wp_resource_hints', 'twentyfourteen_resource_hints', 10, 2 );
 
 /**
- * Enqueue editor styles for Gutenberg
+ * Enqueue styles for the block-based editor.
  *
  * @since Twenty Fourteen 2.3
  */

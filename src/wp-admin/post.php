@@ -200,7 +200,7 @@ switch ( $action ) {
 
 		// Update the thumbnail filename
 		$newmeta          = wp_get_attachment_metadata( $post_id, true );
-		$newmeta['thumb'] = $_POST['thumb'];
+		$newmeta['thumb'] = wp_basename( $_POST['thumb'] );
 
 		wp_update_attachment_metadata( $post_id, $newmeta );
 
@@ -310,6 +310,18 @@ switch ( $action ) {
 		$url = post_preview();
 
 		wp_redirect( $url );
+		exit();
+
+	case 'toggle-custom-fields':
+		check_admin_referer( 'toggle-custom-fields' );
+
+		$current_user_id = get_current_user_id();
+		if ( $current_user_id ) {
+			$enable_custom_fields = (bool) get_user_meta( $current_user_id, 'enable_custom_fields', true );
+			update_user_meta( $current_user_id, 'enable_custom_fields', ! $enable_custom_fields );
+		}
+
+		wp_safe_redirect( wp_get_referer() );
 		exit();
 
 	default:

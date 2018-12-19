@@ -46,6 +46,9 @@ class WP_Test_Block_Render extends WP_UnitTestCase {
 		if ( $registry->is_registered( 'core/test' ) ) {
 			$registry->unregister( 'core/test' );
 		}
+		if ( $registry->is_registered( 'core/dynamic' ) ) {
+			$registry->unregister( 'core/dynamic' );
+		}
 	}
 
 	/**
@@ -75,11 +78,80 @@ class WP_Test_Block_Render extends WP_UnitTestCase {
 		// Block rendering add some extra blank lines, but we're not worried about them.
 		$block_filtered_content = preg_replace( "/\n{2,}/", "\n", $block_filtered_content );
 
-		$this->assertEquals( $classic_filtered_content, $block_filtered_content );
+		remove_shortcode( 'someshortcode' );
+
+		$this->assertEquals( trim( $classic_filtered_content ), trim( $block_filtered_content ) );
 	}
 
 	function handle_shortcode( $atts, $content ) {
 		return $content;
+	}
+
+	public function test_can_nest_at_least_so_deep() {
+		$minimum_depth = 99;
+
+		$content = 'deep inside';
+		for ( $i = 0; $i < $minimum_depth; $i++ ) {
+			$content = '<!-- wp:core/test -->' . $content . '<!-- /wp:core/test -->';
+		}
+
+		$this->assertEquals( 'deep inside', do_blocks( $content ) );
+	}
+
+	public function test_can_nest_at_least_so_deep_with_dynamic_blocks() {
+		$minimum_depth = 99;
+
+		$content = '0';
+		for ( $i = 0; $i < $minimum_depth; $i++ ) {
+			$content = '<!-- wp:core/test -->' . $content . '<!-- /wp:core/test -->';
+		}
+
+		register_block_type(
+			'core/test',
+			array(
+				'render_callback' => array(
+					$this,
+					'render_dynamic_incrementer',
+				),
+			)
+		);
+
+		$this->assertEquals( $minimum_depth, (int) do_blocks( $content ) );
+	}
+
+	public function render_dynamic_incrementer( $attrs, $content ) {
+		return (string) ( 1 + (int) $content );
+	}
+
+	/**
+	 * @ticket 45290
+	 */
+	public function test_blocks_arent_autopeed() {
+		$expected_content = 'test';
+		$test_content     = "<!-- wp:fake/block -->\n$expected_content\n<!-- /wp:fake/block -->";
+
+		$current_priority = has_action( 'the_content', 'wpautop' );
+
+		$filtered_content = trim( apply_filters( 'the_content', $test_content ) );
+
+		$this->assertEquals( $expected_content, $filtered_content );
+
+		// Check that wpautop() is still defined in the same place.
+		$this->assertSame( $current_priority, has_action( 'the_content', 'wpautop' ) );
+		// ... and that the restore function has removed itself.
+		$this->assertFalse( has_action( 'the_content', '_restore_wpautop_hook' ) );
+
+		$test_content     = 'test';
+		$expected_content = "<p>$test_content</p>";
+
+		$current_priority = has_action( 'the_content', 'wpautop' );
+
+		$filtered_content = trim( apply_filters( 'the_content', $test_content ) );
+
+		$this->assertEquals( $expected_content, $filtered_content );
+
+		$this->assertSame( $current_priority, has_action( 'the_content', 'wpautop' ) );
+		$this->assertFalse( has_action( 'the_content', '_restore_wpautop_hook' ) );
 	}
 
 	/**
@@ -211,6 +283,72 @@ class WP_Test_Block_Render extends WP_UnitTestCase {
 		$this->assertInternalType( 'string', $rendered );
 	}
 
+	public function test_dynamic_block_gets_inner_html() {
+		register_block_type(
+			'core/dynamic',
+			array(
+				'render_callback' => array(
+					$this,
+					'render_serialize_dynamic_block',
+				),
+			)
+		);
+
+		$output = do_blocks( '<!-- wp:dynamic -->inner<!-- /wp:dynamic -->' );
+
+		$data = unserialize( base64_decode( $output ) );
+
+		$this->assertEquals( 'inner', $data[1] );
+	}
+
+	public function test_dynamic_block_gets_rendered_inner_blocks() {
+		register_block_type(
+			'core/test',
+			array(
+				'render_callback' => array(
+					$this,
+					'render_test_block_numeric',
+				),
+			)
+		);
+
+		register_block_type(
+			'core/dynamic',
+			array(
+				'render_callback' => array(
+					$this,
+					'render_serialize_dynamic_block',
+				),
+			)
+		);
+
+		$output = do_blocks( '<!-- wp:dynamic -->before<!-- wp:test /-->after<!-- /wp:dynamic -->' );
+
+		$data = unserialize( base64_decode( $output ) );
+
+		$this->assertEquals( 'before10after', $data[1] );
+	}
+
+	public function test_dynamic_block_gets_rendered_inner_dynamic_blocks() {
+		register_block_type(
+			'core/dynamic',
+			array(
+				'render_callback' => array(
+					$this,
+					'render_serialize_dynamic_block',
+				),
+			)
+		);
+
+		$output = do_blocks( '<!-- wp:dynamic -->before<!-- wp:dynamic -->deep inner<!-- /wp:dynamic -->after<!-- /wp:dynamic -->' );
+
+		$data = unserialize( base64_decode( $output ) );
+
+		$inner = $this->render_serialize_dynamic_block( array(), 'deep inner' );
+
+		$this->assertEquals( $data[1], 'before' . $inner . 'after' );
+	}
+
 	/**
 	 * Helper function to remove relative paths and extension from a filename, leaving just the fixture name.
 	 *
@@ -274,6 +412,17 @@ class WP_Test_Block_Render extends WP_UnitTestCase {
 	 */
 	public function render_test_block_numeric() {
 		return 10;
+	}
+
+	/**
+	 * Test block rendering function, returning base64 encoded serialised value.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @return string Block output.
+	 */
+	public function render_serialize_dynamic_block( $attributes, $content ) {
+		return base64_encode( serialize( array( $attributes, $content ) ) );
 	}
 
 	/**

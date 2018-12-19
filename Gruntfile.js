@@ -10,6 +10,7 @@ module.exports = function(grunt) {
 		BUILD_DIR = 'build/',
  		BANNER_TEXT = '/*! This file is auto-generated */',
 		autoprefixer = require( 'autoprefixer' ),
+		nodesass = require( 'node-sass' ),
 		phpUnitWatchGroup = grunt.option( 'group' ),
 		buildFiles = [
 			'*.php',
@@ -104,7 +105,11 @@ module.exports = function(grunt) {
 		clean: {
 			plugins: [BUILD_DIR + 'wp-content/plugins'],
 			themes: [BUILD_DIR + 'wp-content/themes'],
-			all: cleanFiles,
+			all: [
+				cleanFiles,
+				SOURCE_DIR + 'wp-includes/js/dist',
+				SOURCE_DIR + 'wp-includes/css/dist'
+			],
 			js: [BUILD_DIR + 'wp-admin/js/', BUILD_DIR + 'wp-includes/js/'],
 			dynamic: {
 				dot: true,
@@ -137,6 +142,7 @@ module.exports = function(grunt) {
 							'!js/**', // JavaScript is extracted into separate copy tasks.
 							'!.{svn,git}', // Exclude version control folders.
 							'!wp-includes/version.php', // Exclude version.php
+							'!**/*.map', // The build doesn't need .map files.
 							'!index.php', '!wp-admin/index.php',
 							'!_index.php', '!wp-admin/_index.php'
 						] ),
@@ -371,6 +377,7 @@ module.exports = function(grunt) {
 				ext: '.css',
 				src: ['wp-admin/css/colors/*/colors.scss'],
 				options: {
+					implementation: nodesass,
 					outputStyle: 'expanded'
 				}
 			}
@@ -389,6 +396,15 @@ module.exports = function(grunt) {
 					'!wp-admin/css/wp-admin*.css',
 					'wp-includes/css/*.css',
 					'wp-includes/js/mediaelement/wp-mediaelement.css'
+				]
+			},
+			dist: {
+				expand: true,
+				cwd: BUILD_DIR,
+				dest: BUILD_DIR,
+				ext: '.min.css',
+				src: [
+					'wp-includes/css/dist/*/*.css'
 				]
 			},
 			rtl: {
@@ -704,6 +720,7 @@ module.exports = function(grunt) {
 		},
 		webpack: {
 			prod: webpackConfig( { environment: 'production' } ),
+			devProdTarget: webpackConfig( { environment: 'development', forceBuildTarget: 'build/wp-includes' } ),
 			dev: webpackConfig( { environment: 'development' } ),
 			watch: webpackConfig( { environment: 'development', watch: true } )
 		},
@@ -1360,7 +1377,8 @@ module.exports = function(grunt) {
 		'includes:embed',
 		'usebanner',
 		'webpack:prod',
-		'webpack:dev',
+		'webpack:devProdTarget',
+		'cssmin:dist',
 		'jsvalidate:build'
 	] );
 
