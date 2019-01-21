@@ -100,12 +100,6 @@ add_action( 'user_register', array( 'WP_Internal_Pointers', 'dismiss_pointers_fo
 add_action( 'customize_controls_print_footer_scripts', 'customize_themes_print_templates' );
 
 // Theme Install hooks.
-// add_action('install_themes_dashboard', 'install_themes_dashboard');
-// add_action('install_themes_upload', 'install_themes_upload', 10, 0);
-// add_action('install_themes_search', 'display_themes');
-// add_action('install_themes_featured', 'display_themes');
-// add_action('install_themes_new', 'display_themes');
-// add_action('install_themes_updated', 'display_themes');
 add_action( 'install_themes_pre_theme-information', 'install_theme_information' );
 
 // User hooks.
@@ -123,6 +117,8 @@ add_action( 'load-plugins.php', 'wp_plugin_update_rows', 20 ); // After wp_updat
 add_action( 'load-themes.php', 'wp_theme_update_rows', 20 ); // After wp_update_themes() is called.
 
 add_action( 'admin_notices', 'update_nag', 3 );
+add_action( 'admin_notices', 'paused_plugins_notice', 5 );
+add_action( 'admin_notices', 'paused_themes_notice', 5 );
 add_action( 'admin_notices', 'maintenance_nag', 10 );
 
 add_filter( 'update_footer', 'core_update_footer' );

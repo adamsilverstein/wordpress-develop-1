@@ -1626,9 +1626,6 @@ function wp_dashboard_php_nag() {
 		$msg = __( 'WordPress has detected that your site is running on an outdated version of PHP.' );
 	}
 
-	$update_url  = wp_get_update_php_url();
-	$default_url = wp_get_default_update_php_url();
-
 	?>
 	<p><?php echo $msg; ?></p>
 
@@ -1639,7 +1636,7 @@ function wp_dashboard_php_nag() {
 		<?php
 		printf(
 			'<a class="button button-primary" href="%1$s" target="_blank" rel="noopener noreferrer">%2$s <span class="screen-reader-text">%3$s</span><span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
-			esc_url( $update_url ),
+			esc_url( wp_get_update_php_url() ),
 			__( 'Learn more about updating PHP' ),
 			/* translators: accessibility text */
 			__( '(opens in a new tab)' )
@@ -1648,19 +1645,7 @@ function wp_dashboard_php_nag() {
 	</p>
 	<?php
 
-	if ( $update_url !== $default_url ) {
-		?>
-		<p class="description">
-			<?php
-			printf(
-				/* translators: %s: default Update PHP page URL */
-				__( 'This resource is provided by your web host, and is specific to your site. For more information, <a href="%s" target="_blank">see the official WordPress documentation</a>.' ),
-				esc_url( $default_url )
-			);
-			?>
-		</p>
-		<?php
-	}
+	wp_update_php_annotation();
 }
 
 /**
@@ -1766,6 +1751,7 @@ function wp_welcome_panel() {
 		<?php else : ?>
 			<li><?php printf( '<a href="%s" class="welcome-icon welcome-write-blog">' . __( 'Write your first blog post' ) . '</a>', admin_url( 'post-new.php' ) ); ?></li>
 			<li><?php printf( '<a href="%s" class="welcome-icon welcome-add-page">' . __( 'Add an About page' ) . '</a>', admin_url( 'post-new.php?post_type=page' ) ); ?></li>
+			<li><?php printf( '<a href="%s" class="welcome-icon welcome-setup-home">' . __( 'Set up your homepage' ) . '</a>', current_user_can( 'customize' ) ? add_query_arg( 'autofocus[section]', 'static_front_page', admin_url( 'customize.php' ) ) : admin_url( 'options-reading.php' ) ); ?></li>
 		<?php endif; ?>
 			<li><?php printf( '<a href="%s" class="welcome-icon welcome-view-site">' . __( 'View your site' ) . '</a>', home_url( '/' ) ); ?></li>
 		</ul>

@@ -122,7 +122,6 @@ module.exports = function(grunt) {
 				cwd: WORKING_DIR,
 				src: []
 			},
-			tinymce: ['<%= concat.tinymce.dest %>'],
 			qunit: ['tests/qunit/compiled.html']
 		},
 		file_append: {
@@ -164,19 +163,27 @@ module.exports = function(grunt) {
 				]
 			},
 			'npm-packages': {
-				files: {
-					[ WORKING_DIR + 'wp-includes/js/backbone.js' ]: [ './node_modules/backbone/backbone.js' ],
-					[ WORKING_DIR + 'wp-includes/js/hoverIntent.js' ]: [ './node_modules/jquery-hoverintent/jquery.hoverIntent.js' ],
-					[ WORKING_DIR + 'wp-includes/js/imagesloaded.min.js' ]: [ './node_modules/imagesloaded/imagesloaded.pkgd.min.js' ],
-					[ WORKING_DIR + 'wp-includes/js/jquery/jquery-migrate.js' ]: [ './node_modules/jquery-migrate/dist/jquery-migrate.js' ],
-					[ WORKING_DIR + 'wp-includes/js/jquery/jquery-migrate.min.js' ]: [ './node_modules/jquery-migrate/dist/jquery-migrate.min.js' ],
-					[ WORKING_DIR + 'wp-includes/js/jquery/jquery.form.js' ]: [ './node_modules/jquery-form/src/jquery.form.js' ],
-					[ WORKING_DIR + 'wp-includes/js/jquery/jquery.form.min.js' ]: [ './node_modules/jquery-form/dist/jquery.form.min.js' ],
-					[ WORKING_DIR + 'wp-includes/js/jquery/jquery.js' ]: [ './node_modules/jquery/dist/jquery.min.js' ],
-					[ WORKING_DIR + 'wp-includes/js/masonry.min.js' ]: [ './node_modules/masonry-layout/dist/masonry.pkgd.min.js' ],
-					[ WORKING_DIR + 'wp-includes/js/twemoji.js' ]: [ './node_modules/twemoji/2/twemoji.js' ],
-					[ WORKING_DIR + 'wp-includes/js/underscore.min.js' ]: [ './node_modules/underscore/underscore-min.js' ]
-				}
+				files: [
+					{
+						[ WORKING_DIR + 'wp-includes/js/backbone.js' ]: [ './node_modules/backbone/backbone.js' ],
+						[ WORKING_DIR + 'wp-includes/js/hoverIntent.js' ]: [ './node_modules/jquery-hoverintent/jquery.hoverIntent.js' ],
+						[ WORKING_DIR + 'wp-includes/js/imagesloaded.min.js' ]: [ './node_modules/imagesloaded/imagesloaded.pkgd.min.js' ],
+						[ WORKING_DIR + 'wp-includes/js/jquery/jquery-migrate.js' ]: [ './node_modules/jquery-migrate/dist/jquery-migrate.js' ],
+						[ WORKING_DIR + 'wp-includes/js/jquery/jquery-migrate.min.js' ]: [ './node_modules/jquery-migrate/dist/jquery-migrate.min.js' ],
+						[ WORKING_DIR + 'wp-includes/js/jquery/jquery.form.js' ]: [ './node_modules/jquery-form/src/jquery.form.js' ],
+						[ WORKING_DIR + 'wp-includes/js/jquery/jquery.form.min.js' ]: [ './node_modules/jquery-form/dist/jquery.form.min.js' ],
+						[ WORKING_DIR + 'wp-includes/js/jquery/jquery.js' ]: [ './node_modules/jquery/dist/jquery.min.js' ],
+						[ WORKING_DIR + 'wp-includes/js/masonry.min.js' ]: [ './node_modules/masonry-layout/dist/masonry.pkgd.min.js' ],
+						[ WORKING_DIR + 'wp-includes/js/twemoji.js' ]: [ './node_modules/twemoji/2/twemoji.js' ],
+						[ WORKING_DIR + 'wp-includes/js/underscore.js' ]: [ './node_modules/underscore/underscore.js' ],
+					},
+					{
+						expand: true,
+						cwd: './node_modules/jquery-ui/ui/',
+						src: '*.js',
+						dest: SOURCE_DIR + 'wp-includes/js/jquery/ui/'
+					}
+				]
 			},
 			'vendor-js': {
 				files: [
@@ -211,7 +218,14 @@ module.exports = function(grunt) {
 							'suggest*'
 						],
 						dest: WORKING_DIR + 'wp-includes/js/jquery/'
-					}
+					},
+					{
+						expand: true,
+						cwd: SOURCE_DIR + 'js/_enqueues/vendor/tinymce/',
+						src: 'tinymce.js',
+						dest: SOURCE_DIR + 'wp-includes/js/tinymce/'
+					},
+
 				]
 			},
 			'admin-js': {
@@ -746,16 +760,6 @@ module.exports = function(grunt) {
 					WORKING_DIR + 'wp-includes/js/wp-emoji.min.js'
 				],
 				dest: WORKING_DIR + 'wp-includes/js/wp-emoji-release.min.js'
-			}
-		},
-		compress: {
-			tinymce: {
-				options: {
-					mode: 'gzip',
-					level: 9
-				},
-				src: '<%= concat.tinymce.dest %>',
-				dest: WORKING_DIR + 'wp-includes/js/tinymce/wp-tinymce.js.gz'
 			}
 		},
 		patch:{
@@ -1331,12 +1335,6 @@ module.exports = function(grunt) {
 		'uglify:imgareaselect'
 	] );
 
-	grunt.registerTask( 'build:tinymce', [
-		'concat:tinymce',
-		'compress:tinymce',
-		'clean:tinymce'
-	] );
-
 	grunt.registerTask( 'build:js', [
 		'clean:js',
 		'webpack:prod',
@@ -1344,7 +1342,7 @@ module.exports = function(grunt) {
 		'copy:js',
 		'file_append',
 		'uglify:all',
-		'build:tinymce',
+		'concat:tinymce',
 		'concat:emoji',
 		'jsvalidate:build'
 	] );
