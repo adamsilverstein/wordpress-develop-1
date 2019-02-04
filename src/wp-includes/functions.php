@@ -2638,15 +2638,17 @@ function wp_check_filetype_and_ext( $file, $filename, $mimes = null ) {
 	 * Filters the "real" file type of the given file.
 	 *
 	 * @since 3.0.0
+	 * @since 5.1.0 The $real_mime parameter was added.
 	 *
-	 * @param array  $wp_check_filetype_and_ext File data array containing 'ext', 'type', and
-	 *                                          'proper_filename' keys.
-	 * @param string $file                      Full path to the file.
-	 * @param string $filename                  The name of the file (may differ from $file due to
-	 *                                          $file being in a tmp directory).
-	 * @param array  $mimes                     Key is the file extension with value as the mime type.
+	 * @param array       $wp_check_filetype_and_ext File data array containing 'ext', 'type', and
+	 *                                               'proper_filename' keys.
+	 * @param string      $file                      Full path to the file.
+	 * @param string      $filename                  The name of the file (may differ from $file due to
+	 *                                               $file being in a tmp directory).
+	 * @param array       $mimes                     Key is the file extension with value as the mime type.
+	 * @param string|bool $real_mime                 The actual mime type or false if the type cannot be determined.
 	 */
-	return apply_filters( 'wp_check_filetype_and_ext', compact( 'ext', 'type', 'proper_filename' ), $file, $filename, $mimes );
+	return apply_filters( 'wp_check_filetype_and_ext', compact( 'ext', 'type', 'proper_filename' ), $file, $filename, $mimes, $real_mime );
 }
 
 /**
@@ -2933,7 +2935,7 @@ function wp_nonce_ays( $action ) {
  * @since 2.0.4
  * @since 4.1.0 The `$title` and `$args` parameters were changed to optionally accept
  *              an integer to be used as the response code.
- * @since 5.1.0 The `$link_url` and `$link_text` arguments were added.
+ * @since 5.1.0 The `$link_url`, `$link_text`, and `$exit` arguments were added.
  *
  * @param string|WP_Error  $message Optional. Error message. If this is a WP_Error object,
  *                                  and not an Ajax or XML-RPC request, the error's messages are used.
@@ -2957,6 +2959,7 @@ function wp_nonce_ays( $action ) {
  *                                  Default is the value of is_rtl().
  *     @type string $code           Error code to use. Default is 'wp_die', or the main error code if $message
  *                                  is a WP_Error.
+ *     @type bool   $exit           Whether to exit the process after completion. Default true.
  * }
  */
 function wp_die( $message = '', $title = '', $args = array() ) {
@@ -3201,7 +3204,9 @@ function _default_wp_die_handler( $message, $title = '', $args = array() ) {
 </body>
 </html>
 	<?php
-	die();
+	if ( $r['exit'] ) {
+		die();
+	}
 }
 
 /**
@@ -3236,7 +3241,9 @@ function _json_wp_die_handler( $message, $title = '', $args = array() ) {
 	}
 
 	echo wp_json_encode( $data );
-	die();
+	if ( $r['exit'] ) {
+		die();
+	}
 }
 
 /**
@@ -3262,7 +3269,9 @@ function _xmlrpc_wp_die_handler( $message, $title = '', $args = array() ) {
 		$error = new IXR_Error( $r['response'], $message );
 		$wp_xmlrpc_server->output( $error->getXml() );
 	}
-	die();
+	if ( $r['exit'] ) {
+		die();
+	}
 }
 
 /**
@@ -3286,14 +3295,22 @@ function _ajax_wp_die_handler( $message, $title = '', $args = array() ) {
 
 	list( $message, $title, $r ) = _wp_die_process_input( $message, $title, $args );
 
-	if ( ! headers_sent() && null !== $r['response'] ) {
+	// This is intentional. For backward-compatibility, support passing null here.
+	if ( ! headers_sent() && null !== $args['response'] ) {
 		status_header( $r['response'] );
 	}
 
 	if ( is_scalar( $message ) ) {
-		die( (string) $message );
+		$message = (string) $message;
+	} else {
+		$message = '0';
 	}
-	die( '0' );
+
+	if ( $r['exit'] ) {
+		die( $message );
+	}
+
+	echo $message;
 }
 
 /**
@@ -3302,15 +3319,26 @@ function _ajax_wp_die_handler( $message, $title = '', $args = array() ) {
  * This is the handler for wp_die when processing APP requests.
  *
  * @since 3.4.0
+ * @since 5.1.0 Added the $title and $args parameters.
  * @access private
  *
- * @param string $message Optional. Response to print. Default empty.
+ * @param string       $message Optional. Response to print. Default empty.
+ * @param string       $title   Optional. Error title (unused). Default empty.
+ * @param string|array $args    Optional. Arguments to control behavior. Default empty array.
  */
-function _scalar_wp_die_handler( $message = '' ) {
-	if ( is_scalar( $message ) ) {
-		die( (string) $message );
+function _scalar_wp_die_handler( $message = '', $title = '', $args = array() ) {
+	list( $message, $title, $r ) = _wp_die_process_input( $message, $title, $args );
+
+	if ( $r['exit'] ) {
+		if ( is_scalar( $message ) ) {
+			die( (string) $message );
+		}
+		die();
 	}
-	die();
+
+	if ( is_scalar( $message ) ) {
+		echo (string) $message;
+	}
 }
 
 /**
@@ -3328,6 +3356,7 @@ function _wp_die_process_input( $message, $title = '', $args = array() ) {
 	$defaults = array(
 		'response'          => 0,
 		'code'              => '',
+		'exit'              => true,
 		'back_link'         => false,
 		'link_url'          => '',
 		'link_text'         => '',
@@ -3345,7 +3374,7 @@ function _wp_die_process_input( $message, $title = '', $args = array() ) {
 					$errors[] = array(
 						'code'    => $error_code,
 						'message' => $error_message,
-						'data'    => $error->get_error_data( $error_code ),
+						'data'    => $message->get_error_data( $error_code ),
 					);
 				}
 			}

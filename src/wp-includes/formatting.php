@@ -3065,6 +3065,11 @@ function wp_targeted_link_rel_callback( $matches ) {
 	 */
 	$rel = apply_filters( 'wp_targeted_link_rel', 'noopener noreferrer', $link_html );
 
+	// Avoid additional regex if the filter removes rel values.
+	if ( ! $rel ) {
+		return "<a $link_html>";
+	}
+
 	// Value with delimiters, spaces around are optional.
 	$attr_regex = '|rel\s*=\s*?(\\\\{0,1}["\'])(.*?)\\1|i';
 	preg_match( $attr_regex, $link_html, $rel_match );
@@ -3088,6 +3093,52 @@ function wp_targeted_link_rel_callback( $matches ) {
 	}
 
 	return "<a $link_html>";
+}
+
+/**
+ * Adds all filters modifying the rel attribute of targeted links.
+ *
+ * @since 5.1.0
+ */
+function wp_init_targeted_link_rel_filters() {
+	$filters = array(
+		'title_save_pre',
+		'content_save_pre',
+		'excerpt_save_pre',
+		'content_filtered_save_pre',
+		'pre_comment_content',
+		'pre_term_description',
+		'pre_link_description',
+		'pre_link_notes',
+		'pre_user_description',
+	);
+
+	foreach ( $filters as $filter ) {
+		add_filter( $filter, 'wp_targeted_link_rel' );
+	};
+}
+
+/**
+ * Removes all filters modifying the rel attribute of targeted links.
+ *
+ * @since 5.1.0
+ */
+function wp_remove_targeted_link_rel_filters() {
+	$filters = array(
+		'title_save_pre',
+		'content_save_pre',
+		'excerpt_save_pre',
+		'content_filtered_save_pre',
+		'pre_comment_content',
+		'pre_term_description',
+		'pre_link_description',
+		'pre_link_notes',
+		'pre_user_description',
+	);
+
+	foreach ( $filters as $filter ) {
+		remove_filter( $filter, 'wp_targeted_link_rel' );
+	};
 }
 
 /**
