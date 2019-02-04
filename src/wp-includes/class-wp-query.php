@@ -604,7 +604,7 @@ class WP_Query {
 	 *              Introduced `RAND(x)` syntax for `$orderby`, which allows an integer seed value to random sorts.
 	 * @since 4.6.0 Added 'post_name__in' support for `$orderby`. Introduced the `$lazy_load_term_meta` argument.
 	 * @since 4.9.0 Introduced the `$comment_count` parameter.
-	 * @since 5.0.0 Introduced the `$meta_compare_key` parameter.
+	 * @since 5.1.0 Introduced the `$meta_compare_key` parameter.
 	 *
 	 * @param string|array $query {
 	 *     Optional. Array or string of Query parameters.
@@ -1099,14 +1099,16 @@ class WP_Query {
 					$terms = preg_split( '/[+]+/', $term );
 					foreach ( $terms as $term ) {
 						$tax_query[] = array_merge(
-							$tax_query_defaults, array(
+							$tax_query_defaults,
+							array(
 								'terms' => array( $term ),
 							)
 						);
 					}
 				} else {
 					$tax_query[] = array_merge(
-						$tax_query_defaults, array(
+						$tax_query_defaults,
+						array(
 							'terms' => preg_split( '/[,]+/', $term ),
 						)
 					);
@@ -1428,7 +1430,8 @@ class WP_Query {
 		 * words into your language. Instead, look for and provide commonly accepted stopwords in your language.
 		 */
 		$words = explode(
-			',', _x(
+			',',
+			_x(
 				'about,an,are,as,at,be,by,com,for,from,how,in,is,it,of,on,or,that,the,this,to,was,what,when,where,who,will,with,www',
 				'Comma-separated list of search stopwords in your language'
 			)
@@ -1543,6 +1546,9 @@ class WP_Query {
 			'menu_order',
 			'comment_count',
 			'rand',
+			'post__in',
+			'post_parent__in',
+			'post_name__in',
 		);
 
 		$primary_meta_key   = '';
@@ -1573,6 +1579,8 @@ class WP_Query {
 			return false;
 		}
 
+		$orderby_clause = '';
+
 		switch ( $orderby ) {
 			case 'post_name':
 			case 'post_author':
@@ -1599,6 +1607,23 @@ class WP_Query {
 				break;
 			case 'meta_value_num':
 				$orderby_clause = "{$primary_meta_query['alias']}.meta_value+0";
+				break;
+			case 'post__in':
+				if ( ! empty( $this->query_vars['post__in'] ) ) {
+					$orderby_clause = "FIELD({$wpdb->posts}.ID," . implode( ',', array_map( 'absint', $this->query_vars['post__in'] ) ) . ')';
+				}
+				break;
+			case 'post_parent__in':
+				if ( ! empty( $this->query_vars['post_parent__in'] ) ) {
+					$orderby_clause = "FIELD( {$wpdb->posts}.post_parent," . implode( ', ', array_map( 'absint', $this->query_vars['post_parent__in'] ) ) . ' )';
+				}
+				break;
+			case 'post_name__in':
+				if ( ! empty( $this->query_vars['post_name__in'] ) ) {
+					$post_name__in        = array_map( 'sanitize_title_for_query', $this->query_vars['post_name__in'] );
+					$post_name__in_string = "'" . implode( "','", $post_name__in ) . "'";
+					$orderby_clause       = "FIELD( {$wpdb->posts}.post_name," . $post_name__in_string . ' )';
+				}
 				break;
 			default:
 				if ( array_key_exists( $orderby, $meta_clauses ) ) {
@@ -1683,14 +1708,14 @@ class WP_Query {
 	}
 
 	/**
-	 * Retrieve the posts based on query variables.
+	 * Retrieves an array of posts based on query variables.
 	 *
 	 * There are a few filters and actions that can be used to modify the post
 	 * database query.
 	 *
 	 * @since 1.5.0
 	 *
-	 * @return array List of posts.
+	 * @return WP_Post[]|int[] Array of post objects or post IDs.
 	 */
 	public function get_posts() {
 		global $wpdb;
@@ -1742,7 +1767,8 @@ class WP_Query {
 
 		if ( isset( $q['caller_get_posts'] ) ) {
 			_deprecated_argument(
-				'WP_Query', '3.1.0',
+				'WP_Query',
+				'3.1.0',
 				/* translators: 1: caller_get_posts, 2: ignore_sticky_posts */
 				sprintf(
 					__( '%1$s is deprecated. Use %2$s instead.' ),
@@ -2201,7 +2227,8 @@ class WP_Query {
 				$q['comment_count'] = array_merge(
 					array(
 						'compare' => '=',
-					), $q['comment_count']
+					),
+					$q['comment_count']
 				);
 
 				// Fallback for invalid compare operators is '='.
@@ -2234,6 +2261,12 @@ class WP_Query {
 			$q['order'] = $rand ? '' : $this->parse_order( $q['order'] );
 		}
 
+		// These values of orderby should ignore the 'order' parameter.
+		$force_asc = array( 'post__in', 'post_name__in', 'post_parent__in' );
+		if ( isset( $q['orderby'] ) && in_array( $q['orderby'], $force_asc, true ) ) {
+			$q['order'] = '';
+		}
+
 		// Order by.
 		if ( empty( $q['orderby'] ) ) {
 			/*
@@ -2247,12 +2280,6 @@ class WP_Query {
 			}
 		} elseif ( 'none' == $q['orderby'] ) {
 			$orderby = '';
-		} elseif ( $q['orderby'] == 'post__in' && ! empty( $post__in ) ) {
-			$orderby = "FIELD( {$wpdb->posts}.ID, $post__in )";
-		} elseif ( $q['orderby'] == 'post_parent__in' && ! empty( $post_parent__in ) ) {
-			$orderby = "FIELD( {$wpdb->posts}.post_parent, $post_parent__in )";
-		} elseif ( $q['orderby'] == 'post_name__in' && ! empty( $post_name__in ) ) {
-			$orderby = "FIELD( {$wpdb->posts}.post_name, $post_name__in )";
 		} else {
 			$orderby_array = array();
 			if ( is_array( $q['orderby'] ) ) {
@@ -3352,7 +3379,7 @@ class WP_Query {
 	 * @since 1.5.0
 	 *
 	 * @param string|array $query URL query string or array of query arguments.
-	 * @return array List of posts.
+	 * @return WP_Post[]|int[] Array of post objects or post IDs.
 	 */
 	public function query( $query ) {
 		$this->init();
@@ -4158,6 +4185,10 @@ class WP_Query {
 			$content = str_replace( "\n<!--nextpage-->\n", '<!--nextpage-->', $content );
 			$content = str_replace( "\n<!--nextpage-->", '<!--nextpage-->', $content );
 			$content = str_replace( "<!--nextpage-->\n", '<!--nextpage-->', $content );
+
+			// Remove the nextpage block delimiters, to avoid invalid block structures in the split content.
+			$content = str_replace( '<!-- wp:nextpage -->', '', $content );
+			$content = str_replace( '<!-- /wp:nextpage -->', '', $content );
 
 			// Ignore nextpage at the beginning of the content.
 			if ( 0 === strpos( $content, '<!--nextpage-->' ) ) {

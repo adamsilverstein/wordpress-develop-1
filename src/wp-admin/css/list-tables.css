@@ -243,12 +243,12 @@
 
 #the-comment-list tr:last-child th,
 #the-comment-list tr:last-child td {
-    box-shadow: none;
+	box-shadow: none;
 }
 
 #the-comment-list tr.unapproved + tr.approved th,
 #the-comment-list tr.unapproved + tr.approved td {
-    border-top: 1px solid rgba(0, 0, 0, 0.03);
+	border-top: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 /* table vim shortcuts */
@@ -351,7 +351,7 @@ td.plugin-title p {
 table.media .column-title .media-icon {
 	float: left;
 	min-height: 60px;
- 	margin: 0 9px 0 0;
+	margin: 0 9px 0 0;
 }
 
 table.media .column-title .media-icon img {
@@ -393,7 +393,7 @@ table.media .column-title .filename {
 }
 
 #commentsdiv .inside .row-actions {
-	line-height:18px;
+	line-height: 18px;
 }
 
 #commentsdiv .inside .column-author {
@@ -495,8 +495,8 @@ th.asc a:focus span.sorting-indicator:before {
 }
 
 .wp-list-table .toggle-row:focus:before {
-    box-shadow:
-    	0 0 0 1px #5b9dd9,
+	box-shadow:
+		0 0 0 1px #5b9dd9,
 		0 0 2px 1px rgba(30, 140, 190, .8);
 }
 
@@ -1373,7 +1373,7 @@ ul.cat-checklist {
 	margin-right: 0;
 }
 
-@media screen and ( min-width: 1600px ) {
+@media screen and (min-width: 1600px) and ( max-width: 2299px ) {
 	.plugin-card {
 		width: 30%;
 		width: calc( 33.1% - 8px );
@@ -1394,6 +1394,31 @@ ul.cat-checklist {
 	}
 
 	.plugin-card:nth-child(3n) {
+		margin-right: 0;
+	}
+}
+
+@media screen and (min-width: 2300px) {
+	.plugin-card {
+		width: 25%;
+		width: calc( 25% - 12px );
+	}
+
+	.plugin-card:nth-child(odd) {
+		clear: none;
+		margin-left: 8px;
+	}
+
+	.plugin-card:nth-child(even) {
+		margin-right: 8px;
+	}
+
+	.plugin-card:nth-child(4n+1) {
+		clear: both;
+		margin-left: 0;
+	}
+
+	.plugin-card:nth-child(4n) {
 		margin-right: 0;
 	}
 }
@@ -1506,12 +1531,18 @@ div.action-links,
 	color: #444;
 }
 
-.plugin-card .compatibility-incompatible:before {
+.plugin-card .column-compatibility .compatibility-incompatible:before {
 	content: "\f158";
+	color: #c62d2d;
 }
 
-.plugin-card .compatibility-compatible:before {
+.plugin-card .column-compatibility .compatibility-compatible:before {
 	content: "\f147";
+	color: #31843f;
+}
+
+.plugin-card .notice {
+	margin: 20px 20px 0 20px;
 }
 
 .plugin-icon {
@@ -1563,7 +1594,7 @@ div.action-links,
 /* =Media Queries
 -------------------------------------------------------------- */
 
-@media screen and ( max-width: 1100px ) and ( min-width: 782px ), ( max-width: 480px ) {
+@media screen and (max-width: 1100px) and (min-width: 782px), (max-width: 480px) {
 	.plugin-card .action-links {
 		position: static;
 		margin-left: 148px;
@@ -1599,7 +1630,7 @@ div.action-links,
 	}
 }
 
-@media screen and ( max-width: 782px ) {
+@media screen and (max-width: 782px) {
 	/* WP List Table Options & Filters */
 	.tablenav {
 		height: auto;
@@ -1758,6 +1789,11 @@ div.action-links,
 		display: block;
 	}
 
+	/* Comment author hidden via Screen Options */
+	.fixed .column-author.hidden ~ .column-comment .comment-author {
+		display: none;
+	}
+
 	#the-comment-list .is-expanded td {
 		box-shadow: none;
 	}
@@ -1833,6 +1869,30 @@ div.action-links,
 
 	.widefat * {
 		word-wrap: normal;
+	}
+
+	/* Make row actions more easy to select on mobile */
+	body:not(.plugins-php) .row-actions {
+		display: -ms-grid;
+		display: grid;
+		-ms-grid-columns: auto auto auto;
+		grid-template-columns: auto auto auto;
+		color: transparent;
+	}
+
+	.row-actions span {
+		padding: 4px 0;
+	}
+
+	.row-actions span a,
+	.row-actions span .button-link {
+		display: inline-block;
+		padding: 4px 0;
+	}
+
+	.row-actions span.approve:before,
+	.row-actions span.unapprove:before {
+		content: "| ";
 	}
 
 	/* Quick Edit and Bulk Edit */
@@ -1954,6 +2014,11 @@ div.action-links,
 		padding: 10px 9px; /* reset from other list tables that have a label at this width */
 	}
 
+	/* Plugin description hidden via Screen Options */
+	#wpbody-content .wp-list-table.plugins .desc.hidden {
+		display: none;
+	}
+
 	#wpbody-content .wp-list-table.plugins .column-description {
 		padding-top: 2px;
 	}
@@ -2068,9 +2133,15 @@ div.action-links,
 	}
 }
 
-@media screen and ( max-width: 480px ) {
+@media screen and (max-width: 480px) {
 	.tablenav-pages .current-page {
 		margin: 0;
+	}
+
+	/* Drop row actions to two columns on a small screen */
+	.row-actions:not(.plugins-php) {
+		-ms-grid-columns: auto auto;
+		grid-template-columns: auto auto;
 	}
 
 	.tablenav-pages .tablenav-paging-text {

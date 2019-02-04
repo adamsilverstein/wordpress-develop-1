@@ -68,11 +68,11 @@ function wp_fix_server_vars() {
 	// Fix for IIS when running with PHP ISAPI
 	if ( empty( $_SERVER['REQUEST_URI'] ) || ( PHP_SAPI != 'cgi-fcgi' && preg_match( '/^Microsoft-IIS\//', $_SERVER['SERVER_SOFTWARE'] ) ) ) {
 
-		// IIS Mod-Rewrite
 		if ( isset( $_SERVER['HTTP_X_ORIGINAL_URL'] ) ) {
+			// IIS Mod-Rewrite
 			$_SERVER['REQUEST_URI'] = $_SERVER['HTTP_X_ORIGINAL_URL'];
-		} // IIS Isapi_Rewrite
-		elseif ( isset( $_SERVER['HTTP_X_REWRITE_URL'] ) ) {
+		} elseif ( isset( $_SERVER['HTTP_X_REWRITE_URL'] ) ) {
+			// IIS Isapi_Rewrite
 			$_SERVER['REQUEST_URI'] = $_SERVER['HTTP_X_REWRITE_URL'];
 		} else {
 			// Use ORIG_PATH_INFO if there is no PATH_INFO
@@ -225,7 +225,7 @@ function wp_maintenance() {
 	if ( is_rtl() ) {
 		$dir_attr = ' dir="rtl"';
 	}
-?>
+	?>
 	<!DOCTYPE html>
 	<html xmlns="http://www.w3.org/1999/xhtml"<?php echo $dir_attr; ?>>
 	<head>
@@ -237,7 +237,7 @@ function wp_maintenance() {
 		<h1><?php _e( 'Briefly unavailable for scheduled maintenance. Check back in a minute.' ); ?></h1>
 	</body>
 	</html>
-<?php
+	<?php
 	die();
 }
 
@@ -307,12 +307,13 @@ function timer_stop( $display = 0, $precision = 3 ) {
  * from changing the global configuration setting. Defining `WP_DEBUG_DISPLAY`
  * as false will force errors to be hidden.
  *
- * When `WP_DEBUG_LOG` is true, errors will be logged to debug.log in the content
- * directory.
+ * When `WP_DEBUG_LOG` is true, errors will be logged to `wp-content/debug.log`.
+ * When `WP_DEBUG_LOG` is a valid path, errors will be logged to the specified file.
  *
  * Errors are never displayed for XML-RPC, REST, and Ajax requests.
  *
  * @since 3.0.0
+ * @since 5.1.0 `WP_DEBUG_LOG` can be a file path.
  * @access private
  */
 function wp_debug_mode() {
@@ -341,15 +342,23 @@ function wp_debug_mode() {
 			ini_set( 'display_errors', 0 );
 		}
 
-		if ( WP_DEBUG_LOG ) {
+		if ( in_array( strtolower( (string) WP_DEBUG_LOG ), array( 'true', '1' ), true ) ) {
+			$log_path = WP_CONTENT_DIR . '/debug.log';
+		} elseif ( is_string( WP_DEBUG_LOG ) ) {
+			$log_path = WP_DEBUG_LOG;
+		} else {
+			$log_path = false;
+		}
+
+		if ( $log_path ) {
 			ini_set( 'log_errors', 1 );
-			ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
+			ini_set( 'error_log', $log_path );
 		}
 	} else {
 		error_reporting( E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR );
 	}
 
-	if ( defined( 'XMLRPC_REQUEST' ) || defined( 'REST_REQUEST' ) || ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) || wp_doing_ajax() ) {
+	if ( defined( 'XMLRPC_REQUEST' ) || defined( 'REST_REQUEST' ) || ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) || wp_doing_ajax() || wp_is_json_request() ) {
 		@ini_set( 'display_errors', 0 );
 	}
 }
@@ -687,7 +696,36 @@ function wp_get_active_and_valid_plugins() {
 			$plugins[] = WP_PLUGIN_DIR . '/' . $plugin;
 		}
 	}
+
 	return $plugins;
+}
+
+/**
+ * Retrieves an array of active and valid themes.
+ *
+ * While upgrading or installing WordPress, no themes are returned.
+ *
+ * @since 5.1.0
+ * @access private
+ *
+ * @return array Array of paths to theme directories.
+ */
+function wp_get_active_and_valid_themes() {
+	global $pagenow;
+
+	$themes = array();
+
+	if ( wp_installing() && 'wp-activate.php' !== $pagenow ) {
+		return $themes;
+	}
+
+	if ( TEMPLATEPATH !== STYLESHEETPATH ) {
+		$themes[] = STYLESHEETPATH;
+	}
+
+	$themes[] = TEMPLATEPATH;
+
+	return $themes;
 }
 
 /**
@@ -1155,6 +1193,24 @@ function wp_doing_ajax() {
 }
 
 /**
+ * Determines whether the current request should use themes.
+ *
+ * @since 5.1.0
+ *
+ * @return bool True if themes should be used, false otherwise.
+ */
+function wp_using_themes() {
+	/**
+	 * Filters whether the current request should use themes.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @param bool $wp_using_themes Whether the current request should use themes.
+	 */
+	return apply_filters( 'wp_using_themes', defined( 'WP_USE_THEMES' ) && WP_USE_THEMES );
+}
+
+/**
  * Determines whether the current request is a WordPress cron request.
  *
  * @since 4.8.0
@@ -1249,4 +1305,25 @@ function wp_finalize_scraping_edited_file_errors( $scrape_key ) {
 		echo wp_json_encode( true );
 	}
 	echo "\n###### wp_scraping_result_end:$scrape_key ######\n";
+}
+
+/**
+ * Checks whether current request is a JSON request, or is expecting a JSON response.
+ *
+ * @since 5.0.0
+ *
+ * @return bool True if Accepts or Content-Type headers contain application/json, false otherwise.
+ */
+function wp_is_json_request() {
+
+	if ( isset( $_SERVER['HTTP_ACCEPT'] ) && false !== strpos( $_SERVER['HTTP_ACCEPT'], 'application/json' ) ) {
+		return true;
+	}
+
+	if ( isset( $_SERVER['CONTENT_TYPE'] ) && 'application/json' === $_SERVER['CONTENT_TYPE'] ) {
+		return true;
+	}
+
+	return false;
+
 }

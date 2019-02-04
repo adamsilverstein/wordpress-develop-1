@@ -381,7 +381,8 @@ function get_comment_count( $post_id = 0 ) {
 		FROM {$wpdb->comments}
 		{$where}
 		GROUP BY comment_approved
-	", ARRAY_A
+	",
+		ARRAY_A
 	);
 
 	$comment_count = array(
@@ -441,11 +442,7 @@ function get_comment_count( $post_id = 0 ) {
  * @return int|bool Meta ID on success, false on failure.
  */
 function add_comment_meta( $comment_id, $meta_key, $meta_value, $unique = false ) {
-	$added = add_metadata( 'comment', $comment_id, $meta_key, $meta_value, $unique );
-	if ( $added ) {
-		wp_cache_set( 'last_changed', microtime(), 'comment' );
-	}
-	return $added;
+	return add_metadata( 'comment', $comment_id, $meta_key, $meta_value, $unique );
 }
 
 /**
@@ -464,11 +461,7 @@ function add_comment_meta( $comment_id, $meta_key, $meta_value, $unique = false 
  * @return bool True on success, false on failure.
  */
 function delete_comment_meta( $comment_id, $meta_key, $meta_value = '' ) {
-	$deleted = delete_metadata( 'comment', $comment_id, $meta_key, $meta_value );
-	if ( $deleted ) {
-		wp_cache_set( 'last_changed', microtime(), 'comment' );
-	}
-	return $deleted;
+	return delete_metadata( 'comment', $comment_id, $meta_key, $meta_value );
 }
 
 /**
@@ -505,11 +498,7 @@ function get_comment_meta( $comment_id, $key = '', $single = false ) {
  * @return int|bool Meta ID if the key didn't exist, true on successful update, false on failure.
  */
 function update_comment_meta( $comment_id, $meta_key, $meta_value, $prev_value = '' ) {
-	$updated = update_metadata( 'comment', $comment_id, $meta_key, $meta_value, $prev_value );
-	if ( $updated ) {
-		wp_cache_set( 'last_changed', microtime(), 'comment' );
-	}
-	return $updated;
+	return update_metadata( 'comment', $comment_id, $meta_key, $meta_value, $prev_value );
 }
 
 /**
@@ -1780,6 +1769,35 @@ function wp_get_current_commenter() {
 }
 
 /**
+ * Get unapproved comment author's email.
+ *
+ * Used to allow the commenter to see their pending comment.
+ *
+ * @since 5.1.0
+ *
+ * @return string The unapproved comment author's email (when supplied).
+ */
+function wp_get_unapproved_comment_author_email() {
+	$commenter_email = '';
+
+	if ( ! empty( $_GET['unapproved'] ) && ! empty( $_GET['moderation-hash'] ) ) {
+		$comment_id = (int) $_GET['unapproved'];
+		$comment    = get_comment( $comment_id );
+
+		if ( $comment && hash_equals( $_GET['moderation-hash'], wp_hash( $comment->comment_date_gmt ) ) ) {
+			$commenter_email = $comment->comment_author_email;
+		}
+	}
+
+	if ( ! $commenter_email ) {
+		$commenter       = wp_get_current_commenter();
+		$commenter_email = $commenter['comment_author_email'];
+	}
+
+	return $commenter_email;
+}
+
+/**
  * Inserts a comment into the database.
  *
  * @since 2.0.0
@@ -2471,6 +2489,10 @@ function wp_update_comment_count_now( $post_id ) {
 	 * @param int $old     The old comment count.
 	 */
 	do_action( 'wp_update_comment_count', $post_id, $new, $old );
+
+	/** This action is documented in wp-includes/post.php */
+	do_action( "edit_post_{$post->post_type}", $post_id, $post );
+
 	/** This action is documented in wp-includes/post.php */
 	do_action( 'edit_post', $post_id, $post );
 
@@ -2516,7 +2538,8 @@ function discover_pingback_server_uri( $url, $deprecated = '' ) {
 	}
 
 	$response = wp_safe_remote_head(
-		$url, array(
+		$url,
+		array(
 			'timeout'     => 2,
 			'httpversion' => '1.0',
 		)
@@ -2537,7 +2560,8 @@ function discover_pingback_server_uri( $url, $deprecated = '' ) {
 
 	// Now do a GET since we're going to look in the html headers (and we're sure it's not a binary file)
 	$response = wp_safe_remote_get(
-		$url, array(
+		$url,
+		array(
 			'timeout'     => 2,
 			'httpversion' => '1.0',
 		)
@@ -2652,7 +2676,9 @@ function do_trackbacks( $post_id ) {
 				$wpdb->query(
 					$wpdb->prepare(
 						"UPDATE $wpdb->posts SET to_ping = TRIM(REPLACE(to_ping, %s,
-					'')) WHERE ID = %d", $tb_ping, $post->ID
+					'')) WHERE ID = %d",
+						$tb_ping,
+						$post->ID
 					)
 				);
 			}
@@ -3085,7 +3111,7 @@ function _close_comments_for_old_post( $open, $post_id ) {
  */
 function wp_handle_comment_submission( $comment_data ) {
 
-	$comment_post_ID = $comment_parent = 0;
+	$comment_post_ID = $comment_parent = $user_ID = 0;
 	$comment_author  = $comment_author_email = $comment_author_url = $comment_content = null;
 
 	if ( isset( $comment_data['comment_post_ID'] ) ) {
@@ -3249,7 +3275,7 @@ function wp_handle_comment_submission( $comment_data ) {
 	/**
 	 * Filters whether an empty comment should be allowed.
 	 *
-	 * @since 5.0.0
+	 * @since 5.1.0
 	 *
 	 * @param bool  $allow_empty_comment Whether to allow empty comments. Default false.
 	 * @param array $commentdata         Array of comment data to be sent to wp_insert_comment().
@@ -3440,6 +3466,7 @@ function wp_comments_personal_data_eraser( $email_address, $page = 1 ) {
 		)
 	);
 
+	/* translators: Name of a comment's author after being anonymized. */
 	$anon_author = __( 'Anonymous' );
 	$messages    = array();
 
@@ -3447,9 +3474,9 @@ function wp_comments_personal_data_eraser( $email_address, $page = 1 ) {
 		$anonymized_comment                         = array();
 		$anonymized_comment['comment_agent']        = '';
 		$anonymized_comment['comment_author']       = $anon_author;
-		$anonymized_comment['comment_author_email'] = wp_privacy_anonymize_data( 'email', $comment->comment_author_email );
+		$anonymized_comment['comment_author_email'] = '';
 		$anonymized_comment['comment_author_IP']    = wp_privacy_anonymize_data( 'ip', $comment->comment_author_IP );
-		$anonymized_comment['comment_author_url']   = wp_privacy_anonymize_data( 'url', $comment->comment_author_url );
+		$anonymized_comment['comment_author_url']   = '';
 		$anonymized_comment['user_id']              = 0;
 
 		$comment_id = (int) $comment->comment_ID;
@@ -3501,4 +3528,13 @@ function wp_comments_personal_data_eraser( $email_address, $page = 1 ) {
 		'messages'       => $messages,
 		'done'           => $done,
 	);
+}
+
+/**
+ * Sets the last changed time for the 'comment' cache group.
+ *
+ * @since 5.0.0
+ */
+function wp_cache_set_comments_last_changed() {
+	wp_cache_set( 'last_changed', microtime(), 'comment' );
 }

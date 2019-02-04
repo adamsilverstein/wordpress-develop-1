@@ -189,7 +189,8 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 			}
 		}
 		$offer = (object) array_intersect_key(
-			$offer, array_fill_keys(
+			$offer,
+			array_fill_keys(
 				array(
 					'response',
 					'download',
@@ -204,7 +205,8 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 					'notify_email',
 					'support_email',
 					'new_files',
-				), ''
+				),
+				''
 			)
 		);
 	}
@@ -230,6 +232,11 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 
 	// Trigger background updates if running non-interactively, and we weren't called from the update handler.
 	if ( $doing_cron && ! doing_action( 'wp_maybe_auto_update' ) ) {
+		/**
+		 * Fires during wp_cron, starting the auto update process.
+		 *
+		 * @since 3.9.0
+		 */
 		do_action( 'wp_maybe_auto_update' );
 	}
 }

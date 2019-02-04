@@ -25,7 +25,7 @@ function add_user() {
  * @since 2.0.0
  *
  * @param int $user_id Optional. User ID.
- * @return int|WP_Error user id of the updated user
+ * @return int|WP_Error user id of the updated user.
  */
 function edit_user( $user_id = 0 ) {
 	$wp_roles = wp_roles();
@@ -244,7 +244,7 @@ function edit_user( $user_id = 0 ) {
  * Fetch a filtered list of user roles that the current user is
  * allowed to edit.
  *
- * Simple function who's main purpose is to allow filtering of the
+ * Simple function whose main purpose is to allow filtering of the
  * list of roles in the $wp_roles object so that plugins can remove
  * inappropriate ones depending on the situation or user making edits.
  * Specifically because without filtering anyone with the edit_users
@@ -537,7 +537,7 @@ jQuery(document).ready( function($) {
 	});
 });
 </script>
-<?php
+	<?php
 }
 
 /**
@@ -547,15 +547,15 @@ jQuery(document).ready( function($) {
  *
  * @since 2.7.0
  *
- * @param object $user User data object
+ * @param object $user User data object.
  */
 function use_ssl_preference( $user ) {
-?>
+	?>
 	<tr class="user-use-ssl-wrap">
 		<th scope="row"><?php _e( 'Use https' ); ?></th>
 		<td><label for="use_ssl"><input name="use_ssl" type="checkbox" id="use_ssl" value="1" <?php checked( '1', $user->use_ssl ); ?> /> <?php _e( 'Always use https when visiting the admin' ); ?></label></td>
 	</tr>
-<?php
+	<?php
 }
 
 /**
@@ -576,7 +576,10 @@ this email. This invitation will expire in a few days.
 
 Please click the following link to activate your user account:
 %%s'
-		), wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ), home_url(), wp_specialchars_decode( translate_user_role( $role['name'] ) )
+		),
+		wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
+		home_url(),
+		wp_specialchars_decode( translate_user_role( $role['name'] ) )
 	);
 }
 
@@ -615,24 +618,26 @@ function _wp_privacy_resend_request( $request_id ) {
  * @access private
  *
  * @param  int          $request_id Request ID.
- * @return int|WP_Error $request    Request ID on success or WP_Error.
+ * @return int|WP_Error $result Request ID on success or WP_Error.
  */
 function _wp_privacy_completed_request( $request_id ) {
-	$request_id   = absint( $request_id );
-	$request_data = wp_get_user_request_data( $request_id );
+	$request_id = absint( $request_id );
+	$request    = wp_get_user_request_data( $request_id );
 
-	if ( ! $request_data ) {
+	if ( ! $request ) {
 		return new WP_Error( 'privacy_request_error', __( 'Invalid request.' ) );
 	}
 
 	update_post_meta( $request_id, '_wp_user_request_completed_timestamp', time() );
 
-	$request = wp_update_post( array(
-		'ID'          => $request_id,
-		'post_status' => 'request-completed',
-	) );
+	$result = wp_update_post(
+		array(
+			'ID'          => $request_id,
+			'post_status' => 'request-completed',
+		)
+	);
 
-	return $request;
+	return $result;
 }
 
 /**
@@ -642,10 +647,10 @@ function _wp_privacy_completed_request( $request_id ) {
  * @access private
  */
 function _wp_personal_data_handle_actions() {
-	if ( isset( $_POST['privacy_action_email_retry'] ) ) { // WPCS: input var ok.
+	if ( isset( $_POST['privacy_action_email_retry'] ) ) {
 		check_admin_referer( 'bulk-privacy_requests' );
 
-		$request_id = absint( current( array_keys( (array) wp_unslash( $_POST['privacy_action_email_retry'] ) ) ) ); // WPCS: input var ok, sanitization ok.
+		$request_id = absint( current( array_keys( (array) wp_unslash( $_POST['privacy_action_email_retry'] ) ) ) );
 		$result     = _wp_privacy_resend_request( $request_id );
 
 		if ( is_wp_error( $result ) ) {
@@ -664,14 +669,14 @@ function _wp_personal_data_handle_actions() {
 			);
 		}
 	} elseif ( isset( $_POST['action'] ) ) {
-		$action = isset( $_POST['action'] ) ? sanitize_key( wp_unslash( $_POST['action'] ) ) : ''; // WPCS: input var ok, CSRF ok.
+		$action = isset( $_POST['action'] ) ? sanitize_key( wp_unslash( $_POST['action'] ) ) : '';
 
 		switch ( $action ) {
 			case 'add_export_personal_data_request':
 			case 'add_remove_personal_data_request':
 				check_admin_referer( 'personal-data-request' );
 
-				if ( ! isset( $_POST['type_of_action'], $_POST['username_or_email_to_export'] ) ) { // WPCS: input var ok.
+				if ( ! isset( $_POST['type_of_action'], $_POST['username_or_email_for_privacy_request'] ) ) {
 					add_settings_error(
 						'action_type',
 						'action_type',
@@ -679,8 +684,8 @@ function _wp_personal_data_handle_actions() {
 						'error'
 					);
 				}
-				$action_type               = sanitize_text_field( wp_unslash( $_POST['type_of_action'] ) ); // WPCS: input var ok.
-				$username_or_email_address = sanitize_text_field( wp_unslash( $_POST['username_or_email_to_export'] ) ); // WPCS: input var ok.
+				$action_type               = sanitize_text_field( wp_unslash( $_POST['type_of_action'] ) );
+				$username_or_email_address = sanitize_text_field( wp_unslash( $_POST['username_or_email_for_privacy_request'] ) );
 				$email_address             = '';
 
 				if ( ! in_array( $action_type, _wp_privacy_action_request_types(), true ) ) {
@@ -696,8 +701,8 @@ function _wp_personal_data_handle_actions() {
 					$user = get_user_by( 'login', $username_or_email_address );
 					if ( ! $user instanceof WP_User ) {
 						add_settings_error(
-							'username_or_email_to_export',
-							'username_or_email_to_export',
+							'username_or_email_for_privacy_request',
+							'username_or_email_for_privacy_request',
 							__( 'Unable to add this request. A valid email address or username must be supplied.' ),
 							'error'
 						);
@@ -716,16 +721,16 @@ function _wp_personal_data_handle_actions() {
 
 				if ( is_wp_error( $request_id ) ) {
 					add_settings_error(
-						'username_or_email_to_export',
-						'username_or_email_to_export',
+						'username_or_email_for_privacy_request',
+						'username_or_email_for_privacy_request',
 						$request_id->get_error_message(),
 						'error'
 					);
 					break;
 				} elseif ( ! $request_id ) {
 					add_settings_error(
-						'username_or_email_to_export',
-						'username_or_email_to_export',
+						'username_or_email_for_privacy_request',
+						'username_or_email_for_privacy_request',
 						__( 'Unable to initiate confirmation request.' ),
 						'error'
 					);
@@ -735,8 +740,8 @@ function _wp_personal_data_handle_actions() {
 				wp_send_user_request( $request_id );
 
 				add_settings_error(
-					'username_or_email_to_export',
-					'username_or_email_to_export',
+					'username_or_email_for_privacy_request',
+					'username_or_email_for_privacy_request',
 					__( 'Confirmation request initiated successfully.' ),
 					'updated'
 				);
@@ -753,29 +758,33 @@ function _wp_personal_data_handle_actions() {
  */
 function _wp_personal_data_cleanup_requests() {
 	/** This filter is documented in wp-includes/user.php */
-	$expires        = (int) apply_filters( 'user_request_key_expiration', DAY_IN_SECONDS );
+	$expires = (int) apply_filters( 'user_request_key_expiration', DAY_IN_SECONDS );
 
-	$requests_query = new WP_Query( array(
-		'post_type'      => 'user_request',
-		'posts_per_page' => -1,
-		'post_status'    => 'request-pending',
-		'fields'         => 'ids',
-		'date_query'     => array(
-			array(
-				'column' => 'post_modified_gmt',
-				'before' => $expires . ' seconds ago',
+	$requests_query = new WP_Query(
+		array(
+			'post_type'      => 'user_request',
+			'posts_per_page' => -1,
+			'post_status'    => 'request-pending',
+			'fields'         => 'ids',
+			'date_query'     => array(
+				array(
+					'column' => 'post_modified_gmt',
+					'before' => $expires . ' seconds ago',
+				),
 			),
-		),
-	) );
+		)
+	);
 
 	$request_ids = $requests_query->posts;
 
 	foreach ( $request_ids as $request_id ) {
-		wp_update_post( array(
-			'ID'            => $request_id,
-			'post_status'   => 'request-failed',
-			'post_password' => '',
-		) );
+		wp_update_post(
+			array(
+				'ID'            => $request_id,
+				'post_status'   => 'request-failed',
+				'post_password' => '',
+			)
+		);
 	}
 }
 
@@ -796,10 +805,13 @@ function _wp_personal_data_export_page() {
 	// "Borrow" xfn.js for now so we don't have to create new files.
 	wp_enqueue_script( 'xfn' );
 
-	$requests_table = new WP_Privacy_Data_Export_Requests_Table( array(
-		'plural'   => 'privacy_requests',
-		'singular' => 'privacy_request',
-	) );
+	$requests_table = new WP_Privacy_Data_Export_Requests_Table(
+		array(
+			'plural'   => 'privacy_requests',
+			'singular' => 'privacy_request',
+			'screen'   => 'export_personal_data',
+		)
+	);
 	$requests_table->process_bulk_action();
 	$requests_table->prepare_items();
 	?>
@@ -814,8 +826,8 @@ function _wp_personal_data_export_page() {
 			<p><?php esc_html_e( 'An email will be sent to the user at this email address asking them to verify the request.' ); ?></p>
 
 			<div class="wp-privacy-request-form-field">
-				<label for="username_or_email_to_export"><?php esc_html_e( 'Username or email address' ); ?></label>
-				<input type="text" required class="regular-text" id="username_or_email_to_export" name="username_or_email_to_export" />
+				<label for="username_or_email_for_privacy_request"><?php esc_html_e( 'Username or email address' ); ?></label>
+				<input type="text" required class="regular-text" id="username_or_email_for_privacy_request" name="username_or_email_for_privacy_request" />
 				<?php submit_button( __( 'Send Request' ), 'secondary', 'submit', false ); ?>
 			</div>
 			<?php wp_nonce_field( 'personal-data-request' ); ?>
@@ -867,10 +879,13 @@ function _wp_personal_data_removal_page() {
 	// "Borrow" xfn.js for now so we don't have to create new files.
 	wp_enqueue_script( 'xfn' );
 
-	$requests_table = new WP_Privacy_Data_Removal_Requests_Table( array(
-		'plural'   => 'privacy_requests',
-		'singular' => 'privacy_request',
-	) );
+	$requests_table = new WP_Privacy_Data_Removal_Requests_Table(
+		array(
+			'plural'   => 'privacy_requests',
+			'singular' => 'privacy_request',
+			'screen'   => 'remove_personal_data',
+		)
+	);
 
 	$requests_table->process_bulk_action();
 	$requests_table->prepare_items();
@@ -887,8 +902,8 @@ function _wp_personal_data_removal_page() {
 			<p><?php esc_html_e( 'An email will be sent to the user at this email address asking them to verify the request.' ); ?></p>
 
 			<div class="wp-privacy-request-form-field">
-				<label for="username_or_email_to_export"><?php esc_html_e( 'Username or email address' ); ?></label>
-				<input type="text" required class="regular-text" id="username_or_email_to_export" name="username_or_email_to_export" />
+				<label for="username_or_email_for_privacy_request"><?php esc_html_e( 'Username or email address' ); ?></label>
+				<input type="text" required class="regular-text" id="username_or_email_for_privacy_request" name="username_or_email_for_privacy_request" />
 				<?php submit_button( __( 'Send Request' ), 'secondary', 'submit', false ); ?>
 			</div>
 			<?php wp_nonce_field( 'personal-data-request' ); ?>
@@ -1005,6 +1020,19 @@ function _wp_privacy_hook_requests_page() {
 	add_submenu_page( 'tools.php', __( 'Erase Personal Data' ), __( 'Erase Personal Data' ), 'erase_others_personal_data', 'remove_personal_data', '_wp_personal_data_removal_page' );
 }
 
+/**
+ * Add options for the privacy requests screens.
+ *
+ * @since 4.9.8
+ * @access private
+ */
+function _wp_privacy_requests_screen_options() {
+	$args = array(
+		'option' => str_replace( 'tools_page_', '', get_current_screen()->id ) . '_requests_per_page',
+	);
+	add_screen_option( 'per_page', $args );
+}
+
 // TODO: move the following classes in new files.
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
@@ -1064,7 +1092,15 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 	 * @return array Default sortable columns.
 	 */
 	protected function get_sortable_columns() {
-		return array();
+		// The initial sorting is by 'Requested' (post_date) and descending.
+		// With initial sorting, the first click on 'Requested' should be ascending.
+		// With 'Requester' sorting active, the next click on 'Requested' should be descending.
+		$desc_first = isset( $_GET['orderby'] );
+
+		return array(
+			'email'             => 'requester',
+			'created_timestamp' => array( 'requested', $desc_first ),
+		);
 	}
 
 	/**
@@ -1128,13 +1164,47 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 		$views          = array();
 		$admin_url      = admin_url( 'tools.php?page=' . $this->request_type );
 		$counts         = $this->get_request_counts();
+		$total_requests = absint( array_sum( (array) $counts ) );
 
 		$current_link_attributes = empty( $current_status ) ? ' class="current" aria-current="page"' : '';
-		$views['all']            = '<a href="' . esc_url( $admin_url ) . "\" $current_link_attributes>" . esc_html__( 'All' ) . ' <span class="count">(' . absint( array_sum( (array) $counts ) ) . ')</span></a>';
+		$status_label            = sprintf(
+			/* translators: %s: all requests count */
+			_nx(
+				'All <span class="count">(%s)</span>',
+				'All <span class="count">(%s)</span>',
+				$total_requests,
+				'requests'
+			),
+			number_format_i18n( $total_requests )
+		);
+
+		$views['all'] = sprintf(
+			'<a href="%s"%s>%s</a>',
+			esc_url( $admin_url ),
+			$current_link_attributes,
+			$status_label
+		);
 
 		foreach ( $statuses as $status => $label ) {
+			$post_status = get_post_status_object( $status );
+			if ( ! $post_status ) {
+				continue;
+			}
+
 			$current_link_attributes = $status === $current_status ? ' class="current" aria-current="page"' : '';
-			$views[ $status ]        = '<a href="' . esc_url( add_query_arg( 'filter-status', $status, $admin_url ) ) . "\" $current_link_attributes>" . esc_html( $label ) . ' <span class="count">(' . absint( $counts->$status ) . ')</span></a>';
+			$total_status_requests   = absint( $counts->{$status} );
+			$status_label            = sprintf(
+				translate_nooped_plural( $post_status->label_count, $total_status_requests ),
+				number_format_i18n( $total_status_requests )
+			);
+			$status_link             = add_query_arg( 'filter-status', $status, $admin_url );
+
+			$views[ $status ] = sprintf(
+				'<a href="%s"%s>%s</a>',
+				esc_url( $status_link ),
+				$current_link_attributes,
+				$status_label
+			);
 		}
 
 		return $views;
@@ -1161,8 +1231,9 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 	 */
 	public function process_bulk_action() {
 		$action      = $this->current_action();
-		$request_ids = isset( $_REQUEST['request_id'] ) ? wp_parse_id_list( wp_unslash( $_REQUEST['request_id'] ) ) : array(); // WPCS: input var ok, CSRF ok.
-		$count       = 0;
+		$request_ids = isset( $_REQUEST['request_id'] ) ? wp_parse_id_list( wp_unslash( $_REQUEST['request_id'] ) ) : array();
+
+		$count = 0;
 
 		if ( $request_ids ) {
 			check_admin_referer( 'bulk-privacy_requests' );
@@ -1208,20 +1279,13 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 	 * Prepare items to output.
 	 *
 	 * @since 4.9.6
+	 * @since 5.1.0 Added support for column sorting.
 	 */
 	public function prepare_items() {
 		global $wpdb;
 
-		$primary               = $this->get_primary_column_name();
-		$this->_column_headers = array(
-			$this->get_columns(),
-			array(),
-			$this->get_sortable_columns(),
-			$primary,
-		);
-
 		$this->items    = array();
-		$posts_per_page = 20;
+		$posts_per_page = $this->get_items_per_page( $this->request_type . '_requests_per_page' );
 		$args           = array(
 			'post_type'      => $this->post_type,
 			'post_name__in'  => array( $this->request_type ),
@@ -1230,6 +1294,19 @@ abstract class WP_Privacy_Requests_Table extends WP_List_Table {
 			'post_status'    => 'any',
 			's'              => isset( $_REQUEST['s'] ) ? sanitize_text_field( $_REQUEST['s'] ) : '',
 		);
+
+		$orderby_mapping = array(
+			'requester' => 'post_title',
+			'requested' => 'post_date',
+		);
+
+		if ( isset( $_REQUEST['orderby'] ) && isset( $orderby_mapping[ $_REQUEST['orderby'] ] ) ) {
+			$args['orderby'] = $orderby_mapping[ $_REQUEST['orderby'] ];
+		}
+
+		if ( isset( $_REQUEST['order'] ) && in_array( strtoupper( $_REQUEST['order'] ), array( 'ASC', 'DESC' ), true ) ) {
+			$args['order'] = strtoupper( $_REQUEST['order'] );
+		}
 
 		if ( ! empty( $_REQUEST['filter-status'] ) ) {
 			$filter_status       = isset( $_REQUEST['filter-status'] ) ? sanitize_text_field( $_REQUEST['filter-status'] ) : '';
@@ -1488,10 +1565,18 @@ class WP_Privacy_Data_Export_Requests_Table extends WP_Privacy_Requests_Table {
 				submit_button( __( 'Retry' ), 'secondary', 'privacy_action_email_retry[' . $item->ID . ']', false );
 				break;
 			case 'request-completed':
-				echo '<a href="' . esc_url( wp_nonce_url( add_query_arg( array(
-					'action'     => 'delete',
-					'request_id' => array( $item->ID ),
-				), admin_url( 'tools.php?page=export_personal_data' ) ), 'bulk-privacy_requests' ) ) . '" class="button">' . esc_html__( 'Remove request' ) . '</a>';
+				echo '<a href="' . esc_url(
+					wp_nonce_url(
+						add_query_arg(
+							array(
+								'action'     => 'delete',
+								'request_id' => array( $item->ID ),
+							),
+							admin_url( 'tools.php?page=export_personal_data' )
+						),
+						'bulk-privacy_requests'
+					)
+				) . '" class="button">' . esc_html__( 'Remove request' ) . '</a>';
 				break;
 		}
 	}
@@ -1602,10 +1687,18 @@ class WP_Privacy_Data_Removal_Requests_Table extends WP_Privacy_Requests_Table {
 				submit_button( __( 'Retry' ), 'secondary', 'privacy_action_email_retry[' . $item->ID . ']', false );
 				break;
 			case 'request-completed':
-				echo '<a href="' . esc_url( wp_nonce_url( add_query_arg( array(
-					'action'     => 'delete',
-					'request_id' => array( $item->ID ),
-				), admin_url( 'tools.php?page=remove_personal_data' ) ), 'bulk-privacy_requests' ) ) . '" class="button">' . esc_html__( 'Remove request' ) . '</a>';
+				echo '<a href="' . esc_url(
+					wp_nonce_url(
+						add_query_arg(
+							array(
+								'action'     => 'delete',
+								'request_id' => array( $item->ID ),
+							),
+							admin_url( 'tools.php?page=remove_personal_data' )
+						),
+						'bulk-privacy_requests'
+					)
+				) . '" class="button">' . esc_html__( 'Remove request' ) . '</a>';
 				break;
 		}
 	}

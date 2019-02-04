@@ -104,8 +104,7 @@ function image_constrain_size_for_editor( $width, $height, $size = 'medium', $co
 		if ( intval( $content_width ) > 0 && 'edit' === $context ) {
 			$max_width = min( intval( $content_width ), $max_width );
 		}
-	} // $size == 'full' has no constraint
-	else {
+	} else { // $size == 'full' has no constraint
 		$max_width  = $width;
 		$max_height = $height;
 	}
@@ -266,8 +265,8 @@ function image_downsize( $id, $size = 'medium' ) {
  * @global array $_wp_additional_image_sizes Associative array of additional image sizes.
  *
  * @param string     $name   Image size identifier.
- * @param int        $width  Image width in pixels.
- * @param int        $height Image height in pixels.
+ * @param int        $width  Optional. Image width in pixels. Default 0.
+ * @param int        $height Optional. Image height in pixels. Default 0.
  * @param bool|array $crop   Optional. Whether to crop images to specified width and height or resize.
  *                           An array can specify positioning of the crop area. Default false.
  */
@@ -1498,7 +1497,7 @@ add_shortcode( 'caption', 'img_caption_shortcode' );
  *
  * @since 2.6.0
  * @since 3.9.0 The `class` attribute was added.
- * @since 5.0.0 The `caption_id` attribute was added.
+ * @since 5.1.0 The `caption_id` attribute was added.
  *
  * @param array  $attr {
  *     Attributes of the caption shortcode.
@@ -1552,7 +1551,9 @@ function img_caption_shortcode( $attr, $content = null ) {
 			'width'      => '',
 			'caption'    => '',
 			'class'      => '',
-		), $attr, 'caption'
+		),
+		$attr,
+		'caption'
 	);
 
 	$atts['width'] = (int) $atts['width'];
@@ -1722,7 +1723,9 @@ function gallery_shortcode( $attr ) {
 			'include'    => '',
 			'exclude'    => '',
 			'link'       => '',
-		), $attr, 'gallery'
+		),
+		$attr,
+		'gallery'
 	);
 
 	$id = intval( $atts['id'] );
@@ -1897,7 +1900,7 @@ function gallery_shortcode( $attr ) {
  * @since 3.9.0
  */
 function wp_underscore_playlist_templates() {
-?>
+	?>
 <script type="text/html" id="tmpl-wp-playlist-current-item">
 	<# if ( data.image ) { #>
 	<img src="{{ data.thumb.src }}" alt="" />
@@ -1936,7 +1939,7 @@ function wp_underscore_playlist_templates() {
 		<# } #>
 	</div>
 </script>
-<?php
+	<?php
 }
 
 /**
@@ -1949,9 +1952,9 @@ function wp_underscore_playlist_templates() {
 function wp_playlist_scripts( $type ) {
 	wp_enqueue_style( 'wp-mediaelement' );
 	wp_enqueue_script( 'wp-playlist' );
-?>
+	?>
 <!--[if lt IE 9]><script>document.createElement('<?php echo esc_js( $type ); ?>');</script><![endif]-->
-<?php
+	<?php
 	add_action( 'wp_footer', 'wp_underscore_playlist_templates', 0 );
 	add_action( 'admin_footer', 'wp_underscore_playlist_templates', 0 );
 }
@@ -2039,7 +2042,9 @@ function wp_playlist_shortcode( $attr ) {
 			'tracknumbers' => true,
 			'images'       => true,
 			'artists'      => true,
-		), $attr, 'playlist'
+		),
+		$attr,
+		'playlist'
 	);
 
 	$id = intval( $atts['id'] );
@@ -2188,7 +2193,7 @@ function wp_playlist_shortcode( $attr ) {
 	<<?php echo $safe_type; ?> controls="controls" preload="none" width="
 				<?php
 				echo (int) $theme_width;
-	?>
+				?>
 	"
 	<?php
 	if ( 'video' === $safe_type ) :
@@ -3294,7 +3299,8 @@ function wp_prepare_attachment_for_js( $attachment ) {
 
 		/** This filter is documented in wp-admin/includes/media.php */
 		$possible_sizes = apply_filters(
-			'image_size_names_choose', array(
+			'image_size_names_choose',
+			array(
 				'thumbnail' => __( 'Thumbnail' ),
 				'medium'    => __( 'Medium' ),
 				'large'     => __( 'Large' ),
@@ -3371,7 +3377,8 @@ function wp_prepare_attachment_for_js( $attachment ) {
 
 	if ( $meta && ( 'audio' === $type || 'video' === $type ) ) {
 		if ( isset( $meta['length_formatted'] ) ) {
-			$response['fileLength'] = $meta['length_formatted'];
+			$response['fileLength']              = $meta['length_formatted'];
+			$response['fileLengthHumanReadable'] = human_readable_duration( $meta['length_formatted'] );
 		}
 
 		$response['meta'] = array();
@@ -3407,9 +3414,9 @@ function wp_prepare_attachment_for_js( $attachment ) {
 	 *
 	 * @since 3.5.0
 	 *
-	 * @param array   $response   Array of prepared attachment data.
-	 * @param WP_Post $attachment Attachment object.
-	 * @param array   $meta       Array of attachment meta data.
+	 * @param array       $response   Array of prepared attachment data.
+	 * @param WP_Post     $attachment Attachment object.
+	 * @param array|false $meta       Array of attachment meta data, or false if there is none.
 	 */
 	return apply_filters( 'wp_prepare_attachment_for_js', $response, $attachment, $meta );
 }
@@ -3560,7 +3567,8 @@ function wp_enqueue_media( $args = array() ) {
 			FROM $wpdb->posts
 			WHERE post_type = %s
 			ORDER BY post_date DESC
-		", 'attachment'
+		",
+				'attachment'
 			)
 		);
 	}
@@ -4126,7 +4134,7 @@ function wp_media_personal_data_exporter( $email_address, $page = 1 ) {
 
 	$data_to_export = array();
 
-	$user = get_user_by( 'email' , $email_address );
+	$user = get_user_by( 'email', $email_address );
 	if ( false === $user ) {
 		return array(
 			'data' => $data_to_export,
@@ -4151,7 +4159,10 @@ function wp_media_personal_data_exporter( $email_address, $page = 1 ) {
 
 		if ( $attachment_url ) {
 			$post_data_to_export = array(
-				array( 'name'  => __( 'URL' ), 'value' => $attachment_url ),
+				array(
+					'name'  => __( 'URL' ),
+					'value' => $attachment_url,
+				),
 			);
 
 			$data_to_export[] = array(

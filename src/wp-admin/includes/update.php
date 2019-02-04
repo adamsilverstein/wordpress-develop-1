@@ -34,7 +34,8 @@ function get_core_updates( $options = array() ) {
 		array(
 			'available' => true,
 			'dismissed' => false,
-		), $options
+		),
+		$options
 	);
 	$dismissed = get_site_option( 'dismissed_update_core' );
 
@@ -261,28 +262,26 @@ function update_nag() {
 		return false;
 	}
 
+	$version_url = sprintf(
+		/* translators: %s: WordPress version */
+		esc_url( __( 'https://wordpress.org/support/wordpress-version/version-%s/' ) ),
+		sanitize_title( $cur->current )
+	);
+
 	if ( current_user_can( 'update_core' ) ) {
 		$msg = sprintf(
-			/* translators: 1: Codex URL to release notes, 2: new WordPress version, 3: URL to network admin, 4: accessibility text */
+			/* translators: 1: URL to WordPress release notes, 2: new WordPress version, 3: URL to network admin, 4: accessibility text */
 			__( '<a href="%1$s">WordPress %2$s</a> is available! <a href="%3$s" aria-label="%4$s">Please update now</a>.' ),
-			sprintf(
-				/* translators: %s: WordPress version */
-				esc_url( __( 'https://codex.wordpress.org/Version_%s' ) ),
-				$cur->current
-			),
+			$version_url,
 			$cur->current,
 			network_admin_url( 'update-core.php' ),
 			esc_attr__( 'Please update WordPress now' )
 		);
 	} else {
 		$msg = sprintf(
-			/* translators: 1: Codex URL to release notes, 2: new WordPress version */
+			/* translators: 1: URL to WordPress release notes, 2: new WordPress version */
 			__( '<a href="%1$s">WordPress %2$s</a> is available! Please notify the site administrator.' ),
-			sprintf(
-				/* translators: %s: WordPress version */
-				esc_url( __( 'https://codex.wordpress.org/Version_%s' ) ),
-				$cur->current
-			),
+			$version_url,
 			$cur->current
 		);
 	}
@@ -549,7 +548,8 @@ function wp_theme_update_row( $theme_key, $theme ) {
 			'TB_iframe' => 'true',
 			'width'     => 1024,
 			'height'    => 800,
-		), $current->response[ $theme_key ]['url']
+		),
+		$current->response[ $theme_key ]['url']
 	);
 
 	/** @var WP_MS_Themes_List_Table $wp_list_table */

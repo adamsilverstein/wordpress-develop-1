@@ -179,6 +179,14 @@ final class WP_Screen {
 	private $_screen_settings;
 
 	/**
+	 * Whether the screen is using the block editor.
+	 *
+	 * @since 5.0.0
+	 * @var bool
+	 */
+	public $is_block_editor = false;
+
+	/**
 	 * Fetches a screen object.
 	 *
 	 * @since 3.3.0
@@ -272,7 +280,9 @@ final class WP_Screen {
 
 			switch ( $base ) {
 				case 'post':
-					if ( isset( $_GET['post'] ) ) {
+					if ( isset( $_GET['post'] ) && isset( $_POST['post_ID'] ) && (int) $_GET['post'] !== (int) $_POST['post_ID'] ) {
+						wp_die( __( 'A post ID mismatch has been detected.' ), __( 'Sorry, you are not allowed to edit this item.' ), 400 );
+					} elseif ( isset( $_GET['post'] ) ) {
 						$post_id = (int) $_GET['post'];
 					} elseif ( isset( $_POST['post_ID'] ) ) {
 						$post_id = (int) $_POST['post_ID'];
@@ -408,6 +418,22 @@ final class WP_Screen {
 		}
 
 		return ( $admin == $this->in_admin );
+	}
+
+	/**
+	 * Sets or returns whether the block editor is loading on the current screen.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param bool $set Optional. Sets whether the block editor is loading on the current screen or not.
+	 * @return bool True if the block editor is being loaded, false otherwise.
+	 */
+	public function is_block_editor( $set = null ) {
+		if ( $set !== null ) {
+			$this->is_block_editor = (bool) $set;
+		}
+
+		return $this->is_block_editor;
 	}
 
 	/**
@@ -806,7 +832,7 @@ final class WP_Screen {
 									<?php echo esc_html( $tab['title'] ); ?>
 								</a>
 							</li>
-						<?php
+							<?php
 							$class = '';
 						endforeach;
 						?>
@@ -837,7 +863,7 @@ final class WP_Screen {
 								}
 								?>
 							</div>
-						<?php
+							<?php
 							$classes = 'help-tab-content';
 						endforeach;
 						?>
@@ -890,10 +916,10 @@ final class WP_Screen {
 			<div id="contextual-help-link-wrap" class="hide-if-no-js screen-meta-toggle">
 			<button type="button" id="contextual-help-link" class="button show-settings" aria-controls="contextual-help-wrap" aria-expanded="false"><?php _e( 'Help' ); ?></button>
 			</div>
-		<?php
+			<?php
 		endif;
-if ( $this->show_screen_options() ) :
-		?>
+		if ( $this->show_screen_options() ) :
+			?>
 			<div id="screen-options-link-wrap" class="hide-if-no-js screen-meta-toggle">
 			<button type="button" id="show-settings-link" class="button show-settings" aria-controls="screen-options-wrap" aria-expanded="false"><?php _e( 'Screen Options' ); ?></button>
 			</div>
@@ -968,7 +994,8 @@ if ( $this->show_screen_options() ) :
 	 */
 	public function render_screen_options( $options = array() ) {
 		$options = wp_parse_args(
-			$options, array(
+			$options,
+			array(
 				'wrap' => true,
 			)
 		);
@@ -1121,12 +1148,12 @@ if ( $this->show_screen_options() ) :
 													?>
 													<label class="columns-prefs-<?php echo $i; ?>">
 				<input type='radio' name='screen_columns' value='<?php echo esc_attr( $i ); ?>'
-					<?php checked( $screen_layout_columns, $i ); ?> />
-				<?php printf( _n( '%s column', '%s columns', $i ), number_format_i18n( $i ) ); ?>
+													<?php checked( $screen_layout_columns, $i ); ?> />
+													<?php printf( _n( '%s column', '%s columns', $i ), number_format_i18n( $i ) ); ?>
 				</label>
-				<?php
+													<?php
 			endfor;
-			?>
+												?>
 		</fieldset>
 		<?php
 	}
@@ -1235,7 +1262,7 @@ if ( $this->show_screen_options() ) :
 
 		// This needs a submit button
 		add_filter( 'screen_options_show_submit', '__return_true' );
-?>
+		?>
 		<fieldset class="metabox-prefs view-mode">
 		<legend><?php _e( 'View Mode' ); ?></legend>
 				<label for="list-view-mode">
@@ -1247,7 +1274,7 @@ if ( $this->show_screen_options() ) :
 					<?php _e( 'Excerpt View' ); ?>
 				</label>
 		</fieldset>
-<?php
+		<?php
 	}
 
 	/**
