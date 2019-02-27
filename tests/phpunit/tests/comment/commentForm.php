@@ -8,8 +8,8 @@ class Tests_Comment_CommentForm extends WP_UnitTestCase {
 		$p = self::factory()->post->create();
 
 		$args = array(
-			'name_submit' => 'foo-name',
-			'id_submit' => 'foo-id',
+			'name_submit'  => 'foo-name',
+			'id_submit'    => 'foo-id',
 			'class_submit' => 'foo-class',
 			'label_submit' => 'foo-label',
 		);
@@ -24,11 +24,11 @@ class Tests_Comment_CommentForm extends WP_UnitTestCase {
 		$p = self::factory()->post->create();
 
 		$args = array(
-			'name_submit' => 'foo-name',
-			'id_submit' => 'foo-id',
-			'class_submit' => 'foo-class',
-			'label_submit' => 'foo-label',
-			'submit_button' => '<input name="custom-%1$s" type="submit" id="custom-%2$s" class="custom-%3$s" value="custom-%4$s" />'
+			'name_submit'   => 'foo-name',
+			'id_submit'     => 'foo-id',
+			'class_submit'  => 'foo-class',
+			'label_submit'  => 'foo-label',
+			'submit_button' => '<input name="custom-%1$s" type="submit" id="custom-%2$s" class="custom-%3$s" value="custom-%4$s" />',
 		);
 		$form = get_echo( 'comment_form', array( $args, $p ) );
 
@@ -40,11 +40,11 @@ class Tests_Comment_CommentForm extends WP_UnitTestCase {
 		$p = self::factory()->post->create();
 
 		$args = array(
-			'name_submit' => 'foo-name',
-			'id_submit' => 'foo-id',
+			'name_submit'  => 'foo-name',
+			'id_submit'    => 'foo-id',
 			'class_submit' => 'foo-class',
 			'label_submit' => 'foo-label',
-			'submit_field' => '<p class="my-custom-submit-field">%1$s %2$s</p>'
+			'submit_field' => '<p class="my-custom-submit-field">%1$s %2$s</p>',
 		);
 		$form = get_echo( 'comment_form', array( $args, $p ) );
 
@@ -60,8 +60,8 @@ class Tests_Comment_CommentForm extends WP_UnitTestCase {
 		$p = self::factory()->post->create();
 
 		$args = array(
-			'name_submit' => 'foo-name',
-			'id_submit' => 'foo-id',
+			'name_submit'  => 'foo-name',
+			'id_submit'    => 'foo-id',
 			'class_submit' => 'foo-class',
 			'label_submit' => 'foo-label',
 		);
@@ -79,5 +79,25 @@ class Tests_Comment_CommentForm extends WP_UnitTestCase {
 		unset( $defaults['submit_field'] );
 		unset( $defaults['submit_button'] );
 		return $defaults;
+	}
+
+	/**
+	 * @ticket 44126
+	 */
+	public function test_fields_should_include_cookies_consent() {
+		$p = self::factory()->post->create();
+
+		add_filter( 'option_show_comments_cookies_opt_in', '__return_true' );
+
+		$args = array(
+			'fields' => array(
+				'author' => 'Hello World!',
+			),
+		);
+		$form = get_echo( 'comment_form', array( $args, $p ) );
+
+		remove_filter( 'option_show_comments_cookies_opt_in', '__return_true' );
+
+		$this->assertRegExp( '|<p class="comment\-form\-cookies\-consent">.*?</p>|', $form );
 	}
 }

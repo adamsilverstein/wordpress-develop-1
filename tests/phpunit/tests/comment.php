@@ -13,29 +13,58 @@ class Tests_Comment extends WP_UnitTestCase {
 	}
 
 	public static function wpSetUpBeforeClass( $factory ) {
-		self::$user_id = $factory->user->create( array(
-			'role'       => 'author',
-			'user_login' => 'test_wp_user_get',
-			'user_pass'  => 'password',
-			'user_email' => 'test@test.com',
-		) );
+		self::$user_id = $factory->user->create(
+			array(
+				'role'       => 'author',
+				'user_login' => 'test_wp_user_get',
+				'user_pass'  => 'password',
+				'user_email' => 'test@test.com',
+			)
+		);
 
-		self::$post_id = $factory->post->create( array(
-			'post_author' => self::$user_id
-		) );
+		self::$post_id = $factory->post->create(
+			array(
+				'post_author' => self::$user_id,
+			)
+		);
 	}
 
 	function test_wp_update_comment() {
-		$post = self::factory()->post->create_and_get( array( 'post_title' => 'some-post', 'post_type' => 'post' ) );
-		$post2 = self::factory()->post->create_and_get( array( 'post_title' => 'some-post-2', 'post_type' => 'post' ) );
+		$post     = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'some-post',
+				'post_type'  => 'post',
+			)
+		);
+		$post2    = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'some-post-2',
+				'post_type'  => 'post',
+			)
+		);
 		$comments = self::factory()->comment->create_post_comments( $post->ID, 5 );
-		$result = wp_update_comment( array( 'comment_ID' => $comments[0], 'comment_parent' => $comments[1] ) );
+		$result   = wp_update_comment(
+			array(
+				'comment_ID'     => $comments[0],
+				'comment_parent' => $comments[1],
+			)
+		);
 		$this->assertEquals( 1, $result );
 		$comment = get_comment( $comments[0] );
 		$this->assertEquals( $comments[1], $comment->comment_parent );
-		$result = wp_update_comment( array( 'comment_ID' => $comments[0], 'comment_parent' => $comments[1] ) );
+		$result = wp_update_comment(
+			array(
+				'comment_ID'     => $comments[0],
+				'comment_parent' => $comments[1],
+			)
+		);
 		$this->assertEquals( 0, $result );
-		$result = wp_update_comment( array( 'comment_ID' => $comments[0], 'comment_post_ID' => $post2->ID ) );
+		$result  = wp_update_comment(
+			array(
+				'comment_ID'      => $comments[0],
+				'comment_post_ID' => $post2->ID,
+			)
+		);
 		$comment = get_comment( $comments[0] );
 		$this->assertEquals( $post2->ID, $comment->comment_post_ID );
 	}
@@ -46,10 +75,32 @@ class Tests_Comment extends WP_UnitTestCase {
 	function test_wp_update_comment_updates_comment_type() {
 		$comment_id = self::factory()->comment->create( array( 'comment_post_ID' => self::$post_id ) );
 
-		wp_update_comment( array( 'comment_ID' => $comment_id, 'comment_type' => 'pingback' ) );
+		wp_update_comment(
+			array(
+				'comment_ID'   => $comment_id,
+				'comment_type' => 'pingback',
+			)
+		);
 
 		$comment = get_comment( $comment_id );
 		$this->assertEquals( 'pingback', $comment->comment_type );
+	}
+
+	/**
+	 * @ticket 36784
+	 */
+	function test_wp_update_comment_updates_comment_meta() {
+		$comment_id = self::factory()->comment->create( array( 'comment_post_ID' => self::$post_id ) );
+		wp_update_comment(
+			array(
+				'comment_ID'   => $comment_id,
+				'comment_meta' => array(
+					'food'  => 'taco',
+					'sauce' => 'fire',
+				),
+			)
+		);
+		$this->assertEquals( 'fire', get_comment_meta( $comment_id, 'sauce', true ) );
 	}
 
 	/**
@@ -58,7 +109,12 @@ class Tests_Comment extends WP_UnitTestCase {
 	function test_wp_update_comment_updates_user_id() {
 		$comment_id = self::factory()->comment->create( array( 'comment_post_ID' => self::$post_id ) );
 
-		wp_update_comment( array( 'comment_ID' => $comment_id, 'user_id' => 1 ) );
+		wp_update_comment(
+			array(
+				'comment_ID' => $comment_id,
+				'user_id'    => 1,
+			)
+		);
 
 		$comment = get_comment( $comment_id );
 		$this->assertEquals( 1, $comment->user_id );
@@ -72,7 +128,13 @@ class Tests_Comment extends WP_UnitTestCase {
 
 		$updated_comment_text = 'I should be able to update a comment with a Post ID of zero';
 
-		$update = wp_update_comment( array( 'comment_ID' => $comment_id, 'comment_content' => $updated_comment_text, 'comment_post_ID' => 0 ) );
+		$update = wp_update_comment(
+			array(
+				'comment_ID'      => $comment_id,
+				'comment_content' => $updated_comment_text,
+				'comment_post_ID' => 0,
+			)
+		);
 		$this->assertSame( 1, $update );
 
 		$comment = get_comment( $comment_id );
@@ -80,27 +142,52 @@ class Tests_Comment extends WP_UnitTestCase {
 	}
 
 	public function test_get_approved_comments() {
-		$ca1 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id, 'comment_approved' => '1'
-		) );
-		$ca2 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id, 'comment_approved' => '1'
-		) );
-		$ca3 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id, 'comment_approved' => '0'
-		) );
-		$c2 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id, 'comment_approved' => '1', 'comment_type' => 'pingback'
-		) );
-		$c3 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id, 'comment_approved' => '1', 'comment_type' => 'trackback'
-		) );
-		$c4 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id, 'comment_approved' => '1', 'comment_type' => 'mario'
-		) );
-		$c5 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id, 'comment_approved' => '1', 'comment_type' => 'luigi'
-		) );
+		$ca1 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+			)
+		);
+		$ca2 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+			)
+		);
+		$ca3 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '0',
+			)
+		);
+		$c2  = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+				'comment_type'     => 'pingback',
+			)
+		);
+		$c3  = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+				'comment_type'     => 'trackback',
+			)
+		);
+		$c4  = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+				'comment_type'     => 'mario',
+			)
+		);
+		$c5  = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+				'comment_type'     => 'luigi',
+			)
+		);
 
 		$found = get_approved_comments( self::$post_id );
 
@@ -112,9 +199,12 @@ class Tests_Comment extends WP_UnitTestCase {
 	 * @ticket 30412
 	 */
 	public function test_get_approved_comments_with_post_id_0_should_return_empty_array() {
-		$ca1 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id, 'comment_approved' => '1'
-		) );
+		$ca1 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+			)
+		);
 
 		$found = get_approved_comments( 0 );
 
@@ -126,14 +216,14 @@ class Tests_Comment extends WP_UnitTestCase {
 	 */
 	public function test_wp_new_comment_respects_dates() {
 		$data = array(
-			'comment_post_ID' => self::$post_id,
-			'comment_author' => 'Comment Author',
-			'comment_author_url' => '',
+			'comment_post_ID'      => self::$post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_url'   => '',
 			'comment_author_email' => '',
-			'comment_type' => '',
-			'comment_content' => 'Comment',
-			'comment_date' => '2011-01-01 10:00:00',
-			'comment_date_gmt' => '2011-01-01 10:00:00',
+			'comment_type'         => '',
+			'comment_content'      => 'Comment',
+			'comment_date'         => '2011-01-01 10:00:00',
+			'comment_date_gmt'     => '2011-01-01 10:00:00',
 		);
 
 		$id = wp_new_comment( $data );
@@ -255,14 +345,14 @@ class Tests_Comment extends WP_UnitTestCase {
 
 	public function test_comment_field_lengths() {
 		$data = array(
-			'comment_post_ID' => self::$post_id,
-			'comment_author' => 'Comment Author',
-			'comment_author_url' => '',
+			'comment_post_ID'      => self::$post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_url'   => '',
 			'comment_author_email' => '',
-			'comment_type' => '',
-			'comment_content' => str_repeat( 'A', 65536 ),
-			'comment_date' => '2011-01-01 10:00:00',
-			'comment_date_gmt' => '2011-01-01 10:00:00',
+			'comment_type'         => '',
+			'comment_content'      => str_repeat( 'A', 65536 ),
+			'comment_date'         => '2011-01-01 10:00:00',
+			'comment_date_gmt'     => '2011-01-01 10:00:00',
 		);
 
 		$id = wp_new_comment( $data );
@@ -276,31 +366,39 @@ class Tests_Comment extends WP_UnitTestCase {
 	 * @ticket 32566
 	 */
 	public function test_wp_notify_moderator_should_not_throw_notice_when_post_author_is_0() {
-		$p = self::factory()->post->create( array(
-			'post_author' => 0,
-		) );
+		$p = self::factory()->post->create(
+			array(
+				'post_author' => 0,
+			)
+		);
 
-		$c = self::factory()->comment->create( array(
-			'comment_post_ID' => $p,
-		) );
+		$c = self::factory()->comment->create(
+			array(
+				'comment_post_ID' => $p,
+			)
+		);
 
 		$this->assertTrue( wp_notify_moderator( $c ) );
 	}
 
 	public function test_wp_new_comment_notify_postauthor_should_send_email_when_comment_is_approved() {
-		$c = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id,
-		) );
+		$c = self::factory()->comment->create(
+			array(
+				'comment_post_ID' => self::$post_id,
+			)
+		);
 
 		$sent = wp_new_comment_notify_postauthor( $c );
 		$this->assertTrue( $sent );
 	}
 
 	public function test_wp_new_comment_notify_postauthor_should_not_send_email_when_comment_is_unapproved() {
-		$c = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id,
-			'comment_approved' => '0',
-		) );
+		$c = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '0',
+			)
+		);
 
 		$sent = wp_new_comment_notify_postauthor( $c );
 		$this->assertFalse( $sent );
@@ -310,10 +408,12 @@ class Tests_Comment extends WP_UnitTestCase {
 	 * @ticket 33587
 	 */
 	public function test_wp_new_comment_notify_postauthor_should_not_send_email_when_comment_has_been_marked_as_spam() {
-		$c = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id,
-			'comment_approved' => 'spam',
-		) );
+		$c = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => 'spam',
+			)
+		);
 
 		$sent = wp_new_comment_notify_postauthor( $c );
 		$this->assertFalse( $sent );
@@ -323,10 +423,12 @@ class Tests_Comment extends WP_UnitTestCase {
 	 * @ticket 35006
 	 */
 	public function test_wp_new_comment_notify_postauthor_should_not_send_email_when_comment_has_been_trashed() {
-		$c = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id,
-			'comment_approved' => 'trash',
-		) );
+		$c = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => 'trash',
+			)
+		);
 
 		$sent = wp_new_comment_notify_postauthor( $c );
 		$this->assertFalse( $sent );
@@ -336,13 +438,15 @@ class Tests_Comment extends WP_UnitTestCase {
 	 * @ticket 12431
 	 */
 	public function test_wp_new_comment_with_meta() {
-		$c = self::factory()->comment->create( array(
-			'comment_approved' => '1',
-			'comment_meta' => array(
-				'food' => 'taco',
-				'sauce' => 'fire'
+		$c = self::factory()->comment->create(
+			array(
+				'comment_approved' => '1',
+				'comment_meta'     => array(
+					'food'  => 'taco',
+					'sauce' => 'fire',
+				),
 			)
-		) );
+		);
 
 		$this->assertEquals( 'fire', get_comment_meta( $c, 'sauce', true ) );
 	}
@@ -351,41 +455,53 @@ class Tests_Comment extends WP_UnitTestCase {
 	 * @ticket 8071
 	 */
 	public function test_wp_comment_get_children_should_fill_children() {
-		$c1 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id,
-			'comment_approved' => '1',
-		) );
+		$c1 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+			)
+		);
 
-		$c2 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id,
-			'comment_approved' => '1',
-			'comment_parent' => $c1,
-		) );
+		$c2 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+				'comment_parent'   => $c1,
+			)
+		);
 
-		$c3 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id,
-			'comment_approved' => '1',
-			'comment_parent' => $c2,
-		) );
+		$c3 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+				'comment_parent'   => $c2,
+			)
+		);
 
-		$c4 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id,
-			'comment_approved' => '1',
-			'comment_parent' => $c1,
-		) );
+		$c4 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+				'comment_parent'   => $c1,
+			)
+		);
 
-		$c5 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id,
-			'comment_approved' => '1',
-		) );
+		$c5 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+			)
+		);
 
-		$c6 = self::factory()->comment->create( array(
-			'comment_post_ID' => self::$post_id,
-			'comment_approved' => '1',
-			'comment_parent' => $c5,
-		) );
+		$c6 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post_id,
+				'comment_approved' => '1',
+				'comment_parent'   => $c5,
+			)
+		);
 
-		$comment = get_comment( $c1 );
+		$comment  = get_comment( $c1 );
 		$children = $comment->get_children();
 
 		// Direct descendants of $c1.
@@ -401,7 +517,7 @@ class Tests_Comment extends WP_UnitTestCase {
 	public function test_post_properties_should_be_lazyloaded() {
 		$c = self::factory()->comment->create( array( 'comment_post_ID' => self::$post_id ) );
 
-		$post = get_post( self::$post_id );
+		$post    = get_post( self::$post_id );
 		$comment = get_comment( $c );
 
 		$post_fields = array( 'post_author', 'post_date', 'post_date_gmt', 'post_content', 'post_title', 'post_excerpt', 'post_status', 'comment_status', 'ping_status', 'post_name', 'to_ping', 'pinged', 'post_modified', 'post_modified_gmt', 'post_content_filtered', 'post_parent', 'guid', 'menu_order', 'post_type', 'post_mime_type', 'comment_count' );
@@ -419,7 +535,7 @@ class Tests_Comment extends WP_UnitTestCase {
 	 * @since 4.4.0
 	 * @access public
 	 */
-	public function setup_notify_comment(){
+	public function setup_notify_comment() {
 		/**
 		 * Prevent flood alert from firing.
 		 */
@@ -428,13 +544,17 @@ class Tests_Comment extends WP_UnitTestCase {
 		/**
 		 * Set up a comment for testing.
 		 */
-		$post = $this->factory->post->create( array(
-			'post_author' => self::$user_id,
-		) );
+		$post = $this->factory->post->create(
+			array(
+				'post_author' => self::$user_id,
+			)
+		);
 
-		$comment = $this->factory->comment->create( array(
-			'comment_post_ID' => $post,
-		) );
+		$comment = $this->factory->comment->create(
+			array(
+				'comment_post_ID' => $post,
+			)
+		);
 
 		return array(
 			'post'    => $post,
@@ -601,10 +721,10 @@ class Tests_Comment extends WP_UnitTestCase {
 
 		// Check to see if a notification email was sent to the post author `test@test.com`.
 		if ( isset( $GLOBALS['phpmailer']->mock_sent ) &&
-		     ! empty( $GLOBALS['phpmailer']->mock_sent ) &&
-		     'test@test.com' == $GLOBALS['phpmailer']->mock_sent[0]['to'][0][0] ) {
-			$email_sent_when_comment_added = true;
-			reset_phpmailer_instance();
+			! empty( $GLOBALS['phpmailer']->mock_sent ) &&
+			'test@test.com' == $GLOBALS['phpmailer']->mock_sent[0]['to'][0][0] ) {
+				$email_sent_when_comment_added = true;
+				reset_phpmailer_instance();
 		} else {
 			$email_sent_when_comment_added = false;
 		}
@@ -617,7 +737,7 @@ class Tests_Comment extends WP_UnitTestCase {
 		// Close comments more than one day old.
 		update_option( 'close_comments_days_old', 1 );
 
-		$old_date = strtotime( '-25 hours' );
+		$old_date    = strtotime( '-25 hours' );
 		$old_post_id = self::factory()->post->create( array( 'post_date' => strftime( '%Y-%m-%d %H:%M:%S', $old_date ) ) );
 
 		$old_post_comment_status = _close_comments_for_old_post( true, $old_post_id );
@@ -628,7 +748,12 @@ class Tests_Comment extends WP_UnitTestCase {
 	}
 
 	public function test_close_comments_for_old_post_undated_draft() {
-		$draft_id = self::factory()->post->create( array( 'post_status' => 'draft', 'post_type' => 'post' ) );
+		$draft_id             = self::factory()->post->create(
+			array(
+				'post_status' => 'draft',
+				'post_type'   => 'post',
+			)
+		);
 		$draft_comment_status = _close_comments_for_old_post( true, $draft_id );
 
 		$this->assertTrue( $draft_comment_status );
@@ -658,11 +783,13 @@ class Tests_Comment extends WP_UnitTestCase {
 		$this->assertSame( $default_data['comment_agent'], $save->comment_agent );
 
 		// Update the comment.
-		wp_update_comment( array(
-			'comment_ID'        => $comment_id,
-			'comment_author_IP' => '111.111.1.1',
-			'comment_agent'     => 'SHIELD_AGENT',
-		) );
+		wp_update_comment(
+			array(
+				'comment_ID'        => $comment_id,
+				'comment_author_IP' => '111.111.1.1',
+				'comment_agent'     => 'SHIELD_AGENT',
+			)
+		);
 
 		// Retrieve and check the new values.
 		$updated = get_comment( $comment_id );
@@ -685,6 +812,233 @@ class Tests_Comment extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * The `wp_comments_personal_data_eraser()` function should erase user's comments.
+	 *
+	 * @group privacy
+	 * @ticket 43442
+	 */
+	public function test_wp_comments_personal_data_eraser() {
+
+		$post_id = self::factory()->post->create();
+		$user_id = self::factory()->user->create();
+
+		$args       = array(
+			'user_id'              => $user_id,
+			'comment_post_ID'      => $post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_date'         => '2018-04-14 17:20:00',
+			'comment_agent'        => 'COMMENT_AGENT',
+			'comment_content'      => 'Comment Content',
+		);
+		$comment_id = self::factory()->comment->create( $args );
+
+		wp_comments_personal_data_eraser( $args['comment_author_email'] );
+
+		$comment = get_comment( $comment_id );
+
+		$actual = array(
+			'comment_ID'           => $comment->comment_ID,
+			'user_id'              => $comment->user_id,
+			'comment_author'       => $comment->comment_author,
+			'comment_author_email' => $comment->comment_author_email,
+			'comment_author_url'   => $comment->comment_author_url,
+			'comment_author_IP'    => $comment->comment_author_IP,
+			'comment_date'         => $comment->comment_date,
+			'comment_date_gmt'     => $comment->comment_date_gmt,
+			'comment_agent'        => $comment->comment_agent,
+			'comment_content'      => $comment->comment_content,
+		);
+
+		$expected = array(
+			'comment_ID'           => (string) $comment_id,
+			'user_id'              => '0', // Anonymized.
+			'comment_author'       => 'Anonymous', // Anonymized.
+			'comment_author_email' => '', // Anonymized.
+			'comment_author_url'   => '', // Anonymized.
+			'comment_author_IP'    => '192.168.0.0', // Anonymized.
+			'comment_date'         => '2018-04-14 17:20:00',
+			'comment_date_gmt'     => '2018-04-14 17:20:00',
+			'comment_agent'        => '', // Anonymized.
+			'comment_content'      => 'Comment Content',
+		);
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * Testing the `wp_comments_personal_data_eraser()` function's output on an empty first page.
+	 *
+	 * @group privacy
+	 * @ticket 43442
+	 */
+	public function test_wp_comments_personal_data_eraser_empty_first_page_output() {
+
+		$actual   = wp_comments_personal_data_eraser( 'nocommentsfound@local.host' );
+		$expected = array(
+			'items_removed'  => false,
+			'items_retained' => false,
+			'messages'       => array(),
+			'done'           => true,
+		);
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * Testing the `wp_comments_personal_data_eraser()` function's output, for the non-empty first page.
+	 *
+	 * @group privacy
+	 * @ticket 43442
+	 */
+	public function test_wp_comments_personal_data_eraser_non_empty_first_page_output() {
+
+		$post_id = self::factory()->post->create();
+		$args    = array(
+			'comment_post_ID'      => $post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_date'         => '2018-04-14 17:20:00',
+			'comment_agent'        => 'COMMENT_AGENT',
+			'comment_content'      => 'Comment Content',
+		);
+		self::factory()->comment->create( $args );
+
+		$actual   = wp_comments_personal_data_eraser( $args['comment_author_email'] );
+		$expected = array(
+			'items_removed'  => true,
+			'items_retained' => false,
+			'messages'       => array(),
+			'done'           => true,
+		);
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * Testing the `wp_comments_personal_data_eraser()` function's output, for an empty second page.
+	 *
+	 * @group privacy
+	 * @ticket 43442
+	 */
+	public function test_wp_comments_personal_data_eraser_empty_second_page_output() {
+
+		$post_id = self::factory()->post->create();
+		$args    = array(
+			'comment_post_ID'      => $post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_date'         => '2018-04-14 17:20:00',
+			'comment_agent'        => 'COMMENT_AGENT',
+			'comment_content'      => 'Comment Content',
+		);
+		self::factory()->comment->create( $args );
+
+		$actual   = wp_comments_personal_data_eraser( $args['comment_author_email'], 2 );
+		$expected = array(
+			'items_removed'  => false,
+			'items_retained' => false,
+			'messages'       => array(),
+			'done'           => true,
+		);
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * Testing the `wp_anonymize_comment` filter, to prevent comment anonymization.
+	 *
+	 * @group privacy
+	 * @ticket 43442
+	 */
+	public function test_wp_anonymize_comment_filter_to_prevent_comment_anonymization() {
+
+		$post_id    = self::factory()->post->create();
+		$args       = array(
+			'comment_post_ID'      => $post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_date'         => '2018-04-14 17:20:00',
+			'comment_agent'        => 'COMMENT_AGENT',
+			'comment_content'      => 'Comment Content',
+		);
+		$comment_id = self::factory()->comment->create( $args );
+
+		add_filter( 'wp_anonymize_comment', '__return_false' );
+		$actual = wp_comments_personal_data_eraser( $args['comment_author_email'] );
+		remove_filter( 'wp_anonymize_comment', '__return_false' );
+
+		$message = sprintf( 'Comment %d contains personal data but could not be anonymized.', $comment_id );
+
+		$expected = array(
+			'items_removed'  => false,
+			'items_retained' => true,
+			'messages'       => array( $message ),
+			'done'           => true,
+		);
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * Testing the `wp_anonymize_comment` filter, to prevent comment anonymization, with a custom message.
+	 *
+	 * @group privacy
+	 * @ticket 43442
+	 */
+	public function test_wp_anonymize_comment_filter_to_prevent_comment_anonymization_with_custom_message() {
+
+		$post_id    = self::factory()->post->create();
+		$args       = array(
+			'comment_post_ID'      => $post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_date'         => '2018-04-14 17:20:00',
+			'comment_agent'        => 'COMMENT_AGENT',
+			'comment_content'      => 'Comment Content',
+		);
+		$comment_id = self::factory()->comment->create( $args );
+
+		add_filter( 'wp_anonymize_comment', array( $this, 'wp_anonymize_comment_custom_message' ), 10, 3 );
+		$actual = wp_comments_personal_data_eraser( $args['comment_author_email'] );
+		remove_filter( 'wp_anonymize_comment', array( $this, 'wp_anonymize_comment_custom_message' ) );
+
+		$message = sprintf( 'Some custom message for comment %d.', $comment_id );
+
+		$expected = array(
+			'items_removed'  => false,
+			'items_retained' => true,
+			'messages'       => array( $message ),
+			'done'           => true,
+		);
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * Callback for the `wp_anonymize_comment` filter.
+	 *
+	 * @param  bool|string $anonymize          Whether to apply the comment anonymization (bool).
+	 *                                         Custom prevention message (string). Default true.
+	 * @param  WP_Comment  $comment            WP_Comment object.
+	 * @param  array       $anonymized_comment Anonymized comment data.
+	 * @return string
+	 */
+	public function wp_anonymize_comment_custom_message( $anonymize, $comment, $anonymized_comment ) {
+		return sprintf( 'Some custom message for comment %d.', $comment->comment_ID );
+	}
+
 	public function test_update_should_invalidate_comment_cache() {
 		global $wpdb;
 
@@ -693,10 +1047,12 @@ class Tests_Comment extends WP_UnitTestCase {
 		$comment = get_comment( $c );
 		$this->assertSame( 'Foo', $comment->comment_author );
 
-		wp_update_comment( array(
-			'comment_ID' => $c,
-			'comment_author' => 'Bar',
-		) );
+		wp_update_comment(
+			array(
+				'comment_ID'     => $c,
+				'comment_author' => 'Bar',
+			)
+		);
 
 		$comment = get_comment( $c );
 
@@ -761,5 +1117,128 @@ class Tests_Comment extends WP_UnitTestCase {
 		$comment = get_comment( $c );
 
 		$this->assertSame( '1', $comment->comment_approved );
+	}
+
+	/**
+	 * Testing the `wp_comments_personal_data_exporter()` function.
+	 *
+	 * @group privacy
+	 * @ticket 43440
+	 */
+	public function test_wp_comments_personal_data_exporter() {
+		$args = array(
+			'comment_post_ID'      => self::$post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_agent'        => 'SOME_AGENT',
+			'comment_date'         => '2018-03-28 20:05:00',
+			'comment_content'      => 'Comment',
+		);
+
+		$comment_id = self::factory()->comment->create( $args );
+
+		$actual   = wp_comments_personal_data_exporter( $args['comment_author_email'] );
+		$expected = $args;
+
+		$this->assertTrue( $actual['done'] );
+
+		// Number of exported comments.
+		$this->assertSame( 1, count( $actual['data'] ) );
+
+		// Number of exported comment properties.
+		$this->assertSame( 8, count( $actual['data'][0]['data'] ) );
+
+		// Exported group.
+		$this->assertSame( 'comments', $actual['data'][0]['group_id'] );
+		$this->assertSame( 'Comments', $actual['data'][0]['group_label'] );
+
+		// Exported comment properties.
+		$this->assertSame( $expected['comment_author'], $actual['data'][0]['data'][0]['value'] );
+		$this->assertSame( $expected['comment_author_email'], $actual['data'][0]['data'][1]['value'] );
+		$this->assertSame( $expected['comment_author_url'], $actual['data'][0]['data'][2]['value'] );
+		$this->assertSame( $expected['comment_author_IP'], $actual['data'][0]['data'][3]['value'] );
+		$this->assertSame( $expected['comment_agent'], $actual['data'][0]['data'][4]['value'] );
+		$this->assertSame( $expected['comment_date'], $actual['data'][0]['data'][5]['value'] );
+		$this->assertSame( $expected['comment_content'], $actual['data'][0]['data'][6]['value'] );
+		$this->assertSame( esc_html( get_comment_link( $comment_id ) ), strip_tags( $actual['data'][0]['data'][7]['value'] ) );
+	}
+
+	/**
+	 * Testing the `wp_comments_personal_data_exporter()` function for no comments found.
+	 *
+	 * @group privacy
+	 * @ticket 43440
+	 */
+	public function test_wp_comments_personal_data_exporter_no_comments_found() {
+
+		$actual = wp_comments_personal_data_exporter( 'nocommentsfound@local.host' );
+
+		$expected = array(
+			'data' => array(),
+			'done' => true,
+		);
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * Testing the `wp_comments_personal_data_exporter()` function for an empty comment property.
+	 *
+	 * @group privacy
+	 * @ticket 43440
+	 */
+	public function test_wp_comments_personal_data_exporter_empty_comment_prop() {
+		$args = array(
+			'comment_post_ID'      => self::$post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_date'         => '2018-03-28 20:05:00',
+			'comment_agent'        => '',
+			'comment_content'      => 'Comment',
+		);
+
+		$c = self::factory()->comment->create( $args );
+
+		$actual = wp_comments_personal_data_exporter( $args['comment_author_email'] );
+
+		$this->assertTrue( $actual['done'] );
+
+		// Number of exported comments.
+		$this->assertSame( 1, count( $actual['data'] ) );
+
+		// Number of exported comment properties.
+		$this->assertSame( 7, count( $actual['data'][0]['data'] ) );
+	}
+
+	/**
+	 * Testing the `wp_comments_personal_data_exporter()` function with an empty second page.
+	 *
+	 * @group privacy
+	 * @ticket 43440
+	 */
+	public function test_wp_comments_personal_data_exporter_empty_second_page() {
+		$args = array(
+			'comment_post_ID'      => self::$post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_date'         => '2018-03-28 20:05:00',
+			'comment_agent'        => 'SOME_AGENT',
+			'comment_content'      => 'Comment',
+		);
+
+		$c = self::factory()->comment->create( $args );
+
+		$actual = wp_comments_personal_data_exporter( $args['comment_author_email'], 2 );
+
+		$this->assertTrue( $actual['done'] );
+
+		// Number of exported comments.
+		$this->assertSame( 0, count( $actual['data'] ) );
 	}
 }

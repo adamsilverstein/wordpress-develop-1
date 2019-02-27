@@ -2,9 +2,9 @@
 
 class Spy_REST_Server extends WP_REST_Server {
 
-	public $sent_headers = array();
-	public $sent_body = '';
-	public $last_request = null;
+	public $sent_headers        = array();
+	public $sent_body           = '';
+	public $last_request        = null;
 	public $override_by_default = false;
 
 	/**
@@ -29,6 +29,10 @@ class Spy_REST_Server extends WP_REST_Server {
 
 	public function send_header( $header, $value ) {
 		$this->sent_headers[ $header ] = $value;
+	}
+
+	public function remove_header( $header ) {
+		unset( $this->sent_headers[ $header ] );
 	}
 
 	/**
@@ -59,7 +63,7 @@ class Spy_REST_Server extends WP_REST_Server {
 	public function serve_request( $path = null ) {
 
 		ob_start();
-		$result = parent::serve_request( $path );
+		$result          = parent::serve_request( $path );
 		$this->sent_body = ob_get_clean();
 		return $result;
 	}
