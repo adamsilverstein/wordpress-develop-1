@@ -484,6 +484,20 @@ google_ad_format = "120x60_as_rimg";
 google_cpa_choice = "CAAQ2eOZzgEaCD4zuVkdzt_CKI-293M";
 //--></script></p>',
 			),
+			array(
+				'<!-- wp:paragraph -->
+<p><del>This is a paragraph.</del></p>
+<!-- /wp:paragraph -->
+<!-- wp:client/custom-block {"title":"This is the title"} /-->
+<!-- wp:paragraph -->
+<!-- /wp:paragraph -->',
+				'<!-- wp:paragraph -->
+<p><del>This is a paragraph.</del></p>
+<!-- /wp:paragraph -->
+<!-- wp:client/custom-block {"title":"This is the title"} /-->
+<!-- wp:paragraph -->
+<!-- /wp:paragraph -->'
+			),
 		);
 	}
 
