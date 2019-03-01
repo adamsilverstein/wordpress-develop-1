@@ -420,7 +420,7 @@ function wp_constrain_dimensions( $current_width, $current_height, $max_width = 
 	$height_ratio = 1.0;
 	$width_ratio  = $height_ratio;
 	$did_height   = false;
-	$did_width    = $did_height
+	$did_width    = $did_height;
 
 	if ( $max_width > 0 && $current_width > 0 && $current_width > $max_width ) {
 		$width_ratio = $max_width / $current_width;
