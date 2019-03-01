@@ -465,6 +465,16 @@ class Tests_Functions extends WP_UnitTestCase {
 		$this->assertNotEmpty( $mimes );
 	}
 
+	function check_settings_for_single( $settings ) {
+		$this->assertEquals( array( 'image' ), array_keys( $settings['mimeTypes'] ) );
+		return $settings;
+	}
+
+	function check_settings_for_multiple( $settings ) {
+		$this->assertEquals( array( 'image', 'audio' ), array_keys( $settings['mimeTypes'] ) );
+		return $settings;
+	}
+
 	/**
 	 * Test that the media grid uses the correct available single media type.
 	 * @ticket 43658
@@ -477,10 +487,7 @@ class Tests_Functions extends WP_UnitTestCase {
 
 		add_filter(
 			'media_view_settings',
-			function( $settings ) {
-				$this->assertEquals( array( 'image' ), array_keys( $settings['mimeTypes'] ) );
-				return $settings;
-			}
+			array( $this, 'check_settings_for_single' )
 		);
 		wp_enqueue_media();
 		remove_all_filters( 'media_view_settings' );
@@ -503,10 +510,7 @@ class Tests_Functions extends WP_UnitTestCase {
 
 		add_filter(
 			'media_view_settings',
-			function( $settings ) {
-				$this->assertEquals( array( 'image', 'audio' ), array_keys( $settings['mimeTypes'] ) );
-				return $settings;
-			}
+			array( $this, 'check_settings_for_multiple' )
 		);
 		wp_enqueue_media();
 	}
