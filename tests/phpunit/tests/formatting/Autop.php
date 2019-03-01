@@ -416,7 +416,8 @@ Paragraph two.';
 			'select',
 		);
 
-		$content = $expected = array();
+		$expected = array();
+		$content  = $expected;
 
 		foreach ( $inlines as $inline ) {
 			$content[]  = "<$inline>foo</$inline>";
@@ -442,8 +443,8 @@ Paragraph two.';
 	function data_html_comments() {
 		return array(
 			array(
-				"<!-- HTML Comment -->",
-				"<!-- HTML Comment -->",
+				'<!-- HTML Comment -->',
+				'<!-- HTML Comment -->',
 			),
 			array(
 				"<!-- HTML\nmultiline\nComment -->",
@@ -451,22 +452,22 @@ Paragraph two.';
 			),
 			array(
 				"Line One.\n<!-- HTML Comment -->Line Two\nLine Three.",
-				"<p>Line One.<br />
+				'<p>Line One.<br />
 <!-- HTML Comment -->Line Two<br />
-Line Three.</p>",
+Line Three.</p>',
 			),
 			array(
 				"<p>Line One.\n<!-- HTML Comment -->Line Two</p>\nLine Three.",
-				"<p>Line One.<br />
+				'<p>Line One.<br />
 <!-- HTML Comment -->Line Two</p>
-<p>Line Three.</p>",
+<p>Line Three.</p>',
 			),
 			array(
 				"Line One.\n<!-- HTML\nComment -->\nLine Three.",
-				"<p>Line One.<br />
+				'<p>Line One.<br />
 <!-- HTML
 Comment -->
-Line Three.</p>",
+Line Three.</p>',
 			),
 			array(
 				'<script type="text/javascript"><!--
@@ -496,7 +497,7 @@ google_cpa_choice = "CAAQ2eOZzgEaCD4zuVkdzt_CKI-293M";
 <!-- /wp:paragraph -->
 <!-- wp:client/custom-block {"title":"This is the title"} /-->
 <!-- wp:paragraph -->
-<!-- /wp:paragraph -->'
+<!-- /wp:paragraph -->',
 			),
 		);
 	}
@@ -616,9 +617,9 @@ line 2<br/>
 	 * @ticket 39307
 	 */
 	function test_that_wpautop_doses_not_add_extra_closing_p_in_figure() {
-		$content1 = $expected1 = '<figure><img src="example.jpg" /><figcaption>Caption</figcaption></figure>';
-
-		$content2 = '<figure>
+		$expected1 = '<figure><img src="example.jpg" /><figcaption>Caption</figcaption></figure>';
+		$content1  = $expected1;
+		$content2  = '<figure>
 <img src="example.jpg" />
 <figcaption>Caption</figcaption>
 </figure>';
@@ -634,7 +635,7 @@ line 2<br/>
 	 * @ticket 2833
 	 */
 	function test_that_styles_dont_get_extra_brs() {
-		$content = '<style type="text/css>
+		$content  = '<style type="text/css>
 .matt { color: #FFFFFF; }
 </style>';
 		$expected = '<style type="text/css>

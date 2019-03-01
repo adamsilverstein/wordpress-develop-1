@@ -1247,7 +1247,7 @@ http://www.example.com/embed/TEST04YRHA0<br />
 Stop.</p>
 
 EOF;
-		$result = apply_filters( 'the_content', $content );
+		$result   = apply_filters( 'the_content', $content );
 		$this->assertEquals( $expected, $result );
 	}
 
