@@ -66,7 +66,7 @@ function image_constrain_size_for_editor( $width, $height, $size = 'medium', $co
 	if ( is_array( $size ) ) {
 		$max_width  = $size[0];
 		$max_height = $size[1];
-	} elseif ( $size == 'thumb' || $size == 'thumbnail' ) {
+	} elseif ( 'thumb' === $size || 'thumbnail' === $size ) {
 		$max_width  = intval( get_option( 'thumbnail_size_w' ) );
 		$max_height = intval( get_option( 'thumbnail_size_h' ) );
 		// last chance thumbnail size defaults
@@ -74,18 +74,18 @@ function image_constrain_size_for_editor( $width, $height, $size = 'medium', $co
 			$max_width  = 128;
 			$max_height = 96;
 		}
-	} elseif ( $size == 'medium' ) {
+	} elseif ( 'medium' === $size ) {
 		$max_width  = intval( get_option( 'medium_size_w' ) );
 		$max_height = intval( get_option( 'medium_size_h' ) );
 
-	} elseif ( $size == 'medium_large' ) {
+	} elseif ( 'medium_large' === $size ) {
 		$max_width  = intval( get_option( 'medium_large_size_w' ) );
 		$max_height = intval( get_option( 'medium_large_size_h' ) );
 
 		if ( intval( $content_width ) > 0 ) {
 			$max_width = min( intval( $content_width ), $max_width );
 		}
-	} elseif ( $size == 'large' ) {
+	} elseif ( 'large' === $size ) {
 		/*
 		 * We're inserting a large size image into the editor. If it's a really
 		 * big image we'll scale it down to fit reasonably within the editor
@@ -195,15 +195,20 @@ function image_downsize( $id, $size = 'medium' ) {
 	 * @param array|string $size     Size of image. Image size or array of width and height values (in that order).
 	 *                               Default 'medium'.
 	 */
-	if ( $out = apply_filters( 'image_downsize', false, $id, $size ) ) {
+	$out = apply_filters( 'image_downsize', false, $id, $size );
+	if ( $out ) {
 		return $out;
 	}
 
 	$img_url          = wp_get_attachment_url( $id );
 	$meta             = wp_get_attachment_metadata( $id );
-	$width            = $height = 0;
+	$height           = 0;
+	$width            = $height;
 	$is_intermediate  = false;
 	$img_url_basename = wp_basename( $img_url );
+	$intermediate     = image_get_intermediate_size( $id, $size );
+	$thumb_file       = wp_get_attachment_thumb_file( $id );
+	$info             = $thumb_file && getimagesize( $thumb_file );
 
 	// If the file isn't an image, attempt to replace its URL with a rendered image from its meta.
 	// Otherwise, a non-image type could be returned.
@@ -219,14 +224,14 @@ function image_downsize( $id, $size = 'medium' ) {
 	}
 
 	// try for a new style intermediate size
-	if ( $intermediate = image_get_intermediate_size( $id, $size ) ) {
+	if ( $intermediate ) {
 		$img_url         = str_replace( $img_url_basename, $intermediate['file'], $img_url );
 		$width           = $intermediate['width'];
 		$height          = $intermediate['height'];
 		$is_intermediate = true;
-	} elseif ( $size == 'thumbnail' ) {
+	} elseif ( 'thumbnail' === $size ) {
 		// fall back to the old thumbnail
-		if ( ( $thumb_file = wp_get_attachment_thumb_file( $id ) ) && $info = getimagesize( $thumb_file ) ) {
+		if ( $thumb_file && $info ) {
 			$img_url         = str_replace( $img_url_basename, wp_basename( $thumb_file ), $img_url );
 			$width           = $info[0];
 			$height          = $info[1];
@@ -412,8 +417,10 @@ function wp_constrain_dimensions( $current_width, $current_height, $max_width = 
 		return array( $current_width, $current_height );
 	}
 
-	$width_ratio = $height_ratio = 1.0;
-	$did_width   = $did_height = false;
+	$height_ratio = 1.0;
+	$width_ratio  = $height_ratio;
+	$did_height   = false;
+	$did_width    = $did_height
 
 	if ( $max_width > 0 && $current_width > 0 && $current_width > $max_width ) {
 		$width_ratio = $max_width / $current_width;
@@ -687,7 +694,8 @@ function wp_image_matches_ratio( $source_width, $source_height, $target_width, $
  * }
  */
 function image_get_intermediate_size( $post_id, $size = 'thumbnail' ) {
-	if ( ! $size || ! is_array( $imagedata = wp_get_attachment_metadata( $post_id ) ) || empty( $imagedata['sizes'] ) ) {
+	$imagedata = wp_get_attachment_metadata( $post_id );
+	if ( ! $size || ! is_array( $imagedata ) || empty( $imagedata['sizes'] ) ) {
 		return false;
 	}
 
@@ -826,7 +834,8 @@ function wp_get_attachment_image_src( $attachment_id, $size = 'thumbnail', $icon
 	if ( ! $image ) {
 		$src = false;
 
-		if ( $icon && $src = wp_mime_type_icon( $attachment_id ) ) {
+		if ( $icon && wp_mime_type_icon( $attachment_id ) ) {
+			$src = wp_mime_type_icon( $attachment_id );
 			/** This filter is documented in wp-includes/post.php */
 			$icon_dir = apply_filters( 'icon_dir', ABSPATH . WPINC . '/images/media' );
 
@@ -984,7 +993,7 @@ function _wp_get_attachment_relative_path( $file ) {
  *                    or false if the size doesn't exist.
  */
 function _wp_get_image_size_from_meta( $size_name, $image_meta ) {
-	if ( $size_name === 'full' ) {
+	if ( 'full' === $size_name ) {
 		return array(
 			absint( $image_meta['width'] ),
 			absint( $image_meta['height'] ),
@@ -1014,7 +1023,8 @@ function _wp_get_image_size_from_meta( $size_name, $image_meta ) {
  * @return string|bool A 'srcset' value string or false.
  */
 function wp_get_attachment_image_srcset( $attachment_id, $size = 'medium', $image_meta = null ) {
-	if ( ! $image = wp_get_attachment_image_src( $attachment_id, $size ) ) {
+	$image = wp_get_attachment_image_src( $attachment_id, $size );
+	if ( ! $image ) {
 		return false;
 	}
 
@@ -1146,7 +1156,8 @@ function wp_calculate_image_srcset( $size_array, $image_src, $image_meta, $attac
 
 		// If the file name is part of the `src`, we've confirmed a match.
 		if ( ! $src_matched && false !== strpos( $image_src, $dirname . $image['file'] ) ) {
-			$src_matched = $is_src = true;
+			$is_src      = true;
+			$src_matched = $is_src;
 		}
 
 		// Filter out images that are from previous edits.
@@ -1232,7 +1243,8 @@ function wp_calculate_image_srcset( $size_array, $image_src, $image_meta, $attac
  * @return string|bool A valid source size value for use in a 'sizes' attribute or false.
  */
 function wp_get_attachment_image_sizes( $attachment_id, $size = 'medium', $image_meta = null ) {
-	if ( ! $image = wp_get_attachment_image_src( $attachment_id, $size ) ) {
+	$image = wp_get_attachment_image_src( $attachment_id, $size );
+	if ( ! $image ) {
 		return false;
 	}
 
@@ -3575,14 +3587,15 @@ function wp_enqueue_media( $args = array() ) {
 	foreach ( $months as $month_year ) {
 		$month_year->text = sprintf( __( '%1$s %2$d' ), $wp_locale->get_month( $month_year->month ), $month_year->year );
 	}
-        /* settings 'mimeTypes' filter by available post mime types which is already done in media 'list' mode */
-        $avail_post_mime_types = get_available_post_mime_types( 'attachment' );
-        $mimeTypes = wp_list_pluck( get_post_mime_types(), 0 );
-        foreach ( $mimeTypes as $mime_type => $label ) {
-                    if ( ! wp_match_mime_types( $mime_type, $avail_post_mime_types ) ) {
-                        unset( $mimeTypes[$mime_type] );
-                    }
-        }
+
+	// Filter to show only available mime types.
+	$avail_post_mime_types = get_available_post_mime_types( 'attachment' );
+	$mimeTypes             = wp_list_pluck( get_post_mime_types(), 0 );
+	foreach ( $mimeTypes as $mime_type => $label ) {
+		if ( ! wp_match_mime_types( $mime_type, $avail_post_mime_types ) ) {
+			unset( $mimeTypes[ $mime_type ] );
+		}
+	}
 	$settings = array(
 		'tabs'             => $tabs,
 		'tabUrl'           => add_query_arg( array( 'chromeless' => true ), admin_url( 'media-upload.php' ) ),

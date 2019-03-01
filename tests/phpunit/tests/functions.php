@@ -475,10 +475,13 @@ class Tests_Functions extends WP_UnitTestCase {
 		$upload        = wp_upload_bits( basename( $filename ), null, $contents );
 		$attachment_id = $this->_make_attachment( $upload );
 
-		add_filter( 'media_view_settings', function( $settings ) {
-			$this->assertEquals( array( 'image' ), array_keys( $settings['mimeTypes'] ) );
-			return $settings;
-		} );
+		add_filter(
+			'media_view_settings',
+			function( $settings ) {
+				$this->assertEquals( array( 'image' ), array_keys( $settings['mimeTypes'] ) );
+				return $settings;
+			}
+		);
 		wp_enqueue_media();
 		remove_all_filters( 'media_view_settings' );
 	}
@@ -498,10 +501,13 @@ class Tests_Functions extends WP_UnitTestCase {
 		$upload        = wp_upload_bits( basename( $filename ), null, $contents );
 		$attachment_id = $this->_make_attachment( $upload );
 
-		add_filter( 'media_view_settings', function( $settings ) {
-			$this->assertEquals( array( 'image', 'audio' ), array_keys( $settings['mimeTypes'] ) );
-			return $settings;
-		} );
+		add_filter(
+			'media_view_settings',
+			function( $settings ) {
+				$this->assertEquals( array( 'image', 'audio' ), array_keys( $settings['mimeTypes'] ) );
+				return $settings;
+			}
+		);
 		wp_enqueue_media();
 	}
 
