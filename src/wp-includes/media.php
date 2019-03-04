@@ -1577,7 +1577,7 @@ function img_caption_shortcode( $attr, $content = null ) {
 	}
 
 	$describedby = '';
-	$caption_id  = $describedby
+	$caption_id  = $describedby;
 	$id          = $caption_id;
 
 	if ( $atts['id'] ) {
@@ -2600,7 +2600,7 @@ function wp_video_shortcode( $attr, $content = '' ) {
 	}
 
 	$is_youtube    = false;
-	$is_vimeo      = $is_youtube
+	$is_vimeo      = $is_youtube;
 	$yt_pattern    = '#^https?://(?:www\.)?(?:youtube\.com/watch|youtu\.be/)#';
 	$vimeo_pattern = '#^https?://(.+\.)?vimeo\.com/.*#';
 
