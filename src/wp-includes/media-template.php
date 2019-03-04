@@ -185,9 +185,11 @@ function wp_print_media_templates() {
 	</style>
 	<![endif]-->
 	<script type="text/html" id="tmpl-media-frame">
+		<div class="hidden a11y-heading"><?php _e( 'Available Actions' ); ?></div>
 		<div class="media-frame-menu"></div>
 		<div class="media-frame-title"></div>
 		<div class="media-frame-router"></div>
+		<div class="hidden a11y-heading"><?php _e( 'Attachments List' ); ?></div>
 		<div class="media-frame-content"></div>
 		<div class="media-frame-toolbar"></div>
 		<div class="media-frame-uploader"></div>
@@ -650,6 +652,7 @@ function wp_print_media_templates() {
 	</script>
 
 	<script type="text/html" id="tmpl-media-selection">
+		<div class="hidden a11y-heading"><?php _e( 'Available Actions' ); ?></div>
 		<div class="selection-info">
 			<span class="count"></span>
 			<# if ( data.editable ) { #>
