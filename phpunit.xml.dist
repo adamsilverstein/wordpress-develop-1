@@ -13,11 +13,14 @@
 			<file phpVersion="5.3.0">tests/phpunit/tests/image/editorGd.php</file>
 			<file phpVersion="5.3.0">tests/phpunit/tests/image/editorImagick.php</file>
 			<file phpVersion="5.3.0">tests/phpunit/tests/oembed/headers.php</file>
+			<file phpVersion="5.4.0">tests/phpunit/tests/media/media-grid.php</file>
 			<exclude>tests/phpunit/tests/actions/closures.php</exclude>
 			<exclude>tests/phpunit/tests/image/editor.php</exclude>
 			<exclude>tests/phpunit/tests/image/editorGd.php</exclude>
 			<exclude>tests/phpunit/tests/image/editorImagick.php</exclude>
 			<exclude>tests/phpunit/tests/oembed/headers.php</exclude>
+			<exclude>tests/phpunit/tests/media/media-grid.php</exclude>
+
 			<exclude>tests/phpunit/tests/rest-api/rest-autosaves-controller.php</exclude>
 		</testsuite>
 		<!-- Sets the DOING_AUTOSAVE constant, so needs to be run last -->
