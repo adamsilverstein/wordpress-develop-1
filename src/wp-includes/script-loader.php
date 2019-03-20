@@ -541,7 +541,7 @@ function wp_default_packages_inline_scripts( &$scripts ) {
 					'				nonceMiddleware.nonce = response[ "rest_nonce" ];',
 					'			}',
 					'		}',
-					'	)',
+					'	);',
 					'} )();',
 				)
 			),
