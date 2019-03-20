@@ -1,7 +1,8 @@
 <?php
 
 /**
- * @group media-grid.php
+ * @group media
+ * @group mediagrid
  */
 class Tests_Media_Grid extends WP_UnitTestCase {
 

@@ -20,7 +20,6 @@
 			<exclude>tests/phpunit/tests/image/editorImagick.php</exclude>
 			<exclude>tests/phpunit/tests/oembed/headers.php</exclude>
 			<exclude>tests/phpunit/tests/media/media-grid.php</exclude>
-
 			<exclude>tests/phpunit/tests/rest-api/rest-autosaves-controller.php</exclude>
 		</testsuite>
 		<!-- Sets the DOING_AUTOSAVE constant, so needs to be run last -->
