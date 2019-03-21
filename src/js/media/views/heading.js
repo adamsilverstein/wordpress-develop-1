@@ -12,7 +12,7 @@
  */
 var Heading = wp.media.View.extend( {
 	tagName: function() {
-		return this.options.level || 'h1'
+		return this.options.level || 'h1';
 	},
 	className: 'media-views-heading',
 
