@@ -414,7 +414,7 @@ AttachmentsBrowser = View.extend(/** @lends wp.media.view.AttachmentsBrowser.pro
 		this.attachmentsHeading = new wp.media.view.Heading( {
 			text: l10n.attachmentsList,
 			level: 'h2',
-			className: 'screen-reader-text'
+			className: 'media-views-heading screen-reader-text'
 		} );
 		this.views.add( this.attachmentsHeading );
 	},
