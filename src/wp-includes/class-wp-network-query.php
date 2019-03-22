@@ -64,14 +64,6 @@ class WP_Network_Query {
 	public $networks;
 
 	/**
-	 * List of network ids in the query.
-	 *
-	 * @since 5.2.0
-	 * @var array|null
-	 */
-	public $network_ids = null;
-
-	/**
 	 * The amount of found networks for the current query.
 	 *
 	 * @since 4.6.0
@@ -207,6 +199,8 @@ class WP_Network_Query {
 		 */
 		do_action_ref_array( 'pre_get_networks', array( &$this ) );
 
+		$network_ids = null;
+
 		/**
 		 * Filter the sites array before the query takes place.
 		 *
@@ -219,9 +213,9 @@ class WP_Network_Query {
 		 *                                   or null to allow WP to run its normal queries.
 		 * @param WP_Network_Query $this     The WP_Network_Query instance, passed by reference.
 		 */
-		$this->network_ids = apply_filters_ref_array( 'networks_pre_query', array( $this->network_ids, &$this ) );
+		$network_ids = apply_filters_ref_array( 'networks_pre_query', array( $network_ids, &$this ) );
 
-		if ( null === $this->network_ids ) {
+		if ( null === $network_ids ) {
 
 			// $args can include anything. Only use the args defined in the query_var_defaults to compute the key.
 			$_args = wp_array_slice_assoc( $this->query_vars, array_keys( $this->query_var_defaults ) );
@@ -236,18 +230,18 @@ class WP_Network_Query {
 			$cache_value = wp_cache_get( $cache_key, 'networks' );
 
 			if ( false === $cache_value ) {
-				$this->network_ids = $this->get_network_ids();
-				if ( $this->network_ids ) {
+				$network_ids = $this->get_network_ids();
+				if ( $network_ids ) {
 					$this->set_found_networks();
 				}
 
 				$cache_value = array(
-					'network_ids'    => $this->network_ids,
+					'network_ids'    => $network_ids,
 					'found_networks' => $this->found_networks,
 				);
 				wp_cache_add( $cache_key, $cache_value, 'networks' );
 			} else {
-				$this->network_ids    = $cache_value['network_ids'];
+				$network_ids    = $cache_value['network_ids'];
 				$this->found_networks = $cache_value['found_networks'];
 			}
 		}
@@ -259,24 +253,24 @@ class WP_Network_Query {
 		// If querying for a count only, there's nothing more to do.
 		if ( $this->query_vars['count'] ) {
 			// $network_ids is actually a count in this case.
-			return intval( $this->network_ids );
+			return intval( $network_ids );
 		}
 
-		$this->network_ids = array_map( 'intval', $this->network_ids );
+		$network_ids = array_map( 'intval', $network_ids );
 
 		if ( 'ids' == $this->query_vars['fields'] ) {
-			$this->networks = $this->network_ids;
+			$this->networks = $network_ids;
 
 			return $this->networks;
 		}
 
 		if ( $this->query_vars['update_network_cache'] ) {
-			_prime_network_caches( $this->network_ids );
+			_prime_network_caches( $network_ids );
 		}
 
 		// Fetch full network objects from the primed cache.
 		$_networks = array();
-		foreach ( $this->network_ids as $network_id ) {
+		foreach ( $network_ids as $network_id ) {
 			if ( $_network = get_network( $network_id ) ) {
 				$_networks[] = $_network;
 			}
