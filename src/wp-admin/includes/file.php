@@ -1139,8 +1139,8 @@ function verify_file_signature( $filename, $signatures, $filename_for_errors = f
 		return new WP_Error(
 			'signature_verification_unsupported',
 			sprintf(
-				/* translators: 1: The filename of the package. */
-				__( 'The authenticity of %1$s could not be verified as signature verification is unavailable on this system.' ),
+				/* translators: %s: The filename of the package. */
+				__( 'The authenticity of %s could not be verified as signature verification is unavailable on this system.' ),
 				'<span class="code">' . esc_html( $filename_for_errors ) . '</span>'
 			),
 			( ! function_exists( 'sodium_crypto_sign_verify_detached' ) ? 'sodium_crypto_sign_verify_detached' : 'sha384' )
@@ -1151,8 +1151,8 @@ function verify_file_signature( $filename, $signatures, $filename_for_errors = f
 		return new WP_Error(
 			'signature_verification_no_signature',
 			sprintf(
-				/* translators: 1: The filename of the package. */
-				__( 'The authenticity of %1$s could not be verified as no signature was found.' ),
+				/* translators: %s: The filename of the package. */
+				__( 'The authenticity of %s could not be verified as no signature was found.' ),
 				'<span class="code">' . esc_html( $filename_for_errors ) . '</span>'
 			),
 			array(
@@ -1198,8 +1198,8 @@ function verify_file_signature( $filename, $signatures, $filename_for_errors = f
 	return new WP_Error(
 		'signature_verification_failed',
 		sprintf(
-			/* translators: 1: The filename of the package. */
-			__( 'The authenticity of %1$s could not be verified.' ),
+			/* translators: %s: The filename of the package. */
+			__( 'The authenticity of %s could not be verified.' ),
 			'<span class="code">' . esc_html( $filename_for_errors ) . '</span>'
 		),
 		// Error data helpful for debugging:
@@ -2218,7 +2218,7 @@ function wp_privacy_generate_personal_data_export_file( $request_id ) {
 	}
 
 	$title = sprintf(
-		/* translators: %s: user's e-mail address */
+		/* translators: %s: user's email address */
 		__( 'Personal Data Export for %s' ),
 		$email_address
 	);
@@ -2423,6 +2423,7 @@ All at ###SITENAME###
 	$mail_success = wp_mail(
 		$email_address,
 		sprintf(
+			/* translators: Personal data export notification email subject. %s: Site title */
 			__( '[%s] Personal Data Export' ),
 			$site_name
 		),
