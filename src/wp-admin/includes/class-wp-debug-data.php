@@ -109,10 +109,12 @@ class WP_Debug_Data {
 			),
 		);
 
-		$info['wp-paths-sizes'] = array(
-			'label'  => __( 'Directories and Sizes' ),
-			'fields' => array(),
-		);
+		if ( ! $is_multisite ) {
+			$info['wp-paths-sizes'] = array(
+				'label'  => __( 'Directories and Sizes' ),
+				'fields' => array(),
+			);
+		}
 
 		$info['wp-dropins'] = array(
 			'label'       => __( 'Drop-ins' ),
@@ -389,56 +391,59 @@ class WP_Debug_Data {
 			);
 		}
 
-		$not_calculated = __( 'Not calculated' );
+		// Remove accordion for Directories and Sizes if in Multisite.
+		if ( ! $is_multisite ) {
+			$loading = __( 'Loading&hellip;' );
 
-		$info['wp-paths-sizes']['fields'] = array(
-			'wordpress_path' => array(
-				'label' => __( 'WordPress directory location' ),
-				'value' => untrailingslashit( ABSPATH ),
-			),
-			'wordpress_size' => array(
-				'label' => __( 'WordPress directory size' ),
-				'value' => $not_calculated,
-				'debug' => 'not calculated',
-			),
-			'uploads_path'   => array(
-				'label' => __( 'Uploads directory location' ),
-				'value' => $upload_dir['basedir'],
-			),
-			'uploads_size'   => array(
-				'label' => __( 'Uploads directory size' ),
-				'value' => $not_calculated,
-				'debug' => 'not calculated',
-			),
-			'themes_path'    => array(
-				'label' => __( 'Themes directory location' ),
-				'value' => get_theme_root(),
-			),
-			'themes_size'    => array(
-				'label' => __( 'Themes directory size' ),
-				'value' => $not_calculated,
-				'debug' => 'not calculated',
-			),
-			'plugins_path'   => array(
-				'label' => __( 'Plugins directory location' ),
-				'value' => WP_PLUGIN_DIR,
-			),
-			'plugins_size'   => array(
-				'label' => __( 'Plugins directory size' ),
-				'value' => $not_calculated,
-				'debug' => 'not calculated',
-			),
-			'database_size'  => array(
-				'label' => __( 'Database size' ),
-				'value' => $not_calculated,
-				'debug' => 'not calculated',
-			),
-			'total_size'     => array(
-				'label' => __( 'Total installation size' ),
-				'value' => $not_calculated,
-				'debug' => 'not calculated',
-			),
-		);
+			$info['wp-paths-sizes']['fields'] = array(
+				'wordpress_path' => array(
+					'label' => __( 'WordPress directory location' ),
+					'value' => untrailingslashit( ABSPATH ),
+				),
+				'wordpress_size' => array(
+					'label' => __( 'WordPress directory size' ),
+					'value' => $loading,
+					'debug' => 'loading...',
+				),
+				'uploads_path'   => array(
+					'label' => __( 'Uploads directory location' ),
+					'value' => $upload_dir['basedir'],
+				),
+				'uploads_size'   => array(
+					'label' => __( 'Uploads directory size' ),
+					'value' => $loading,
+					'debug' => 'loading...',
+				),
+				'themes_path'    => array(
+					'label' => __( 'Themes directory location' ),
+					'value' => get_theme_root(),
+				),
+				'themes_size'    => array(
+					'label' => __( 'Themes directory size' ),
+					'value' => $loading,
+					'debug' => 'loading...',
+				),
+				'plugins_path'   => array(
+					'label' => __( 'Plugins directory location' ),
+					'value' => WP_PLUGIN_DIR,
+				),
+				'plugins_size'   => array(
+					'label' => __( 'Plugins directory size' ),
+					'value' => $loading,
+					'debug' => 'loading...',
+				),
+				'database_size'  => array(
+					'label' => __( 'Database size' ),
+					'value' => $loading,
+					'debug' => 'loading...',
+				),
+				'total_size'     => array(
+					'label' => __( 'Total installation size' ),
+					'value' => $loading,
+					'debug' => 'loading...',
+				),
+			);
+		}
 
 		// Get a list of all drop-in replacements.
 		$dropins = get_dropins();
@@ -1054,8 +1059,8 @@ class WP_Debug_Data {
 				if ( is_array( $debug_data ) ) {
 					$value = '';
 
-					foreach ( $field['value'] as $name => $value ) {
-						$value .= sprintf( "\n\t%s: %s", $name, $value );
+					foreach ( $debug_data as $sub_field_name => $sub_field_value ) {
+						$value .= sprintf( "\n\t%s: %s", $sub_field_name, $sub_field_value );
 					}
 				} elseif ( is_bool( $debug_data ) ) {
 					$value = $debug_data ? 'true' : 'false';
