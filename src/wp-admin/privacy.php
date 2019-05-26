@@ -125,7 +125,7 @@ require_once( ABSPATH . 'wp-admin/admin-header.php' );
 ?>
 <div class="wrap">
 	<h1><?php echo $title; ?></h1>
-	<h2><?php _e( 'Privacy Policy page' ); ?></h2>
+	<h2><?php _e( 'Privacy Policy Page' ); ?></h2>
 	<p>
 		<?php _e( 'As a website owner, you may need to follow national or international privacy laws. For example, you may need to create and display a Privacy Policy.' ); ?>
 		<?php _e( 'If you already have a Privacy Policy page, please select it below. If not, please create one.' ); ?>
@@ -191,9 +191,9 @@ require_once( ABSPATH . 'wp-admin/admin-header.php' );
 	</p>
 
 	<hr>
-	<table class="form-table tools-privacy-policy-page">
+	<table class="form-table tools-privacy-policy-page" role="presentation">
 		<tr>
-			<th scope="row">
+			<th scope="row"><label for="page_for_privacy_policy">
 				<?php
 				if ( $privacy_policy_page_exists ) {
 					_e( 'Change your Privacy Policy page' );
@@ -201,7 +201,7 @@ require_once( ABSPATH . 'wp-admin/admin-header.php' );
 					_e( 'Select a Privacy Policy page' );
 				}
 				?>
-			</th>
+			</label></th>
 			<td>
 				<?php
 				$has_pages = (bool) get_posts(
@@ -218,9 +218,6 @@ require_once( ABSPATH . 'wp-admin/admin-header.php' );
 				if ( $has_pages ) :
 					?>
 					<form method="post" action="">
-						<label for="page_for_privacy_policy">
-							<?php _e( 'Select an existing page:' ); ?>
-						</label>
 						<input type="hidden" name="action" value="set-privacy-page" />
 						<?php
 						wp_dropdown_pages(

@@ -355,7 +355,7 @@ class WP_Site_Health {
 					sprintf(
 						/* translators: %d: The number of active plugins. */
 						_n(
-							'Your site has %d active plugin, and they are all up to date.',
+							'Your site has %d active plugin, and it is up to date.',
 							'Your site has %d active plugins, and they are all up to date.',
 							$plugins_active
 						),
@@ -511,7 +511,7 @@ class WP_Site_Health {
 					sprintf(
 						/* translators: %d: The number of themes. */
 						_n(
-							'Your site has %d installed theme, and they are all up to date.',
+							'Your site has %d installed theme, and it is up to date.',
 							'Your site has %d installed themes, and they are all up to date.',
 							$themes_total
 						),
@@ -740,13 +740,13 @@ class WP_Site_Health {
 				'<p>%s</p><p>%s</p>',
 				__( 'PHP modules perform most of the tasks on the server that make your site run. Any changes to these must be made by your server administrator.' ),
 				sprintf(
-					/* translators: %s: Link to the hosting group page about recommended PHP modules. */
-					__( 'The WordPress Hosting Team maintains a list of those modules, both recommended and required, in %s.' ),
+					/* translators: 1: Link to the hosting group page about recommended PHP modules. 2: Additional link attributes. 3: Accessibility text. */
+					__( 'The WordPress Hosting Team maintains a list of those modules, both recommended and required, in <a href="%1$s" %2$s>the team handbook%3$s</a>.' ),
+					/* translators: Localized team handbook, if one exists. */
+					esc_url( __( 'https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions' ) ),
+					'target="_blank" rel="noopener noreferrer"',
 					sprintf(
-						'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s <span class="screen-reader-text">%3$s</span><span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
-						/* translators: Localized team handbook, if one exists. */
-						esc_url( __( 'https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions' ) ),
-						__( 'the team handbook' ),
+						' <span class="screen-reader-text">%s</span><span aria-hidden="true" class="dashicons dashicons-external"></span>',
 						/* translators: accessibility text */
 						__( '(opens in a new tab)' )
 					)
@@ -1577,7 +1577,7 @@ class WP_Site_Health {
 		$blocked = false;
 		$hosts   = array();
 
-		if ( defined( 'WP_HTTP_BLOCK_EXTERNAL' ) ) {
+		if ( defined( 'WP_HTTP_BLOCK_EXTERNAL' ) && WP_HTTP_BLOCK_EXTERNAL ) {
 			$blocked = true;
 		}
 

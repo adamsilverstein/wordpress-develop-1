@@ -742,7 +742,7 @@ function _wp_handle_upload( &$file, $overrides, $time, $action ) {
 	}
 
 	/*
-	 * This may not have orignially been intended to be overrideable,
+	 * This may not have originally been intended to be overridable,
 	 * but historically has been.
 	 */
 	if ( isset( $overrides['upload_error_strings'] ) ) {
@@ -1155,7 +1155,7 @@ function verify_file_md5( $filename, $expected_md5 ) {
  * @param string|array $signatures          A Signature provided for the file.
  * @param string       $filename_for_errors A friendly filename for errors. Optional.
  *
- * @return bool|WP_Error true on success, false if verificaiton not attempted, or WP_Error describing an error condition.
+ * @return bool|WP_Error true on success, false if verification not attempted, or WP_Error describing an error condition.
  */
 function verify_file_signature( $filename, $signatures, $filename_for_errors = false ) {
 	if ( ! $filename_for_errors ) {
@@ -1197,6 +1197,39 @@ function verify_file_signature( $filename, $signatures, $filename_for_errors = f
 			)
 		);
 
+	}
+
+	// Verify runtime speed of Sodium_Compat is acceptable.
+	if ( ! extension_loaded( 'sodium' ) && ! ParagonIE_Sodium_Compat::polyfill_is_fast() ) {
+		$sodium_compat_is_fast = false;
+
+		// Allow for an old version of Sodium_Compat being loaded before the bundled WordPress one.
+		if ( method_exists( 'ParagonIE_Sodium_Compat', 'runtime_speed_test' ) ) {
+			// Run `ParagonIE_Sodium_Compat::runtime_speed_test()` in optimized integer mode, as that's what WordPress utilises during signing verifications.
+			$old_fastMult                      = ParagonIE_Sodium_Compat::$fastMult;
+			ParagonIE_Sodium_Compat::$fastMult = true;
+			$sodium_compat_is_fast             = ParagonIE_Sodium_Compat::runtime_speed_test( 100, 10 );
+			ParagonIE_Sodium_Compat::$fastMult = $old_fastMult;
+		}
+
+		// This cannot be performed in a reasonable amount of time
+		// https://github.com/paragonie/sodium_compat#help-sodium_compat-is-slow-how-can-i-make-it-fast
+		if ( ! $sodium_compat_is_fast ) {
+			return new WP_Error(
+				'signature_verification_unsupported',
+				sprintf(
+					/* translators: 1: The filename of the package. */
+					__( 'The authenticity of %1$s could not be verified as signature verification is unavailable on this system.' ),
+					'<span class="code">' . esc_html( $filename_for_errors ) . '</span>'
+				),
+				array(
+					'php'                => phpversion(),
+					'sodium'             => defined( 'SODIUM_LIBRARY_VERSION' ) ? SODIUM_LIBRARY_VERSION : ( defined( 'ParagonIE_Sodium_Compat::VERSION_STRING' ) ? ParagonIE_Sodium_Compat::VERSION_STRING : false ),
+					'polyfill_is_fast'   => false,
+					'max_execution_time' => ini_get( 'max_execution_time' ),
+				)
+			);
+		}
 	}
 
 	if ( ! $signatures ) {
@@ -2494,7 +2527,7 @@ All at ###SITENAME###
 }
 
 /**
- * Intercept personal data exporter page ajax responses in order to assemble the personal data export file.
+ * Intercept personal data exporter page Ajax responses in order to assemble the personal data export file.
  * @see wp_privacy_personal_data_export_page
  * @since 4.9.6
  *
@@ -2510,7 +2543,7 @@ All at ###SITENAME###
 function wp_privacy_process_personal_data_export_page( $response, $exporter_index, $email_address, $page, $request_id, $send_as_email, $exporter_key ) {
 	/* Do some simple checks on the shape of the response from the exporter.
 	 * If the exporter response is malformed, don't attempt to consume it - let it
-	 * pass through to generate a warning to the user by default ajax processing.
+	 * pass through to generate a warning to the user by default Ajax processing.
 	 */
 	if ( ! is_array( $response ) ) {
 		return $response;
