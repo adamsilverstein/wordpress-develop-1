@@ -232,7 +232,7 @@ final class WP_Customize_Manager {
 	 * Changeset data loaded from a customize_changeset post.
 	 *
 	 * @since 4.7.0
-	 * @var array
+	 * @var array|null
 	 */
 	private $_changeset_data;
 
@@ -5436,7 +5436,7 @@ final class WP_Customize_Manager {
 				'section' => 'background_image',
 				'type'    => 'select',
 				'choices' => array(
-					'auto'    => __( 'Original' ),
+					'auto'    => _x( 'Original', 'Original Size' ),
 					'contain' => __( 'Fit to Screen' ),
 					'cover'   => __( 'Fill Screen' ),
 				),

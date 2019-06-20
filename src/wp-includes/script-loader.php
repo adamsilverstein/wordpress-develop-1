@@ -49,7 +49,7 @@ function wp_register_tinymce_scripts( &$scripts, $force_uncompressed = false ) {
 	script_concat_settings();
 
 	$compressed = $compress_scripts && $concatenate_scripts && isset( $_SERVER['HTTP_ACCEPT_ENCODING'] )
-				  && false !== stripos( $_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip' ) && ! $force_uncompressed;
+		&& false !== stripos( $_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip' ) && ! $force_uncompressed;
 
 	// Load tinymce.js when running from /src, otherwise load wp-tinymce.js.gz (in production) or
 	// tinymce.min.js (when SCRIPT_DEBUG is true).
@@ -229,8 +229,8 @@ function wp_default_packages_scripts( &$scripts ) {
 		'api-fetch'                          => '3.1.2',
 		'autop'                              => '2.0.0',
 		'blob'                               => '2.3.0',
-		'block-editor'                       => '2.0.2',
-		'block-library'                      => '2.4.5',
+		'block-editor'                       => '2.0.3',
+		'block-library'                      => '2.4.6',
 		'block-serialization-default-parser' => '3.1.0',
 		'blocks'                             => '6.2.5',
 		'components'                         => '7.3.2',
@@ -241,11 +241,11 @@ function wp_default_packages_scripts( &$scripts ) {
 		'deprecated'                         => '2.2.0',
 		'dom'                                => '2.2.5',
 		'dom-ready'                          => '2.2.0',
-		'edit-post'                          => '3.3.5',
-		'editor'                             => '9.2.5',
+		'edit-post'                          => '3.3.6',
+		'editor'                             => '9.2.6',
 		'element'                            => '2.3.0',
 		'escape-html'                        => '1.2.0',
-		'format-library'                     => '1.4.5',
+		'format-library'                     => '1.4.6',
 		'hooks'                              => '2.2.0',
 		'html-entities'                      => '2.2.0',
 		'i18n'                               => '3.3.0',
@@ -754,8 +754,8 @@ function wp_tinymce_inline_scripts() {
 			$init_obj .= $key . ':' . $val . ',';
 			continue;
 		} elseif ( ! empty( $value ) && is_string( $value ) && (
-			( '{' == $value{0} && '}' == $value{strlen( $value ) - 1} ) ||
-			( '[' == $value{0} && ']' == $value{strlen( $value ) - 1} ) ||
+			( '{' === $value{0} && '}' === $value{strlen( $value ) - 1} ) ||
+			( '[' === $value{0} && ']' === $value{strlen( $value ) - 1} ) ||
 			preg_match( '/^\(?function ?\(/', $value ) ) ) {
 			$init_obj .= $key . ':' . $value . ',';
 			continue;
@@ -844,8 +844,9 @@ function wp_scripts_get_suffix( $type = '' ) {
 function wp_default_scripts( &$scripts ) {
 	$suffix     = wp_scripts_get_suffix();
 	$dev_suffix = wp_scripts_get_suffix( 'dev' );
+	$guessurl   = site_url();
 
-	if ( ! $guessurl = site_url() ) {
+	if ( ! $guessurl ) {
 		$guessed_url = true;
 		$guessurl    = wp_guess_url();
 	}
@@ -1444,7 +1445,7 @@ function wp_default_scripts( &$scripts ) {
 			'themeDownloading'        => __( 'Downloading your new theme&hellip;' ),
 			'themePreviewWait'        => __( 'Setting up your live preview. This may take a bit.' ),
 			'revertingChanges'        => __( 'Reverting unpublished changes&hellip;' ),
-			'trashConfirm'            => __( 'Are you sure you&#8217;d like to discard your unpublished changes?' ),
+			'trashConfirm'            => __( 'Are you sure you want to discard your unpublished changes?' ),
 			/* translators: %s: Display name of the user who has taken over the changeset in customizer. */
 			'takenOverMessage'        => __( '%s has taken over and is currently customizing.' ),
 			/* translators: %s: URL to the Customizer to load the autosaved version */
@@ -1469,7 +1470,7 @@ function wp_default_scripts( &$scripts ) {
 			'themePreviewUnavailable' => __( 'Sorry, you can&#8217;t preview new themes when you have changes scheduled or saved as a draft. Please publish your changes, or wait until they publish to preview new themes.' ),
 			'themeInstallUnavailable' => sprintf(
 				/* translators: %s: URL to Add Themes admin screen */
-				   __( 'You won&#8217;t be able to install new themes from here yet since your install requires SFTP credentials. For now, please <a href="%s">add themes in the admin</a>.' ),
+				__( 'You won&#8217;t be able to install new themes from here yet since your install requires SFTP credentials. For now, please <a href="%s">add themes in the admin</a>.' ),
 				esc_url( admin_url( 'theme-install.php' ) )
 			),
 			'publishSettings'         => __( 'Publish Settings' ),
@@ -1542,19 +1543,6 @@ function wp_default_scripts( &$scripts ) {
 		);
 
 		$scripts->add( 'xfn', "/wp-admin/js/xfn$suffix.js", array( 'jquery' ), false, 1 );
-		did_action( 'init' ) && $scripts->localize(
-			'xfn',
-			'privacyToolsL10n',
-			array(
-				'noDataFound'     => __( 'No personal data was found for this user.' ),
-				'foundAndRemoved' => __( 'All of the personal data found for this user was erased.' ),
-				'noneRemoved'     => __( 'Personal data was found for this user but was not erased.' ),
-				'someNotRemoved'  => __( 'Personal data was found for this user but some of the personal data found was not erased.' ),
-				'removalError'    => __( 'An error occurred while attempting to find and erase personal data.' ),
-				'noExportFile'    => __( 'No personal data export file was generated.' ),
-				'exportError'     => __( 'An error occurred while attempting to export personal data.' ),
-			)
-		);
 
 		$scripts->add( 'postbox', "/wp-admin/js/postbox$suffix.js", array( 'jquery-ui-sortable' ), false, 1 );
 		did_action( 'init' ) && $scripts->localize(
@@ -1692,6 +1680,21 @@ function wp_default_scripts( &$scripts ) {
 
 		$scripts->add( 'site-health', "/wp-admin/js/site-health$suffix.js", array( 'clipboard', 'jquery', 'wp-util', 'wp-a11y', 'wp-i18n' ), false, 1 );
 		$scripts->set_translations( 'site-health' );
+
+		$scripts->add( 'privacy-tools', "/wp-admin/js/privacy-tools$suffix.js", array( 'jquery' ), false, 1 );
+		did_action( 'init' ) && $scripts->localize(
+			'privacy-tools',
+			'privacyToolsL10n',
+			array(
+				'noDataFound'     => __( 'No personal data was found for this user.' ),
+				'foundAndRemoved' => __( 'All of the personal data found for this user was erased.' ),
+				'noneRemoved'     => __( 'Personal data was found for this user but was not erased.' ),
+				'someNotRemoved'  => __( 'Personal data was found for this user but some of the personal data found was not erased.' ),
+				'removalError'    => __( 'An error occurred while attempting to find and erase personal data.' ),
+				'noExportFile'    => __( 'No personal data export file was generated.' ),
+				'exportError'     => __( 'An error occurred while attempting to export personal data.' ),
+			)
+		);
 
 		$scripts->add( 'updates', "/wp-admin/js/updates$suffix.js", array( 'jquery', 'wp-util', 'wp-a11y' ), false, 1 );
 		did_action( 'init' ) && $scripts->localize(
@@ -1881,7 +1884,9 @@ function wp_default_styles( &$styles ) {
 		define( 'SCRIPT_DEBUG', false !== strpos( $wp_version, '-src' ) );
 	}
 
-	if ( ! $guessurl = site_url() ) {
+	$guessurl = site_url();
+
+	if ( ! $guessurl ) {
 		$guessurl = wp_guess_url();
 	}
 
@@ -1905,16 +1910,16 @@ function wp_default_styles( &$styles ) {
 		 */
 		$subset = _x( 'no-subset', 'Open Sans font: add new subset (greek, cyrillic, vietnamese)' );
 
-		if ( 'cyrillic' == $subset ) {
+		if ( 'cyrillic' === $subset ) {
 			$subsets .= ',cyrillic,cyrillic-ext';
-		} elseif ( 'greek' == $subset ) {
+		} elseif ( 'greek' === $subset ) {
 			$subsets .= ',greek,greek-ext';
-		} elseif ( 'vietnamese' == $subset ) {
+		} elseif ( 'vietnamese' === $subset ) {
 			$subsets .= ',vietnamese';
 		}
 
 		// Hotlink Open Sans, for now
-		$open_sans_font_url = "https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,300,400,600&subset=$subsets";
+		$open_sans_font_url = "https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,300,400,600&subset=$subsets&display=fallback";
 	}
 
 	// Register a stylesheet for the selected admin color scheme.
@@ -2108,11 +2113,15 @@ function wp_default_styles( &$styles ) {
  * @return array Reordered array, if needed.
  */
 function wp_prototype_before_jquery( $js_array ) {
-	if ( false === $prototype = array_search( 'prototype', $js_array, true ) ) {
+	$prototype = array_search( 'prototype', $js_array, true );
+
+	if ( false === $prototype ) {
 		return $js_array;
 	}
 
-	if ( false === $jquery = array_search( 'jquery', $js_array, true ) ) {
+	$jquery = array_search( 'jquery', $js_array, true );
+
+	if ( false === $jquery ) {
 		return $js_array;
 	}
 
@@ -2328,7 +2337,7 @@ function wp_style_loader_src( $src, $handle ) {
 		return preg_replace( '#^wp-admin/#', './', $src );
 	}
 
-	if ( 'colors' == $handle ) {
+	if ( 'colors' === $handle ) {
 		$color = get_user_option( 'admin_color' );
 
 		if ( empty( $color ) || ! isset( $_wp_admin_css_colors[ $color ] ) ) {
@@ -2448,8 +2457,9 @@ function _print_scripts() {
 		$zip = 'gzip';
 	}
 
-	if ( $concat = trim( $wp_scripts->concat, ', ' ) ) {
+	$concat = trim( $wp_scripts->concat, ', ' );
 
+	if ( $concat ) {
 		if ( ! empty( $wp_scripts->print_code ) ) {
 			echo "\n<script type='text/javascript'>\n";
 			echo "/* <![CDATA[ */\n"; // not needed in HTML 5
@@ -2458,10 +2468,14 @@ function _print_scripts() {
 			echo "</script>\n";
 		}
 
-		$concat = str_split( $concat, 128 );
-		$concat = 'load%5B%5D=' . implode( '&load%5B%5D=', $concat );
+		$concat       = str_split( $concat, 128 );
+		$concatenated = '';
 
-		$src = $wp_scripts->base_url . "/wp-admin/load-scripts.php?c={$zip}&" . $concat . '&ver=' . $wp_scripts->default_version;
+		foreach ( $concat as $key => $chunk ) {
+			$concatenated .= "&load%5Bchunk_{$key}%5D={$chunk}";
+		}
+
+		$src = $wp_scripts->base_url . "/wp-admin/load-scripts.php?c={$zip}" . $concatenated . '&ver=' . $wp_scripts->default_version;
 		echo "<script type='text/javascript' src='" . esc_attr( $src ) . "'></script>\n";
 	}
 
@@ -2624,14 +2638,20 @@ function _print_styles() {
 		$zip = 'gzip';
 	}
 
-	if ( $concat = trim( $wp_styles->concat, ', ' ) ) {
+	$concat = trim( $wp_styles->concat, ', ' );
+
+	if ( $concat ) {
 		$dir = $wp_styles->text_direction;
 		$ver = $wp_styles->default_version;
 
-		$concat = str_split( $concat, 128 );
-		$concat = 'load%5B%5D=' . implode( '&load%5B%5D=', $concat );
+		$concat       = str_split( $concat, 128 );
+		$concatenated = '';
 
-		$href = $wp_styles->base_url . "/wp-admin/load-styles.php?c={$zip}&dir={$dir}&" . $concat . '&ver=' . $ver;
+		foreach ( $concat as $key => $chunk ) {
+			$concatenated .= "&load%5Bchunk_{$key}%5D={$chunk}";
+		}
+
+		$href = $wp_styles->base_url . "/wp-admin/load-styles.php?c={$zip}&dir={$dir}" . $concatenated . '&ver=' . $ver;
 		echo "<link rel='stylesheet' href='" . esc_attr( $href ) . "' type='text/css' media='all' />\n";
 
 		if ( ! empty( $wp_styles->print_code ) ) {
@@ -2658,7 +2678,7 @@ function _print_styles() {
 function script_concat_settings() {
 	global $concatenate_scripts, $compress_scripts, $compress_css;
 
-	$compressed_output = ( ini_get( 'zlib.output_compression' ) || 'ob_gzhandler' == ini_get( 'output_handler' ) );
+	$compressed_output = ( ini_get( 'zlib.output_compression' ) || 'ob_gzhandler' === ini_get( 'output_handler' ) );
 
 	if ( ! isset( $concatenate_scripts ) ) {
 		$concatenate_scripts = defined( 'CONCATENATE_SCRIPTS' ) ? CONCATENATE_SCRIPTS : true;
@@ -2713,7 +2733,7 @@ function wp_common_block_scripts_and_styles() {
 	 *
 	 * @since 5.0.0
 	 */
-	  do_action( 'enqueue_block_assets' );
+	do_action( 'enqueue_block_assets' );
 }
 
 /**

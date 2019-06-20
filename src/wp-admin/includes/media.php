@@ -476,15 +476,16 @@ function media_handle_sideload( $file_array, $post_id, $desc = null, $post_data 
 }
 
 /**
- * Adds the iframe to display content for the media upload page
+ * Outputs the iframe to display the media upload page.
  *
  * @since 2.5.0
  *
  * @global int $body_id
  *
- * @param string|callable $content_func
+ * @param callable $content_func Function that outputs the content.
+ * @param mixed    ...$args      Optional additional parameters to pass to the callback function when it's called.
  */
-function wp_iframe( $content_func /* ... */ ) {
+function wp_iframe( $content_func ) {
 	_wp_admin_html_begin();
 	?>
 <title><?php bloginfo( 'name' ); ?> &rsaquo; <?php _e( 'Uploads' ); ?> &#8212; <?php _e( 'WordPress' ); ?></title>
@@ -2071,7 +2072,7 @@ wpUploaderInit = <?php echo wp_json_encode( $plupload_init ); ?>;
 	?>
 <div id="drag-drop-area">
 	<div class="drag-drop-inside">
-	<p class="drag-drop-info"><?php _e( 'Drop files here' ); ?></p>
+	<p class="drag-drop-info"><?php _e( 'Drop files to upload' ); ?></p>
 	<p><?php _ex( 'or', 'Uploader: Drop files here - or - Select Files' ); ?></p>
 	<p class="drag-drop-buttons"><input id="plupload-browse-button" type="button" value="<?php esc_attr_e( 'Select Files' ); ?>" class="button" /></p>
 	</div>
