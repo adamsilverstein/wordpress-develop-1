@@ -3056,6 +3056,10 @@ function wp_trash_post( $post_id = 0 ) {
 	 */
 	do_action( 'wp_trash_post', $post_id );
 
+	if ( wp_is_post_revision( $post_id ) ) {
+		return wp_delete_post( $post_id, true );
+	}
+
 	add_post_meta( $post_id, '_wp_trash_meta_status', $post->post_status );
 	add_post_meta( $post_id, '_wp_trash_meta_time', time() );
 
