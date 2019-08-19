@@ -125,12 +125,13 @@ function wp_terms_checklist( $post_id = 0, $args = array() ) {
 	} else {
 		$args['selected_cats'] = array();
 	}
+
 	if ( is_array( $parsed_args['popular_cats'] ) ) {
 		$args['popular_cats'] = $parsed_args['popular_cats'];
 	} else {
 		$args['popular_cats'] = get_terms(
-			$taxonomy,
 			array(
+				'taxonomy'     => $taxonomy,
 				'fields'       => 'ids',
 				'orderby'      => 'count',
 				'order'        => 'DESC',
@@ -139,10 +140,11 @@ function wp_terms_checklist( $post_id = 0, $args = array() ) {
 			)
 		);
 	}
+
 	if ( $descendants_and_self ) {
 		$categories = (array) get_terms(
-			$taxonomy,
 			array(
+				'taxonomy'     => $taxonomy,
 				'child_of'     => $descendants_and_self,
 				'hierarchical' => 0,
 				'hide_empty'   => 0,
@@ -151,7 +153,12 @@ function wp_terms_checklist( $post_id = 0, $args = array() ) {
 		$self       = get_term( $descendants_and_self, $taxonomy );
 		array_unshift( $categories, $self );
 	} else {
-		$categories = (array) get_terms( $taxonomy, array( 'get' => 'all' ) );
+		$categories = (array) get_terms(
+			array(
+				'taxonomy' => $taxonomy,
+				'get'      => 'all',
+			)
+		);
 	}
 
 	$output = '';
@@ -207,8 +214,8 @@ function wp_popular_terms_checklist( $taxonomy, $default = 0, $number = 10, $ech
 	}
 
 	$terms = get_terms(
-		$taxonomy,
 		array(
+			'taxonomy'     => $taxonomy,
 			'orderby'      => 'count',
 			'order'        => 'DESC',
 			'number'       => $number,
@@ -266,8 +273,8 @@ function wp_link_category_checklist( $link_id = 0 ) {
 	}
 
 	$categories = get_terms(
-		'link_category',
 		array(
+			'taxonomy'   => 'link_category',
 			'orderby'    => 'name',
 			'hide_empty' => 0,
 		)
@@ -750,7 +757,7 @@ function meta_form( $post = null ) {
  * @since 0.71
  * @since 4.4.0 Converted to use get_comment() instead of the global `$comment`.
  *
- * @global WP_Locale  $wp_locale
+ * @global WP_Locale $wp_locale WordPress date and time locale object.
  *
  * @param int|bool $edit      Accepts 1|true for editing the date, 0|false for adding the date.
  * @param int|bool $for_post  Accepts 1|true for applying the date to a post, 0|false for a comment.
@@ -1678,6 +1685,7 @@ function do_settings_fields( $page, $section ) {
  * page is first accessed.
  *
  * @since 3.0.0
+ * @since 5.3.0 Added `warning` and `info` as possible values for `$type`.
  *
  * @global array $wp_settings_errors Storage array of errors registered during this pageload
  *
@@ -1685,8 +1693,8 @@ function do_settings_fields( $page, $section ) {
  * @param string $code    Slug-name to identify the error. Used as part of 'id' attribute in HTML output.
  * @param string $message The formatted message text to display to the user (will be shown inside styled
  *                        `<div>` and `<p>` tags).
- * @param string $type    Optional. Message type, controls HTML class. Accepts 'error' or 'updated'.
- *                        Default 'error'.
+ * @param string $type    Optional. Message type, controls HTML class. Possible values include 'error',
+ *                        'success', 'warning', 'info'. Default 'error'.
  */
 function add_settings_error( $setting, $code, $message, $type = 'error' ) {
 	global $wp_settings_errors;
@@ -1780,6 +1788,8 @@ function get_settings_errors( $setting = '', $sanitize = false ) {
  * missing settings when the user arrives at the settings page.
  *
  * @since 3.0.0
+ * @since 5.3.0 Legacy `error` and `updated` CSS classes are mapped to
+ *              `notice-error` and `notice-success`.
  *
  * @param string $setting        Optional slug title of a specific setting whose errors you want.
  * @param bool   $sanitize       Whether to re-sanitize the setting value before returning errors.
@@ -1800,11 +1810,22 @@ function settings_errors( $setting = '', $sanitize = false, $hide_on_update = fa
 
 	$output = '';
 	foreach ( $settings_errors as $key => $details ) {
-		$css_id    = 'setting-error-' . $details['code'];
-		$css_class = $details['type'] . ' settings-error notice is-dismissible';
-		$output   .= "<div id='$css_id' class='$css_class'> \n";
-		$output   .= "<p><strong>{$details['message']}</strong></p>";
-		$output   .= "</div> \n";
+		if ( 'updated' === $details['type'] ) {
+			$details['type'] = 'success';
+		}
+
+		$css_id    = sprintf(
+			'setting-error-%s',
+			sanitize_html_class( $details['code'] )
+		);
+		$css_class = sprintf(
+			'notice notice-%s settings-error is-dismissible',
+			sanitize_html_class( $details['type'] )
+		);
+
+		$output .= "<div id='$css_id' class='$css_class'> \n";
+		$output .= "<p><strong>{$details['message']}</strong></p>";
+		$output .= "</div> \n";
 	}
 	echo $output;
 }
@@ -1898,7 +1919,7 @@ function _admin_search_query() {
  *
  * @global string    $hook_suffix
  * @global string    $admin_body_class
- * @global WP_Locale $wp_locale
+ * @global WP_Locale $wp_locale        WordPress date and time locale object.
  *
  * @param string $title      Optional. Title of the Iframe page. Default empty.
  * @param bool   $deprecated Not used.

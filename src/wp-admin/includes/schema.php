@@ -11,7 +11,7 @@
 /**
  * Declare these as global in case schema.php is included from a function.
  *
- * @global wpdb   $wpdb
+ * @global wpdb   $wpdb            WordPress database abstraction object.
  * @global array  $wp_queries
  * @global string $charset_collate
  */
@@ -144,7 +144,8 @@ CREATE TABLE $wpdb->options (
 	option_value longtext NOT NULL,
 	autoload varchar(20) NOT NULL default 'yes',
 	PRIMARY KEY  (option_id),
-	UNIQUE KEY option_name (option_name)
+	UNIQUE KEY option_name (option_name),
+	KEY autoload (autoload)
 ) $charset_collate;
 CREATE TABLE $wpdb->postmeta (
 	meta_id bigint(20) unsigned NOT NULL auto_increment,
@@ -358,9 +359,9 @@ $wp_queries = wp_get_db_schema( 'all' );
  * @since 1.5.0
  * @since 5.1.0 The $options parameter has been added.
  *
- * @global wpdb $wpdb WordPress database abstraction object.
- * @global int  $wp_db_version
- * @global int  $wp_current_db_version
+ * @global wpdb $wpdb                  WordPress database abstraction object.
+ * @global int  $wp_db_version         WordPress database version.
+ * @global int  $wp_current_db_version The old (current) database version.
  *
  * @param array $options Optional. Custom option $key => $value pairs to use. Default empty array.
  */
@@ -542,6 +543,9 @@ function populate_options( array $options = array() ) {
 
 		// 4.9.8
 		'show_comments_cookies_opt_in'    => 1,
+
+		// 5.3.0
+		'admin_email_lifespan'            => ( time() + 6 * MONTH_IN_SECONDS ),
 	);
 
 	// 3.3
@@ -947,9 +951,9 @@ endif;
  *
  * @since 3.0.0
  *
- * @global wpdb       $wpdb
+ * @global wpdb       $wpdb         WordPress database abstraction object.
  * @global object     $current_site
- * @global WP_Rewrite $wp_rewrite
+ * @global WP_Rewrite $wp_rewrite   WordPress rewrite component.
  *
  * @param int    $network_id        ID of network to populate.
  * @param string $domain            The domain name for the network (eg. "example.com").
