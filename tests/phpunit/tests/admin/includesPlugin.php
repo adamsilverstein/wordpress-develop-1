@@ -67,10 +67,10 @@ class Tests_Admin_includesPlugin extends WP_UnitTestCase {
 	 * @param int $expected_position Where the new item is expected to appear.
 	 * @dataProvider data_submenu_priority
 	 */
-	function test_submenu_priority( $priority, $expected_position  ) {
+	function test_submenu_priority( $priority, $expected_position ) {
 		global $submenu;
 		$current_user = get_current_user_id();
-		$admin_user = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		$admin_user   = self::factory()->user->create( array( 'role' => 'administrator' ) );
 		wp_set_current_user( $admin_user );
 		set_current_screen( 'dashboard' );
 
@@ -81,7 +81,7 @@ class Tests_Admin_includesPlugin extends WP_UnitTestCase {
 		}
 
 		// Insert the new page.
-		add_submenu_page( $parent, 'New Page', 'New Page', 'manage_options', 'custom-position', 'custom_pos' , $priority );
+		add_submenu_page( $parent, 'New Page', 'New Page', 'manage_options', 'custom-position', 'custom_pos', $priority );
 		wp_set_current_user( $current_user );
 
 		// Clean up the temporary user.
@@ -119,7 +119,7 @@ class Tests_Admin_includesPlugin extends WP_UnitTestCase {
 			array( 1, 1 ),                     // Insert as the second item.
 			array( 3, 3 ),                     // Insert as the 4th item.
 			array( $menu_count, $menu_count ), // Numbers equal to the number of items are added at the end.
-			array( 123456, $menu_count )       // Numbers higher than the number of items are added at the end.
+			array( 123456, $menu_count ),       // Numbers higher than the number of items are added at the end.
 		);
 	}
 

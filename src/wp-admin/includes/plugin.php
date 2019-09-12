@@ -1463,7 +1463,7 @@ function add_management_page( $page_title, $menu_title, $capability, $menu_slug,
  * @param int      $position   The position in the menu order this one should appear.
  * @return false|string The resulting page's hook_suffix, or false if the user does not have the capability required.
  */
-function add_options_page( $page_title, $menu_title, $capability, $menu_slug, $function = '', $position = null  ) {
+function add_options_page( $page_title, $menu_title, $capability, $menu_slug, $function = '', $position = null ) {
 	return add_submenu_page( 'options-general.php', $page_title, $menu_title, $capability, $menu_slug, $function, $position );
 }
 
@@ -1534,7 +1534,7 @@ function add_plugins_page( $page_title, $menu_title, $capability, $menu_slug, $f
  */
 
 function add_users_page( $page_title, $menu_title, $capability, $menu_slug, $function = '', $position = null ) {
-	if ( current_user_can('edit_users') ) {
+	if ( current_user_can( 'edit_users' ) ) {
 		$parent = 'users.php';
 	} else {
 		$parent = 'profile.php';
@@ -1653,7 +1653,7 @@ function add_links_page( $page_title, $menu_title, $capability, $menu_slug, $fun
  * @return false|string The resulting page's hook_suffix, or false if the user does not have the capability required.
  */
 function add_pages_page( $page_title, $menu_title, $capability, $menu_slug, $function = '', $position = null ) {
-	return add_submenu_page( 'edit.php?post_type=page', $page_title, $menu_title, $capability, $menu_slug, $function, $position);
+	return add_submenu_page( 'edit.php?post_type=page', $page_title, $menu_title, $capability, $menu_slug, $function, $position );
 }
 
 /**
