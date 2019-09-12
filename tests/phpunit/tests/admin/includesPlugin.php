@@ -61,6 +61,8 @@ class Tests_Admin_includesPlugin extends WP_UnitTestCase {
 	 * Tests the priority parameter.
 	 *
 	 * @ticket 39776
+	 * @covers ::add_submenu_page
+	 *
 	 * @param int $priority          The position of the new item.
 	 * @param int $expected_position Where the new item is expected to appear.
 	 * @dataProvider data_submenu_priority
