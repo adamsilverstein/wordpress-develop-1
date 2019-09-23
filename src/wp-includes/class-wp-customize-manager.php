@@ -1376,13 +1376,6 @@ final class WP_Customize_Manager {
 						)
 					);
 
-					// In PHP < 5.6 filesize() returns 0 for the temp files unless we clear the file status cache.
-					// Technically, PHP < 5.6.0 || < 5.5.13 || < 5.4.29 but no need to be so targeted.
-					// See https://bugs.php.net/bug.php?id=65701
-					if ( version_compare( PHP_VERSION, '5.6', '<' ) ) {
-						clearstatcache();
-					}
-
 					$attachment_id = media_handle_sideload( $file_array, 0, null, $attachment_post_data );
 					if ( is_wp_error( $attachment_id ) ) {
 						continue;
@@ -5933,7 +5926,7 @@ final class WP_Customize_Manager {
 		$video = get_attached_file( absint( $value ) );
 		if ( $video ) {
 			$size = filesize( $video );
-			if ( 8 < $size / pow( 1024, 2 ) ) { // Check whether the size is larger than 8MB.
+			if ( $size > 8 * MB_IN_BYTES ) {
 				$validity->add(
 					'size_too_large',
 					__( 'This video file is too large to use as a header video. Try a shorter video or optimize the compression settings and re-upload a file that is less than 8MB. Or, upload your video to YouTube and link it with the option below.' )

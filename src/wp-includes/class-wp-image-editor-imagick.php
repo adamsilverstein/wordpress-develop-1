@@ -83,11 +83,6 @@ class WP_Image_Editor_Imagick extends WP_Image_Editor {
 			return false;
 		}
 
-		// HHVM Imagick does not support loading from URL, so fail to allow fallback to GD.
-		if ( defined( 'HHVM_VERSION' ) && isset( $args['path'] ) && preg_match( '|^https?://|', $args['path'] ) ) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -791,6 +786,10 @@ class WP_Image_Editor_Imagick extends WP_Image_Editor {
 			// By default, PDFs are rendered in a very low resolution.
 			// We want the thumbnail to be readable, so increase the rendering DPI.
 			$this->image->setResolution( 128, 128 );
+
+			// When generating thumbnails from cropped PDF pages, Imagemagick uses the uncropped
+			// area (resulting in unnecessary whitespace) unless the following option is set.
+			$this->image->setOption( 'pdf:use-cropbox', true );
 
 			// Only load the first page.
 			return $this->file . '[0]';

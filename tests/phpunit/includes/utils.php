@@ -372,17 +372,6 @@ function mask_input_value( $in, $name = '_wpnonce' ) {
 	return preg_replace( '@<input([^>]*) name="' . preg_quote( $name ) . '"([^>]*) value="[^>]*" />@', '<input$1 name="' . preg_quote( $name ) . '"$2 value="***" />', $in );
 }
 
-if ( ! function_exists( 'str_getcsv' ) ) {
-	function str_getcsv( $input, $delimiter = ',', $enclosure = '"', $escape = '\\' ) {
-		$fp = fopen( 'php://temp/', 'r+' );
-		fputs( $fp, $input );
-		rewind( $fp );
-		$data = fgetcsv( $fp, strlen( $input ), $delimiter, $enclosure );
-		fclose( $fp );
-		return $data;
-	}
-}
-
 /**
  * Removes the post type and its taxonomy associations.
  */
@@ -465,12 +454,8 @@ class WpdbExposedMethodsForTesting extends wpdb {
 function benchmark_pcre_backtracking( $pattern, $subject, $strategy ) {
 	$saved_config = ini_get( 'pcre.backtrack_limit' );
 
-	// Attempt to prevent PHP crashes.  Adjust these lower when needed.
-	if ( version_compare( phpversion(), '5.4.8', '>' ) ) {
-		$limit = 1000000;
-	} else {
-		$limit = 20000;  // 20,000 is a reasonable upper limit, but see also https://core.trac.wordpress.org/ticket/29557#comment:10
-	}
+	// Attempt to prevent PHP crashes. Adjust lower when needed.
+	$limit = 1000000;
 
 	// Start with small numbers, so if a crash is encountered at higher numbers we can still debug the problem.
 	for ( $i = 4; $i <= $limit; $i *= 2 ) {
