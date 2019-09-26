@@ -450,9 +450,11 @@ Commenter avatars come from <a href="https://gravatar.com">Gravatar</a>.'
 					0 => 'search-2',
 					1 => 'recent-posts-2',
 					2 => 'recent-comments-2',
-					3 => 'archives-2',
-					4 => 'categories-2',
-					5 => 'meta-2',
+				),
+				'sidebar-2'           => array(
+					0 => 'archives-2',
+					1 => 'categories-2',
+					2 => 'meta-2',
 				),
 				'array_version'       => 3,
 			)
@@ -2473,7 +2475,7 @@ function get_alloptions_110() {
  * @param string $setting Option name.
  * @return mixed
  */
-function __get_option( $setting ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionDoubleUnderscore
+function __get_option( $setting ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionDoubleUnderscore,PHPCompatibility.FunctionNameRestrictions.ReservedFunctionNames.FunctionDoubleUnderscore
 	global $wpdb;
 
 	if ( $setting == 'home' && defined( 'WP_HOME' ) ) {

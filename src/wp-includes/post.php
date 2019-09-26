@@ -337,28 +337,30 @@ function create_initial_post_types() {
 	register_post_status(
 		'draft',
 		array(
-			'label'       => _x( 'Draft', 'post status' ),
-			'protected'   => true,
-			'_builtin'    => true, /* internal use only. */
+			'label'         => _x( 'Draft', 'post status' ),
+			'protected'     => true,
+			'_builtin'      => true, /* internal use only. */
 			/* translators: %s: Number of draft posts. */
-			'label_count' => _n_noop(
+			'label_count'   => _n_noop(
 				'Draft <span class="count">(%s)</span>',
 				'Drafts <span class="count">(%s)</span>'
 			),
+			'date_floating' => true,
 		)
 	);
 
 	register_post_status(
 		'pending',
 		array(
-			'label'       => _x( 'Pending', 'post status' ),
-			'protected'   => true,
-			'_builtin'    => true, /* internal use only. */
+			'label'         => _x( 'Pending', 'post status' ),
+			'protected'     => true,
+			'_builtin'      => true, /* internal use only. */
 			/* translators: %s: Number of pending posts. */
-			'label_count' => _n_noop(
+			'label_count'   => _n_noop(
 				'Pending <span class="count">(%s)</span>',
 				'Pending <span class="count">(%s)</span>'
 			),
+			'date_floating' => true,
 		)
 	);
 
@@ -394,9 +396,10 @@ function create_initial_post_types() {
 	register_post_status(
 		'auto-draft',
 		array(
-			'label'    => 'auto-draft',
-			'internal' => true,
-			'_builtin' => true, /* internal use only. */
+			'label'         => 'auto-draft',
+			'internal'      => true,
+			'_builtin'      => true, /* internal use only. */
+			'date_floating' => true,
 		)
 	);
 
@@ -1018,6 +1021,8 @@ function _wp_privacy_statuses() {
  *                                                  the top of the edit listings,
  *                                                  e.g. All (12) | Published (9) | My Custom Status (2)
  *                                                  Default is value of $internal.
+ *     @type bool        $date_floating             Whether the post has a floating creation date.
+ *                                                  Default to false.
  * }
  * @return object
  */
@@ -1041,6 +1046,7 @@ function register_post_status( $post_status, $args = array() ) {
 		'publicly_queryable'        => null,
 		'show_in_admin_status_list' => null,
 		'show_in_admin_all_list'    => null,
+		'date_floating'             => null,
 	);
 	$args     = wp_parse_args( $args, $defaults );
 	$args     = (object) $args;
@@ -1083,6 +1089,10 @@ function register_post_status( $post_status, $args = array() ) {
 
 	if ( null === $args->show_in_admin_status_list ) {
 		$args->show_in_admin_status_list = ! $args->internal;
+	}
+
+	if ( null === $args->date_floating ) {
+		$args->date_floating = false;
 	}
 
 	if ( false === $args->label ) {
@@ -1272,7 +1282,8 @@ function get_post_types( $args = array(), $output = 'names', $operator = 'and' )
  * @since 4.6.0 Post type object returned is now an instance of `WP_Post_Type`.
  * @since 4.7.0 Introduced `show_in_rest`, `rest_base` and `rest_controller_class`
  *              arguments to register the post type in REST API.
- *
+ * @since 5.3.0 The `supports` argument will now accept an array of arguments for a feature.
+ * .
  * @global array $wp_post_types List of post types.
  *
  * @param string $post_type Post type key. Must not exceed 20 characters and may
@@ -1343,8 +1354,11 @@ function get_post_types( $args = array(), $output = 'names', $operator = 'and' )
  *                                              'page-attributes', 'thumbnail', 'custom-fields', and 'post-formats'.
  *                                              Additionally, the 'revisions' feature dictates whether the post type
  *                                              will store revisions, and the 'comments' feature dictates whether the
- *                                              comments count will show on the edit screen. Defaults is an array
- *                                              containing 'title' and 'editor'.
+ *                                              comments count will show on the edit screen. A feature can also be
+ *                                              specified as an array of arguments to provide additional information
+ *                                              about supporting that feature. Example: `array( 'my_feature', array(
+ *                                              'field' => 'value' ) )`. Default is an array containing 'title' and
+ *                                              'editor'.
  *     @type callable    $register_meta_box_cb  Provide a callback function that sets up the meta boxes for the
  *                                              edit form. Do remove_meta_box() and add_meta_box() calls in the
  *                                              callback. Default null.
@@ -1800,6 +1814,9 @@ function _add_post_type_submenus() {
  * Additionally, the 'revisions' feature dictates whether the post type will
  * store revisions, and the 'comments' feature dictates whether the comments
  * count will show on the edit screen.
+ *
+ * A third, optional parameter can also be passed along with a feature to provide
+ * additional information about supporting that feature.
  *
  * Example usage:
  *
@@ -3710,7 +3727,7 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 	}
 
 	if ( empty( $postarr['post_date_gmt'] ) || '0000-00-00 00:00:00' == $postarr['post_date_gmt'] ) {
-		if ( ! in_array( $post_status, array( 'draft', 'pending', 'auto-draft' ) ) ) {
+		if ( ! in_array( $post_status, get_post_stati( array( 'date_floating' => true ) ), true ) ) {
 			$post_date_gmt = get_gmt_from_date( $post_date );
 		} else {
 			$post_date_gmt = '0000-00-00 00:00:00';
@@ -5096,7 +5113,7 @@ function _page_traverse_name( $page_id, &$children, &$result ) {
  * Sub pages will be in the "directory" under the parent page post name.
  *
  * @since 1.5.0
- * @since 4.6.0 Converted the `$page` parameter to optional.
+ * @since 4.6.0 The `$page` parameter was made optional.
  *
  * @param WP_Post|object|int $page Optional. Page ID or WP_Post object. Default is global $post.
  * @return string|false Page URI, false on error.

@@ -192,13 +192,9 @@ function rest_api_default_filters() {
  */
 function create_initial_rest_routes() {
 	foreach ( get_post_types( array( 'show_in_rest' => true ), 'objects' ) as $post_type ) {
-		$class = ! empty( $post_type->rest_controller_class ) ? $post_type->rest_controller_class : 'WP_REST_Posts_Controller';
+		$controller = $post_type->get_rest_controller();
 
-		if ( ! class_exists( $class ) ) {
-			continue;
-		}
-		$controller = new $class( $post_type->name );
-		if ( ! is_subclass_of( $controller, 'WP_REST_Controller' ) ) {
+		if ( ! $controller ) {
 			continue;
 		}
 
@@ -1209,6 +1205,20 @@ function rest_get_avatar_sizes() {
  * @return true|WP_Error
  */
 function rest_validate_value_from_schema( $value, $args, $param = '' ) {
+	if ( is_array( $args['type'] ) ) {
+		foreach ( $args['type'] as $type ) {
+			$type_args         = $args;
+			$type_args['type'] = $type;
+
+			if ( true === rest_validate_value_from_schema( $value, $type_args, $param ) ) {
+				return true;
+			}
+		}
+
+		/* translators: 1: Parameter, 2: List of types. */
+		return new WP_Error( 'rest_invalid_param', sprintf( __( '%1$s is not of type %2$s' ), $param, implode( ',', $args['type'] ) ) );
+	}
+
 	if ( 'array' === $args['type'] ) {
 		if ( ! is_null( $value ) ) {
 			$value = wp_parse_list( $value );
@@ -1259,6 +1269,15 @@ function rest_validate_value_from_schema( $value, $args, $param = '' ) {
 				}
 			}
 		}
+	}
+
+	if ( 'null' === $args['type'] ) {
+		if ( null !== $value ) {
+			/* translators: 1: Parameter, 2: Type name. */
+			return new WP_Error( 'rest_invalid_param', sprintf( __( '%1$s is not of type %2$s.' ), $param, 'null' ) );
+		}
+
+		return true;
 	}
 
 	if ( ! empty( $args['enum'] ) ) {
@@ -1365,6 +1384,27 @@ function rest_validate_value_from_schema( $value, $args, $param = '' ) {
  * @return true|WP_Error
  */
 function rest_sanitize_value_from_schema( $value, $args ) {
+	if ( is_array( $args['type'] ) ) {
+		// Determine which type the value was validated against, and use that type when performing sanitization
+		$validated_type = '';
+
+		foreach ( $args['type'] as $type ) {
+			$type_args         = $args;
+			$type_args['type'] = $type;
+
+			if ( ! is_wp_error( rest_validate_value_from_schema( $value, $type_args ) ) ) {
+				$validated_type = $type;
+				break;
+			}
+		}
+
+		if ( ! $validated_type ) {
+			return null;
+		}
+
+		$args['type'] = $validated_type;
+	}
+
 	if ( 'array' === $args['type'] ) {
 		if ( empty( $args['items'] ) ) {
 			return (array) $value;
@@ -1405,6 +1445,10 @@ function rest_sanitize_value_from_schema( $value, $args ) {
 		}
 
 		return $value;
+	}
+
+	if ( 'null' === $args['type'] ) {
+		return null;
 	}
 
 	if ( 'integer' === $args['type'] ) {

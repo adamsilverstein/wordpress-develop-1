@@ -96,13 +96,35 @@ class WP_Site_Health {
 					);
 
 					if ( method_exists( $this, $test_function ) && is_callable( array( $this, $test_function ) ) ) {
-						$health_check_js_variables['site_status']['direct'][] = call_user_func( array( $this, $test_function ) );
+						/**
+						 * Filter the output of a finished Site Health test.
+						 *
+						 * @since 5.3.0
+						 *
+						 * @param array $test_result {
+						 *     An associated array of test result data.
+						 *
+						 *     @param string $label  A label describing the test, and is used as a header in the output.
+						 *     @param string $status The status of the test, which can be a value of `good`, `recommended` or `critical`.
+						 *     @param array  $badge {
+						 *         Tests are put into categories which have an associated badge shown, these can be modified and assigned here.
+						 *
+						 *         @param string $label The test label, for example `Performance`.
+						 *         @param string $color Default `blue`. A string representing a color to use for the label.
+						 *     }
+						 *     @param string $description A more descriptive explanation of what the test looks for, and why it is important for the end user.
+						 *     @param string $actions     An action to direct the user to where they can resolve the issue, if one exists.
+						 *     @param string $test        The name of the test being ran, used as a reference point.
+						 * }
+						 */
+						$health_check_js_variables['site_status']['direct'][] = apply_filters( 'site_status_test_result', call_user_func( array( $this, $test_function ) ) );
 						continue;
 					}
 				}
 
 				if ( is_callable( $test['test'] ) ) {
-					$health_check_js_variables['site_status']['direct'][] = call_user_func( $test['test'] );
+					/** This filter is documented in wp-admin/includes/class-wp-site-health.php */
+					$health_check_js_variables['site_status']['direct'][] = apply_filters( 'site_status_test_result', call_user_func( $test['test'] ) );
 				}
 			}
 
@@ -136,7 +158,7 @@ class WP_Site_Health {
 			// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_get_server_info
 			$mysql_server_type = mysqli_get_server_info( $wpdb->dbh );
 		} else {
-			// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_get_server_info
+			// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_get_server_info,PHPCompatibility.Extensions.RemovedExtensions.mysql_DeprecatedRemoved
 			$mysql_server_type = mysql_get_server_info( $wpdb->dbh );
 		}
 
@@ -260,7 +282,7 @@ class WP_Site_Health {
 					$result['status'] = 'good';
 					$result['label']  = sprintf(
 						/* translators: %s: The current version of WordPress installed on this site. */
-						__( 'Your WordPress version is up to date (%s)' ),
+						__( 'Your version of WordPress (%s) is up to date' ),
 						$core_current_version
 					);
 
@@ -654,7 +676,7 @@ class WP_Site_Health {
 		$result = array(
 			'label'       => sprintf(
 				/* translators: %s: The current PHP version. */
-				__( 'PHP is up to date (%s)' ),
+				__( 'Your version of PHP (%s) is up to date' ),
 				PHP_VERSION
 			),
 			'status'      => 'good',
@@ -664,7 +686,11 @@ class WP_Site_Health {
 			),
 			'description' => sprintf(
 				'<p>%s</p>',
-				__( 'PHP is the programming language we use to build and maintain WordPress. Newer versions of PHP are both faster and more secure, so updating will have a positive effect on your site&#8217;s performance.' )
+				sprintf(
+					/* translators: %s: The minimum recommended PHP version. */
+					__( 'PHP is the programming language used to build and maintain WordPress. Newer versions of PHP are faster and more secure, so staying up to date will help your site&#8217;s overall performance and security. The minimum recommended version of PHP is %s.' ),
+					$response['recommended_version']
+				)
 			),
 			'actions'     => sprintf(
 				'<p><a href="%s" target="_blank" rel="noopener noreferrer">%s <span class="screen-reader-text">%s</span><span aria-hidden="true" class="dashicons dashicons-external"></span></a></p>',
@@ -681,9 +707,13 @@ class WP_Site_Health {
 			return $result;
 		}
 
-		// The PHP version is older than the recommended version, but still acceptable.
+		// The PHP version is older than the recommended version, but still receiving active support.
 		if ( $response['is_supported'] ) {
-			$result['label']  = __( 'We recommend that you update PHP' );
+			$result['label'] = sprintf(
+				/* translators: %s: The server PHP version. */
+				__( 'Your version of PHP (%s) is out of date' ),
+				PHP_VERSION
+			);
 			$result['status'] = 'recommended';
 
 			return $result;
@@ -691,14 +721,22 @@ class WP_Site_Health {
 
 		// The PHP version is only receiving security fixes.
 		if ( $response['is_secure'] ) {
-			$result['label']  = __( 'Your PHP version should be updated' );
+			$result['label'] = sprintf(
+				/* translators: %s: The server PHP version. */
+				__( 'Your version of PHP (%s) should be updated' ),
+				PHP_VERSION
+			);
 			$result['status'] = 'recommended';
 
 			return $result;
 		}
 
 		// Anything no longer secure must be updated.
-		$result['label']          = __( 'Your PHP version requires an update' );
+		$result['label'] = sprintf(
+			/* translators: %s: The server PHP version. */
+			__( 'Your version of PHP (%s) requires an update' ),
+			PHP_VERSION
+		);
 		$result['status']         = 'critical';
 		$result['badge']['label'] = __( 'Security' );
 
@@ -711,15 +749,18 @@ class WP_Site_Health {
 	 * Make the check for available PHP modules into a simple boolean operator for a cleaner test runner.
 	 *
 	 * @since 5.2.0
+	 * @since 5.3.0 The `$constant` and `$class` parameters were added.
 	 *
 	 * @param string $extension Optional. The extension name to test. Default null.
 	 * @param string $function  Optional. The function name to test. Default null.
+	 * @param string $constant  Optional. The constant name to test for. Default null.
+	 * @param string $class     Optional. The class name to test for. Default null.
 	 *
 	 * @return bool Whether or not the extension and function are available.
 	 */
-	private function test_php_extension_availability( $extension = null, $function = null ) {
+	private function test_php_extension_availability( $extension = null, $function = null, $constant = null, $class = null ) {
 		// If no extension or function is passed, claim to fail testing, as we have nothing to test against.
-		if ( ! $extension && ! $function ) {
+		if ( ! $extension && ! $function && ! $constant && ! $class ) {
 			return false;
 		}
 
@@ -727,6 +768,12 @@ class WP_Site_Health {
 			return false;
 		}
 		if ( $function && ! function_exists( $function ) ) {
+			return false;
+		}
+		if ( $constant && ! defined( $constant ) ) {
+			return false;
+		}
+		if ( $class && ! class_exists( $class ) ) {
 			return false;
 		}
 
@@ -772,36 +819,40 @@ class WP_Site_Health {
 		);
 
 		$modules = array(
-			'bcmath'    => array(
-				'function' => 'bcadd',
-				'required' => false,
-			),
 			'curl'      => array(
 				'function' => 'curl_version',
+				'required' => false,
+			),
+			'dom'       => array(
+				'class'    => 'DOMNode',
 				'required' => false,
 			),
 			'exif'      => array(
 				'function' => 'exif_read_data',
 				'required' => false,
 			),
-			'filter'    => array(
-				'function' => 'filter_list',
-				'required' => false,
-			),
 			'fileinfo'  => array(
 				'function' => 'finfo_file',
 				'required' => false,
 			),
-			'mod_xml'   => array(
-				'extension' => 'libxml',
-				'required'  => false,
+			'hash'      => array(
+				'function' => 'hash',
+				'required' => false,
+			),
+			'json'      => array(
+				'function' => 'json_last_error',
+				'required' => true,
+			),
+			'mbstring'  => array(
+				'function' => 'mb_check_encoding',
+				'required' => false,
 			),
 			'mysqli'    => array(
 				'function' => 'mysqli_connect',
 				'required' => false,
 			),
 			'libsodium' => array(
-				'function'            => 'sodium_compare',
+				'constant'            => 'SODIUM_LIBRARY_VERSION',
 				'required'            => false,
 				'php_bundled_version' => '7.2.0',
 			),
@@ -817,20 +868,41 @@ class WP_Site_Health {
 				'extension' => 'imagick',
 				'required'  => false,
 			),
+			'mod_xml'   => array(
+				'extension' => 'libxml',
+				'required'  => false,
+			),
+			'zip'       => array(
+				'class'    => 'ZipArchive',
+				'required' => false,
+			),
+			'filter'    => array(
+				'function' => 'filter_list',
+				'required' => false,
+			),
 			'gd'        => array(
 				'extension'    => 'gd',
 				'required'     => false,
 				'fallback_for' => 'imagick',
+			),
+			'iconv'     => array(
+				'function' => 'iconv',
+				'required' => false,
 			),
 			'mcrypt'    => array(
 				'extension'    => 'mcrypt',
 				'required'     => false,
 				'fallback_for' => 'libsodium',
 			),
+			'simplexml' => array(
+				'extension'    => 'simplexml',
+				'required'     => false,
+				'fallback_for' => 'mod_xml',
+			),
 			'xmlreader' => array(
 				'extension'    => 'xmlreader',
 				'required'     => false,
-				'fallback_for' => 'xml',
+				'fallback_for' => 'mod_xml',
 			),
 			'zlib'      => array(
 				'extension'    => 'zlib',
@@ -843,6 +915,7 @@ class WP_Site_Health {
 		 * An array representing all the modules we wish to test for.
 		 *
 		 * @since 5.2.0
+		 * @since 5.3.0 The `$constant` and `$class` parameters were added.
 		 *
 		 * @param array $modules {
 		 *     An associated array of modules to test for.
@@ -853,6 +926,8 @@ class WP_Site_Health {
 		 *
 		 *         string $function     Optional. A function name to test for the existence of.
 		 *         string $extension    Optional. An extension to check if is loaded in PHP.
+		 *         string $constant     Optional. A constant name to check for to verify an extension exists.
+		 *         string $class        Optional. A class name to check for to verify an extension exists.
 		 *         bool   $required     Is this a required feature or not.
 		 *         string $fallback_for Optional. The module this module replaces as a fallback.
 		 *     }
@@ -863,8 +938,10 @@ class WP_Site_Health {
 		$failures = array();
 
 		foreach ( $modules as $library => $module ) {
-			$extension = ( isset( $module['extension'] ) ? $module['extension'] : null );
-			$function  = ( isset( $module['function'] ) ? $module['function'] : null );
+			$extension  = ( isset( $module['extension'] ) ? $module['extension'] : null );
+			$function   = ( isset( $module['function'] ) ? $module['function'] : null );
+			$constant   = ( isset( $module['constant'] ) ? $module['constant'] : null );
+			$class_name = ( isset( $module['class'] ) ? $module['class'] : null );
 
 			// If this module is a fallback for another function, check if that other function passed.
 			if ( isset( $module['fallback_for'] ) ) {
@@ -879,7 +956,7 @@ class WP_Site_Health {
 				}
 			}
 
-			if ( ! $this->test_php_extension_availability( $extension, $function ) && ( ! isset( $module['php_bundled_version'] ) || version_compare( PHP_VERSION, $module['php_bundled_version'], '<' ) ) ) {
+			if ( ! $this->test_php_extension_availability( $extension, $function, $constant, $class_name ) && ( ! isset( $module['php_bundled_version'] ) || version_compare( PHP_VERSION, $module['php_bundled_version'], '<' ) ) ) {
 				if ( $module['required'] ) {
 					$result['status'] = 'critical';
 
@@ -1094,7 +1171,7 @@ class WP_Site_Health {
 			// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_get_client_info
 			$mysql_client_version = mysqli_get_client_info();
 		} else {
-			// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_get_client_info
+			// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysql_get_client_info,PHPCompatibility.Extensions.RemovedExtensions.mysql_DeprecatedRemoved
 			$mysql_client_version = mysql_get_client_info();
 		}
 

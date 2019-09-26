@@ -2062,9 +2062,49 @@ function iframe_footer() {
 }
 
 /**
- * @param WP_Post $post
+ * Function to echo or return the post states as HTML.
+ *
+ * @since 2.7.0
+ * @since 5.3.0 Added the `$echo` parameter and a return value.
+ *
+ * @see get_post_states()
+ *
+ * @param WP_Post $post The post to retrieve states for.
+ * @param bool    $echo Optional. Whether to echo the post states as an HTML string. Default true.
+ * @return string Post states string.
  */
-function _post_states( $post ) {
+function _post_states( $post, $echo = true ) {
+	$post_states        = get_post_states( $post );
+	$post_states_string = '';
+
+	if ( ! empty( $post_states ) ) {
+		$state_count = count( $post_states );
+		$i           = 0;
+
+		$post_states_string .= ' &mdash; ';
+		foreach ( $post_states as $state ) {
+			++$i;
+			( $i == $state_count ) ? $sep = '' : $sep = ', ';
+			$post_states_string          .= "<span class='post-state'>$state$sep</span>";
+		}
+	}
+
+	if ( $echo ) {
+		echo $post_states_string;
+	}
+
+	return $post_states_string;
+}
+
+/**
+ * Function to retrieve an array of post states from a post.
+ *
+ * @since 5.3.0
+ *
+ * @param WP_Post $post The post to retrieve states for.
+ * @return array The array of translated post states.
+ */
+function get_post_states( $post ) {
 	$post_states = array();
 	if ( isset( $_REQUEST['post_status'] ) ) {
 		$post_status = $_REQUEST['post_status'];
@@ -2073,43 +2113,47 @@ function _post_states( $post ) {
 	}
 
 	if ( ! empty( $post->post_password ) ) {
-		$post_states['protected'] = __( 'Password protected' );
+		$post_states['protected'] = _x( 'Password protected', 'post status' );
 	}
+
 	if ( 'private' == $post->post_status && 'private' != $post_status ) {
-		$post_states['private'] = __( 'Private' );
+		$post_states['private'] = _x( 'Private', 'post status' );
 	}
+
 	if ( 'draft' === $post->post_status ) {
 		if ( get_post_meta( $post->ID, '_customize_changeset_uuid', true ) ) {
 			$post_states[] = __( 'Customization Draft' );
 		} elseif ( 'draft' !== $post_status ) {
-			$post_states['draft'] = __( 'Draft' );
+			$post_states['draft'] = _x( 'Draft', 'post status' );
 		}
 	} elseif ( 'trash' === $post->post_status && get_post_meta( $post->ID, '_customize_changeset_uuid', true ) ) {
-		$post_states[] = __( 'Customization Draft' );
+		$post_states[] = _x( 'Customization Draft', 'post status' );
 	}
+
 	if ( 'pending' == $post->post_status && 'pending' != $post_status ) {
 		$post_states['pending'] = _x( 'Pending', 'post status' );
 	}
+
 	if ( is_sticky( $post->ID ) ) {
-		$post_states['sticky'] = __( 'Sticky' );
+		$post_states['sticky'] = _x( 'Sticky', 'post status' );
 	}
 
 	if ( 'future' === $post->post_status ) {
-		$post_states['scheduled'] = __( 'Scheduled' );
+		$post_states['scheduled'] = _x( 'Scheduled', 'post status' );
 	}
 
 	if ( 'page' === get_option( 'show_on_front' ) ) {
 		if ( intval( get_option( 'page_on_front' ) ) === $post->ID ) {
-			$post_states['page_on_front'] = __( 'Front Page' );
+			$post_states['page_on_front'] = _x( 'Front Page', 'page label' );
 		}
 
 		if ( intval( get_option( 'page_for_posts' ) ) === $post->ID ) {
-			$post_states['page_for_posts'] = __( 'Posts Page' );
+			$post_states['page_for_posts'] = _x( 'Posts Page', 'page label' );
 		}
 	}
 
 	if ( intval( get_option( 'wp_page_for_privacy_policy' ) ) === $post->ID ) {
-		$post_states['page_for_privacy_policy'] = __( 'Privacy Policy Page' );
+		$post_states['page_for_privacy_policy'] = _x( 'Privacy Policy Page', 'page label' );
 	}
 
 	/**
@@ -2121,23 +2165,16 @@ function _post_states( $post ) {
 	 * @param string[] $post_states An array of post display states.
 	 * @param WP_Post  $post        The current post object.
 	 */
-	$post_states = apply_filters( 'display_post_states', $post_states, $post );
-
-	if ( ! empty( $post_states ) ) {
-		$state_count = count( $post_states );
-		$i           = 0;
-		echo ' &mdash; ';
-		foreach ( $post_states as $state ) {
-			++$i;
-			( $i == $state_count ) ? $sep = '' : $sep = ', ';
-			echo "<span class='post-state'>$state$sep</span>";
-		}
-	}
-
+	return apply_filters( 'display_post_states', $post_states, $post );
 }
 
 /**
- * @param WP_Post $post
+ * Function to echo the attachment media states as HTML.
+ *
+ * @since 3.2.0
+ *
+ * @param WP_Post $post The attachment post to retrieve states for.
+ * @return string Media states string.
  */
 function _media_states( $post ) {
 	$media_states = array();

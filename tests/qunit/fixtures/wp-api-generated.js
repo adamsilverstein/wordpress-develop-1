@@ -373,12 +373,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -553,12 +559,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -893,12 +905,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -1238,12 +1256,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -1390,12 +1414,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -1702,12 +1732,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -2015,12 +2051,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -2152,12 +2194,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -2399,12 +2447,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -2503,12 +2557,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -2612,12 +2672,18 @@ mockedApiResponse.Schema = {
                         "date": {
                             "required": false,
                             "description": "The date the object was published, in the site's timezone.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "date_gmt": {
                             "required": false,
                             "description": "The date the object was published, as GMT.",
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "slug": {
                             "required": false,
@@ -7326,6 +7392,7 @@ mockedApiResponse.StatusesCollection = {
         "public": true,
         "queryable": true,
         "slug": "publish",
+        "date_floating": false,
         "_links": {
             "archives": [
                 {
@@ -7339,6 +7406,7 @@ mockedApiResponse.StatusesCollection = {
         "public": false,
         "queryable": false,
         "slug": "future",
+        "date_floating": false,
         "_links": {
             "archives": [
                 {
@@ -7352,6 +7420,7 @@ mockedApiResponse.StatusesCollection = {
         "public": false,
         "queryable": false,
         "slug": "draft",
+        "date_floating": true,
         "_links": {
             "archives": [
                 {
@@ -7365,6 +7434,7 @@ mockedApiResponse.StatusesCollection = {
         "public": false,
         "queryable": false,
         "slug": "pending",
+        "date_floating": true,
         "_links": {
             "archives": [
                 {
@@ -7378,6 +7448,7 @@ mockedApiResponse.StatusesCollection = {
         "public": false,
         "queryable": false,
         "slug": "private",
+        "date_floating": false,
         "_links": {
             "archives": [
                 {
@@ -7391,6 +7462,7 @@ mockedApiResponse.StatusesCollection = {
         "public": false,
         "queryable": false,
         "slug": "trash",
+        "date_floating": false,
         "_links": {
             "archives": [
                 {
@@ -7405,7 +7477,8 @@ mockedApiResponse.StatusModel = {
     "name": "Published",
     "public": true,
     "queryable": true,
-    "slug": "publish"
+    "slug": "publish",
+    "date_floating": false
 };
 
 mockedApiResponse.TaxonomiesCollection = {

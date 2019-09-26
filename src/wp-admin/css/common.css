@@ -190,7 +190,7 @@ p.popular-tags,
 .feature-filter,
 .imgedit-group,
 .comment-ays {
-	border: 1px solid #e5e5e5;
+	border: 1px solid #ccd0d4;
 	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
 }
 
@@ -272,11 +272,7 @@ a:focus,
 a:focus .media-icon img,
 .wp-person a:focus .gravatar {
 	color: #124964;
-	box-shadow:
-		0 0 0 1px #5b9dd9,
-		0 0 2px 1px rgba(30, 140, 190, 0.8);
-	/* Only visible in Windows High Contrast mode */
-	outline: 1px solid transparent;
+	outline: 1px dotted #555d66;
 }
 
 .ie8 a:focus {
@@ -284,9 +280,7 @@ a:focus .media-icon img,
 }
 
 #adminmenu a:focus {
-	box-shadow: none;
-	/* Only visible in Windows High Contrast mode */
-	outline: 1px solid transparent;
+	outline: 1px dotted #555d66;
 	outline-offset: -1px;
 }
 
@@ -490,12 +484,12 @@ code {
 
 .widefat thead th,
 .widefat thead td {
-	border-bottom: 1px solid #e1e1e1;
+	border-bottom: 1px solid #ccd0d4;
 }
 
 .widefat tfoot th,
 .widefat tfoot td {
-	border-top: 1px solid #e1e1e1;
+	border-top: 1px solid #ccd0d4;
 	border-bottom: none;
 }
 
@@ -623,15 +617,13 @@ code {
 	position: relative;
 	top: -3px;
 	text-decoration: none;
-	border: none;
-	border: 1px solid #ccc;
+	border: 1px solid #7e8993;
 	border-radius: 2px;
-	background: #f7f7f7;
 	text-shadow: none;
 	font-weight: 600;
 	font-size: 13px;
 	line-height: normal; /* IE8-IE11 need this for buttons */
-	color: #0073aa; /* some of these controls are button elements and don't inherit from links */
+	color: #555; /* use the standard color used for buttons */
 	cursor: pointer;
 }
 
@@ -641,14 +633,14 @@ code {
 
 .wrap .add-new-h2:hover, /* deprecated */
 .wrap .page-title-action:hover {
-	border-color: #008EC2;
-	background: #00a0d2;
-	color: #fff;
+	background: #f3f5f6;
+	border-color: #7e8993;
+	color: #007cba;
 }
 
 /* lower specificity: color needs to be overridden by :hover and :active */
 .page-title-action:focus {
-	color: #124964;
+	color: #016087;
 }
 
 /* Dashicon for language options on General Settings and Profile screens */
@@ -658,8 +650,8 @@ code {
 }
 
 .wrap .page-title-action:focus {
-	border-color: #5b9dd9;
-	box-shadow: 0 0 2px rgba(30, 140, 190, 0.8);
+	border-color: #007cba;
+	box-shadow: 0 0 0 1px #007cba;
 	/* Only visible in Windows High Contrast mode */
 	outline: 2px solid transparent;
 }
@@ -779,7 +771,7 @@ img.emoji {
 
 .postbox .hndle,
 .stuffbox .hndle {
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #ccd0d4;
 }
 
 .quicktags,
@@ -841,9 +833,7 @@ img.emoji {
 }
 
 .tagchecklist .ntdelbutton:focus .remove-tag-icon:before {
-	box-shadow:
-		0 0 0 1px #5b9dd9,
-		0 0 2px 1px rgba(30, 140, 190, 0.8);
+	outline: 1px dotted #555d66;
 }
 
 .key-labels label {
@@ -1009,7 +999,7 @@ th.action-links {
 	padding: 0 10px;
 	width: 100%;
 	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
-	border: 1px solid #e5e5e5;
+	border: 1px solid #ccd0d4;
 	background: #fff;
 	color: #555;
 	font-size: 13px;
@@ -1376,8 +1366,9 @@ th.action-links {
 div.updated,
 div.error {
 	background: #fff;
-	border-left: 4px solid #fff;
-	box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+	border: 1px solid #ccd0d4;
+	border-left-width: 4px;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
 	margin: 5px 15px 2px;
 	padding: 1px 12px;
 }
@@ -1441,8 +1432,7 @@ div.error p,
 }
 
 .notice-dismiss:focus {
-	outline: none;
-	box-shadow: 0 0 0 1px #5b9dd9, 0 0 2px 1px rgba(30, 140, 190, 0.8);
+	outline: 1px dotted #555d66;
 }
 
 .ie8 .notice-dismiss:focus {
@@ -1681,9 +1671,9 @@ form.upgrade .hint {
 	margin: 0 20px -1px 0px;
 	position: relative;
 	background-color: #fff;
-	border: 1px solid #ddd;
+	border: 1px solid #ccd0d4;
 	border-top: none;
-	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.025);
+	box-shadow: 0 0 0 transparent;
 }
 
 #screen-options-link-wrap,
@@ -1698,17 +1688,17 @@ form.upgrade .hint {
 }
 
 #screen-meta-links .show-settings {
-	border: 1px solid #ddd;
+	border: 1px solid #ccd0d4;
 	border-top: none;
-	border-bottom-color: #ccc;
 	height: auto;
 	margin-bottom: 0;
 	padding: 3px 6px 3px 16px;
 	background: #fff;
-	border-radius: 0;
+	border-radius: 0 0 4px 4px;
 	color: #72777c;
 	line-height: 1.7;
-	box-shadow: none;
+	box-shadow: 0 0 0 transparent;
+	transition: box-shadow 0.1s linear;
 }
 
 #screen-meta-links .show-settings:hover,
@@ -1847,7 +1837,7 @@ form.upgrade .hint {
 	bottom: 0;
 	left: 150px;
 	right: 170px;
-	border: 1px solid #e1e1e1;
+	border: 1px solid #ccd0d4;
 	border-top: none;
 	border-bottom: none;
 	background: #f6fbfd;
@@ -1900,7 +1890,7 @@ form.upgrade .hint {
 }
 
 .contextual-help-tabs .active a {
-	border-color: #e1e1e1;
+	border-color: #ccd0d4;
 	color: #32373c;
 }
 
@@ -2049,6 +2039,11 @@ html.wp-toolbar {
 .js .widget .widget-top,
 .js .postbox .hndle {
 	cursor: move;
+}
+
+.js .widget .widget-top.is-non-sortable,
+.js .postbox .hndle.is-non-sortable {
+	cursor: auto;
 }
 
 .hndle a {
@@ -3070,9 +3065,7 @@ img {
 }
 
 .js .postbox .handlediv:focus .toggle-indicator:before {
-	box-shadow:
-		0 0 0 1px #5b9dd9,
-		0 0 2px 1px rgba(30, 140, 190, 0.8);
+	outline: 1px dotted #555d66;
 }
 
 /* @todo: appears to be Press This only and overridden */
@@ -3166,7 +3159,7 @@ img {
 }
 [role="treeitem"] .folder-label.focus {
 	color: #124964;
-	box-shadow: 0 0 0 1px #5b9dd9, 0 0 2px 1px rgba(30, 140, 190, 0.8);
+	outline: 1px dotted #555d66;
 }
 [role="treeitem"].hover,
 [role="treeitem"] .folder-label.hover {
@@ -3393,9 +3386,7 @@ img {
 }
 
 .widget-top .widget-action:focus .toggle-indicator:before {
-	box-shadow:
-		0 0 0 1px #5b9dd9,
-		0 0 2px 1px rgba(30, 140, 190, 0.8);
+	outline: 1px dotted #555d66;
 }
 
 .control-section .accordion-section-title:after,
